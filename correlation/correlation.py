@@ -1,5 +1,6 @@
 import json
 from tqdm import tqdm
+import scipy.stats
 
 char2attr = json.load(open('../preprocess/char2attr.json', encoding='utf-8'))
 attr2char = json.load(open('../preprocess/attr2char.json', encoding='utf-8'))
@@ -18,8 +19,9 @@ def calc_chi2(data, A, B):
     c = res[1][0]
     d = res[1][1]
     chi2 = (a+b+c+d)*(a*d-b*c)**2/((a+b)*(c+d)*(a+c)*(b+d))
+    p = scipy.stats.chi2.sf(chi2, df=1)
     # print('\tF\tT\t{}\nF\t{}\t{}\nT\t{}\t{}\n{}\tchi2 = {}'.format(A, a, b, c, d, B, chi2))
-    return chi2, res
+    return chi2, p, res
 
 # print(calc_chi2('傲娇', '双马尾'))
 # print(calc_chi2('傲娇', '金发'))
@@ -34,10 +36,10 @@ for i in tqdm(range(len(attrs))):
     for j in range(i+1, len(attrs)):
         A = attrs[i]
         B = attrs[j]
-        chi2, res = calc_chi2(char2attr, A, B)
-        if res[0][1]==0 or res[1][0]==0:
+        chi2, p, res = calc_chi2(char2attr, A, B)
+        if res[0][1] == 0 or res[1][0] == 0:
             continue
-        a.append((chi2, A, B, res))
+        a.append((chi2, p, A, B, res))
 a.sort()
 print(a)
 json.dump(a, open('test.json', 'w', encoding='utf-8'), ensure_ascii=False)
