@@ -18,7 +18,8 @@ def calc_chi2(data, A, B):
     b = res[0][1]
     c = res[1][0]
     d = res[1][1]
-    chi2 = (a+b+c+d)*(a*d-b*c)**2/((a+b)*(c+d)*(a+c)*(b+d))
+    n = a+b+c+d
+    chi2 = n*(abs(a*d-b*c)-n/2)**2/((a+b)*(c+d)*(a+c)*(b+d))
     p = scipy.stats.chi2.sf(chi2, df=1)
     # print('\tF\tT\t{}\nF\t{}\t{}\nT\t{}\t{}\n{}\tchi2 = {}'.format(A, a, b, c, d, B, chi2))
     return chi2, p, res
