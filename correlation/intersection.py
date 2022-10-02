@@ -49,5 +49,5 @@ with tqdm(total=attr_count*(attr_count-1)//2+attr_count) as pbar:
             # result.append((attrs[i], attrs[j], chi2, table))
             pbar.update(1)
 
-json.dump(attrs, open('attr_index.json', 'w', encoding='utf-8'), ensure_ascii=False)
+json.dump(attrs, open('attr_ids.json', 'w', encoding='utf-8'), ensure_ascii=False)
 intersection.dump(open('intersection.npy', 'wb'))

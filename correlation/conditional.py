@@ -1,7 +1,7 @@
 import json
 import numpy
 
-attrs = json.load(open('attr_index.json', encoding='utf-8'))
+attrs = json.load(open('attr_ids.json', encoding='utf-8'))
 chars = json.load(open('../preprocess/char_index.json', encoding='utf-8'))
 P = numpy.load(open('intersection.npy', 'rb'), allow_pickle=True)
 attr_count = len(attrs)
@@ -27,10 +27,19 @@ def query_attr(x, limit=None):
     return tmp
 
 
+def calc(x, y):
+    xx = attrmap[x]
+    yy = attrmap[y]
+    pxy = P[xx][yy]
+    pxx = P[xx][xx]
+    pyy = P[yy][yy]
+    return ((pxy/pxx)/(pyy/char_count), pxy, pxx, pxy/pxx, x, y)
+
+
 hair_color_attr = json.load(open('../crawler/hair_color_attr.json', encoding='utf-8'))
 
 tmp = query_attr('傲娇')
 for i in tmp:
     # if i[-1] in hair_color_attr:
-        if i[3] > 0.01:
-            print(i)
+    if i[2] > 30 and i[3] > 0.01:
+        print(i)
