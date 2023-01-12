@@ -1,5 +1,4 @@
 import json
-from re import I
 import requests
 import urllib.parse
 import time
