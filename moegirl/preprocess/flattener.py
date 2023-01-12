@@ -23,23 +23,30 @@ dfs(data, res)
 res.sort(key=lambda x: len(x['pages']))
 
 # for i in res:
-#     print(i['name'], len(i['pages']))
+# print(i['name'], len(i['pages']))
+
+char_filter = json.load(open('../../bangumi/moegirl_to_bgm.json', encoding='utf-8'))
 
 char_index = {}
 attr_index = {}
 for i in res:
-    tmp = i.copy()
-    tmp.pop('pages')
-    attr_index[i['name']] = tmp
+    cnt = 0
     for j in i['pages']:
         page = j['page']
         url = j['url']
+        if page not in char_filter:
+            continue
+        cnt += 1
         if page not in char_index:
             char_index[page] = j
         # else:
         #     current = char_index[page]
         #     if json.dumps(current) != json.dumps(j):
         #         print(j)
+    if cnt > 0:
+        tmp = i.copy()
+        tmp.pop('pages')
+        attr_index[i['name']] = tmp
 # print(char_index)
 # print(attr_index)
 json.dump(char_index, open('char_index.json', 'w', encoding='utf-8'), ensure_ascii=False)
@@ -51,18 +58,23 @@ print('character count: {}'.format(len(char_index)))
 char2attr = {}
 attr2char = {}
 for i in res:
+    if i['name'] not in attr_index:
+        continue
     if i['name'] in attr2char:
         continue
     chars = []
     for j in i['pages']:
-        chars.append(j['page'])
         page = j['page']
+        if page not in char_filter:
+            continue
+        chars.append(page)
         url = j['url']
         if page not in char2attr:
             char2attr[page] = []
         if i['name'] not in char2attr[page]:
             char2attr[page].append(i['name'])
-    attr2char[i['name']] = chars
+    if len(chars) > 0:
+        attr2char[i['name']] = chars
 
 json.dump(attr2char, open('attr2char.json', 'w', encoding='utf-8'), ensure_ascii=False)
 json.dump(char2attr, open('char2attr.json', 'w', encoding='utf-8'), ensure_ascii=False)
