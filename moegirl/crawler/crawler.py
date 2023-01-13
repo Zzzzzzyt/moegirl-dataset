@@ -4,6 +4,11 @@ import urllib.parse
 import time
 from bs4 import BeautifulSoup
 
+
+def save_json(data, path):
+    json.dump(data, open(path, 'w', encoding='utf-8'), ensure_ascii=False)
+
+
 headers = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
     'Accept-Encoding': 'gzip, deflate, br',
@@ -109,16 +114,47 @@ def parse_index(url, depth=0, first_page=True):
             if err:
                 raise err
     except BaseException as e:
+        if depth == 0:
+            print(e)
         return ret, e
     return ret, None
 
 
-# safe_soup('https://zh.moegirl.org.cn/index.php?title=asdfasdfsa')
-# parse_index('https://zh.moegirl.org.cn/Category:%E9%95%BF%E7%9B%B4')
-res, err = parse_index('https://zh.moegirl.org.cn/index.php?title=Category:按角色特征分类')
-# res, err = parse_index('https://zh.moegirl.org.cn/index.php?title=Category:按角色特征分类&subcatfrom=大小眼#mw-subcategories', first_page=False)
-# res, err = parse_index('https://zh.moegirl.org.cn/index.php?title=Category:按角色特征分类&pagefrom=A&filefrom=A&subcatfrom=异性恐惧症#mw-subcategories', first_page=False)
-# res, err = parse_index('https://zh.moegirl.org.cn/index.php?title=Category:按角色特征分类&pagefrom=A&filefrom=A&subcatfrom=紫瞳%E2%80%8E%E2%80%8E#mw-subcategories', first_page=False)
-print(err)
-json.dump(res, open('out.json', 'w', encoding='utf-8'), ensure_ascii=False)
-print('json saved.')
+def merge(*output):
+    ret = {'pages': [], 'subcategories': []}
+    for i in output:
+        ret['pages'].extend(i['pages'])
+        ret['subcategories'].extend(i['subcategories'])
+    return ret
+
+
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:按角色特征分类')[0],'out.json')
+
+# save_json(merge(
+#     parse_index('https://zh.moegirl.org.cn/Category:东方正作人物')[0],
+#     parse_index('https://zh.moegirl.org.cn/Category:东方旧作人物')[0]
+# ), 'touhou_out.json')
+
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:魔法禁书目录')[0],'toaru_out.json')
+
+save_json(merge(
+    parse_index('https://zh.moegirl.org.cn/Category:AIR')[0],
+    parse_index('https://zh.moegirl.org.cn/Category:古典部系列')[0],
+    parse_index('https://zh.moegirl.org.cn/Category:CLANNAD')[0],
+    parse_index('https://zh.moegirl.org.cn/Category:Free!')[0],
+    parse_index('https://zh.moegirl.org.cn/Category:甘城光辉游乐园')[0],
+    parse_index('https://zh.moegirl.org.cn/Category:境界的彼方')[0],
+    parse_index('https://zh.moegirl.org.cn/Category:紫罗兰永恒花园')[0],
+    parse_index('https://zh.moegirl.org.cn/Category:Kanon')[0],
+    parse_index('https://zh.moegirl.org.cn/Category:吹响！上低音号')[0],
+    parse_index('https://zh.moegirl.org.cn/Category:凉宫春日系列')[0],
+    parse_index('https://zh.moegirl.org.cn/Category:轻音少女')[0],
+    parse_index('https://zh.moegirl.org.cn/Category:全金属狂潮')[0],
+    parse_index('https://zh.moegirl.org.cn/Category:日常')[0],
+    parse_index('https://zh.moegirl.org.cn/Category:声之形')[0],
+    parse_index('https://zh.moegirl.org.cn/Category:弦音_-风舞高中弓道部-')[0],
+    parse_index('https://zh.moegirl.org.cn/Category:小林家的龙女仆')[0],
+    parse_index('https://zh.moegirl.org.cn/Category:幸运星')[0],
+    parse_index('https://zh.moegirl.org.cn/Category:玉子市场')[0],
+    parse_index('https://zh.moegirl.org.cn/Category:中二病也要谈恋爱！')[0]
+), 'kyoani_out.json')

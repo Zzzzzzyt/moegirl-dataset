@@ -5,25 +5,22 @@ def save_json(data, path):
     json.dump(data, open(path, 'w', encoding='utf-8'), ensure_ascii=False)
 
 
-def multisplit(str, sp=', ，/／'):
+def multisplit(str, sp=',，/／'):
     ret = []
     cur = ''
     for i in str:
         if i in sp:
-            ret.append(cur)
+            ret.append(cur.strip())
             cur = ''
         else:
             cur += i
     if cur != '':
-        ret.append(cur)
+        ret.append(cur.strip())
     return ret
 
 
-bgm_chars = json.load(open('bgm_chars.json', encoding='utf-8'))
-moegirl_chars = json.load(open('../moegirl/preprocess/char_index.json', encoding='utf-8'))
-
 special_map = {
-    '10452': '初音未来(世界计划)',  # 初音未来
+    '10452': '初音未来',  # 初音未来
     '24094': '加藤惠(路人女主的养成方法)',  # 加藤惠
     '3': 'C.C.(CODE GEASS)',  # C.C.
     '1': '鲁路修·vi·布里塔尼亚',  # 鲁路修·兰佩路基
@@ -67,6 +64,10 @@ special_map = {
     '11909': '博士(日常)',  # 博士
 }
 
+bgm_index = json.load(open('bgm_index.json', encoding='utf-8'))
+bgm_chars = json.load(open('bgm_chars.json', encoding='utf-8'))
+moegirl_chars = json.load(open('../moegirl/preprocess/char_index.json', encoding='utf-8'))
+
 
 def multimatch(bgm_name):
     ret = []
@@ -78,40 +79,70 @@ def multimatch(bgm_name):
             else:
                 if i[-1] == ')' and i[len(bgm_name)] == '(':
                     ret.append(i)
+        elif idx > 0:
+            if i[idx-1] == ':':
+                ret.append(i)
     return ret
 
 
-def map_bgm(id):
+def is_postfix(a, b):
+    if len(a) < len(b):
+        offset = len(b)-len(a)
+        return b[offset-1] == ':' and a == b[offset:]
+    else:
+        return a == b
+
+
+def map_bgm(entry):
+    id = str(entry['id'])
     if id in special_map:
         return special_map[id]
-    char = bgm_chars[id]
-    canon_name = None
-    aliases = []
-    for i in char['infobox']:
-        if i['key'] == '简体中文名':
-            canon_name = i['value']
-        elif i['key'] == '别名':
-            for j in i['value']:
-                names = multisplit(j['v'])
-                aliases.extend(names)
+    canon_name = []
+    names = []
+    if id in bgm_chars:
+        char = bgm_chars[id]
+        names.extend(multisplit(char['name']))
+        for i in char['infobox']:
+            if i['key'] == '简体中文名':
+                canon_name = multisplit(i['value'])
+            elif i['key'] == '别名':
+                for j in i['value']:
+                    split = multisplit(j['v'])
+                    names.extend(split)
+        names = canon_name+names
+    else:
+        # fallback
+        canon_name.append(entry['name'])
 
     ret = []
-    for i in [canon_name]+aliases:
+    for i in names:
         ret.extend(multimatch(i))
     if len(ret) == 0:
-        print('{}: None, #{}'.format(id, canon_name))
-    elif canon_name != ret[0]:
-        print('{}: \'{}\', #{}'.format(id, ret, canon_name))
+        print('{}: None, #{}'.format(id, names))
+        return None
+    elif len(ret) == 1:
+        flag = True
+        for i in names:
+            if is_postfix(i, ret[0]):
+                flag = False
+                break
+        if flag:
+            print('{}: {}, #{}'.format(id, ret, names))
+    elif ret[0] not in canon_name:
+        print('{}: {}, #{}'.format(id, ret, names))
     return ret[0]
 
 
 bgm_to_moegirl = {}
 moegirl_to_bgm = {}
-for rank, i in enumerate(bgm_chars):
+for cnt, i in enumerate(bgm_index):
     moegirl_id = map_bgm(i)
-    print(rank, i, bgm_chars[i]['name'], moegirl_id)
-    bgm_to_moegirl[i] = moegirl_id
-    moegirl_to_bgm[moegirl_id] = i
+    bgm_id = i['id']
+    print(cnt, bgm_id, i['name'], moegirl_id)
+    bgm_to_moegirl[bgm_id] = moegirl_id
+    if moegirl_id != None:
+        moegirl_to_bgm[moegirl_id] = bgm_id
 
+print(f'successful map: {len(moegirl_to_bgm)}')
 save_json(bgm_to_moegirl, 'bgm_to_moegirl.json')
 save_json(moegirl_to_bgm, 'moegirl_to_bgm.json')

@@ -10,9 +10,9 @@ headers = {
     'Accept-Encoding': 'gzip, deflate, br',
     'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7',
     'Connection': 'keep-alive',
-    'User-Agent': 'Zzzyt/moegirl-dataset-crawler (https://github.com/Zzzzzzyt/moegirl-dataset)',
+    'User-Agent': 'Zzzyt/MoeRanker (https://github.com/Zzzzzzyt/MoeRanker)',
 }
-cooldown = 0
+cooldown = 3
 
 requests.adapters.DEFAULT_RETRIES = 3
 
@@ -77,7 +77,8 @@ def crawl_index(count):
 def crawl_characters(index):
     ret = {}
     try:
-        for i in index:
+        for cnt, i in enumerate(index):
+            print(cnt, i['name'], end=' ')
             id = i['id']
             data = json.loads(safe_get(f'https://api.bgm.tv/v0/characters/{id}').text)
             ret[id] = data
@@ -92,6 +93,8 @@ def download_thumnail(index, chars):
             return
         id = str(i['id'])
         print(idx, id, i['name'])
+        if idx < 200:
+            continue
         images = chars[str(id)]['images']
         safe_download(i['avatar'], 'images/{}-avatar.jpg'.format(id))
         # safe_download(images['small'], 'images/{}-small.jpg'.format(id))
@@ -101,10 +104,12 @@ def download_thumnail(index, chars):
 
 
 if __name__ == '__main__':
-    # save_json(index, 'bgm_index.json')
-    index = json.load(open("bgm_index.json", encoding='utf-8'))
-    # chars, e = crawl_characters(index[:200])
+    index = crawl_index(1000)
+    save_json(index, 'bgm_index.json')
+    # index = json.load(open("bgm_index.json", encoding='utf-8'))
+    # chars, e = crawl_characters(index)
     # print(chars, e)
     # save_json(chars, 'bgm_chars.json')
-    chars = json.load(open('bgm_chars.json', encoding='utf-8'))
+
+    # chars = json.load(open('bgm_chars.json', encoding='utf-8'))
     # download_thumnail(index, chars)

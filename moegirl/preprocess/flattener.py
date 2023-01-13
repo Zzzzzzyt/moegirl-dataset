@@ -1,6 +1,10 @@
 import json
 
 
+def save_json(data, path):
+    json.dump(data, open(path, 'w', encoding='utf-8'), ensure_ascii=False)
+
+
 def dfs(data: dict, ret: list, depth=0):
     pages = []
     if depth != 0:
@@ -26,6 +30,7 @@ res.sort(key=lambda x: len(x['pages']))
 # print(i['name'], len(i['pages']))
 
 char_filter = json.load(open('../../bangumi/moegirl_to_bgm.json', encoding='utf-8'))
+# char_filter = None
 
 char_index = {}
 attr_index = {}
@@ -34,7 +39,7 @@ for i in res:
     for j in i['pages']:
         page = j['page']
         url = j['url']
-        if page not in char_filter:
+        if char_filter != None and page not in char_filter:
             continue
         cnt += 1
         if page not in char_index:
@@ -49,8 +54,8 @@ for i in res:
         attr_index[i['name']] = tmp
 # print(char_index)
 # print(attr_index)
-json.dump(char_index, open('char_index.json', 'w', encoding='utf-8'), ensure_ascii=False)
-json.dump(attr_index, open('attr_index.json', 'w', encoding='utf-8'), ensure_ascii=False)
+save_json(char_index, 'char_index.json')
+save_json(attr_index, 'attr_index.json')
 
 print('attribute count: {}'.format(len(attr_index)))
 print('character count: {}'.format(len(char_index)))
@@ -65,7 +70,7 @@ for i in res:
     chars = []
     for j in i['pages']:
         page = j['page']
-        if page not in char_filter:
+        if char_filter != None and page not in char_filter:
             continue
         chars.append(page)
         url = j['url']
@@ -76,5 +81,5 @@ for i in res:
     if len(chars) > 0:
         attr2char[i['name']] = chars
 
-json.dump(attr2char, open('attr2char.json', 'w', encoding='utf-8'), ensure_ascii=False)
-json.dump(char2attr, open('char2attr.json', 'w', encoding='utf-8'), ensure_ascii=False)
+save_json(attr2char, 'attr2char.json')
+save_json(char2attr, 'char2attr.json')
