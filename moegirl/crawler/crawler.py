@@ -35,10 +35,11 @@ characters = {}
 
 def safe_get(url):
     url = urllib.parse.unquote(url)
+    print('GET: {} '.format(url), end='')
     r = requests.get(url, headers=headers)
     r.encoding = 'utf-8'
     elapsed = r.elapsed.total_seconds()
-    print('GET: {} {} in {:.3f}s'.format(url, r.status_code, elapsed))
+    print('{} in {:.3f}s'.format(r.status_code, elapsed))
     if r.status_code != 200:
         print('ERROR: {}'.format(r.status_code))
         raise RuntimeError('Network error')
@@ -136,12 +137,10 @@ def merge(*output):
 
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:按角色特征分类')[0],'out.json')
 
-# save_json(merge(
-#     parse_index('https://zh.moegirl.org.cn/Category:东方正作人物')[0],
-#     parse_index('https://zh.moegirl.org.cn/Category:东方旧作人物')[0]
-# ), 'touhou_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:东方正作人物')[0], 'subset/touhou_new_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:东方旧作人物')[0], 'subset/touhou_old_out.json')
 
-# save_json(parse_index('https://zh.moegirl.org.cn/Category:魔法禁书目录')[0],'toaru_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:魔法禁书目录')[0],'subset/toaru_out.json')
 
 # save_json(merge(
 #     parse_index('https://zh.moegirl.org.cn/Category:AIR')[0],
@@ -163,11 +162,22 @@ def merge(*output):
 #     parse_index('https://zh.moegirl.org.cn/Category:幸运星')[0],
 #     parse_index('https://zh.moegirl.org.cn/Category:玉子市场')[0],
 #     parse_index('https://zh.moegirl.org.cn/Category:中二病也要谈恋爱！')[0]
-# ), 'kyoani_out.json')
+# ), 'subset/kyoani_out.json')
 
-# save_json(parse_index('https://zh.moegirl.org.cn/Category:明日方舟')[0], 'arknights_out.json')
-# save_json(parse_index('https://zh.moegirl.org.cn/Category:原神')[0], 'genshin_out.json')
-# save_json(parse_index('https://zh.moegirl.org.cn/Category:Fate系列')[0], 'fate_out.json')
-# save_json(parse_index('https://zh.moegirl.org.cn/Category:JOJO的奇妙冒险')[0], 'jojo_out.json')
-# save_json(parse_index('https://zh.moegirl.org.cn/Category:机动战士高达系列')[0], 'gundam_out.json')
-# save_json(parse_index('https://zh.moegirl.org.cn/Category:火影忍者')[0], 'naruto_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:明日方舟')[0], 'subset/arknights_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:原神')[0], 'subset/genshin_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:Fate系列')[0], 'subset/fate_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:JOJO的奇妙冒险')[0], 'subset/jojo_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:机动战士高达系列')[0], 'subset/gundam_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:火影忍者')[0], 'subset/naruto_out.json')
+
+save_json(merge(
+    parse_index('https://zh.moegirl.org.cn/Category:孤独摇滚！')[0],
+    parse_index('https://zh.moegirl.org.cn/Category:新世纪福音战士')[0],
+    parse_index('https://zh.moegirl.org.cn/Category:少女终末旅行')[0],
+    parse_index('https://zh.moegirl.org.cn/Category:凉宫春日系列')[0],
+    parse_index('https://zh.moegirl.org.cn/Category:轻音少女')[0],
+    parse_index('https://zh.moegirl.org.cn/Category:幸运星')[0],
+    parse_index('https://zh.moegirl.org.cn/Category:中二病也要谈恋爱！')[0],
+    parse_index('https://zh.moegirl.org.cn/Category:东方正作人物')[0],
+), 'subset/zzzyt_out.json')

@@ -24,13 +24,17 @@ def save_json(data, path):
 
 def safe_get(url, bar=None):
     url = urllib.parse.unquote(url)
+    if bar is not None:
+        bar.write('GET: {} '.format(url), end='')
+    else:
+        print('GET: {} '.format(url), end='')
     r = requests.get(url, headers=headers)
     r.encoding = 'utf-8'
     elapsed = r.elapsed.total_seconds()
     if bar is not None:
-        bar.write('GET: {} {} in {:.3f}s'.format(url, r.status_code, elapsed))
+        bar.write('{} in {:.3f}s'.format(r.status_code, elapsed))
     else:
-        print('GET: {} {} in {:.3f}s'.format(url, r.status_code, elapsed))
+        print('{} in {:.3f}s'.format(r.status_code, elapsed))
     if r.status_code != 200:
         print('ERROR: {}'.format(r.status_code))
         raise RuntimeError('Network error')
@@ -74,7 +78,7 @@ def crawl_index(count):
         for char in chars.children:
             id = int(char.find('a')['href'].replace('/character/', ''))
             avatar = 'https:'+char.find('img')['src']
-            name = char.find('h3').contents[0].text
+            name = char.find('h3').contents[0].text.strip()
             print(id, avatar, name)
             ret.append({
                 'id': id,

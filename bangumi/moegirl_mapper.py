@@ -130,17 +130,18 @@ def multisplit(str, sp=',，/／'):
 
 
 def moegirl_split(name):
+    cur = name
     pre = ''
-    prepos = name.find('#')
+    prepos = cur.find(':')
     if prepos != -1:
-        pre = name[:prepos]
-        name = name[prepos+1:]
+        pre = cur[:prepos]
+        cur = cur[prepos+1:]
     post = ''
-    postpos = name.find('(')
-    if postpos != -1 and name[-1] == ')':
-        post = name[postpos+1:-1]
-        name = name[:postpos]
-    return name, pre, post
+    postpos = cur.find('(')
+    if postpos != -1 and cur[-1] == ')':
+        post = cur[postpos+1:-1]
+        cur = cur[:postpos]
+    return cur, pre, post
 
 
 def map_bgm(entry):
