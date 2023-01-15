@@ -14,7 +14,7 @@ def dfs(data: dict, ret: list, depth=0):
         pages.extend(pages2)
     if depth != 0 and len(pages) > 0:
         tmp = {'name': data['name'], 'pages': pages}
-        if 'article' in data and not data['article']['url'].startswith('/index.php?title='):
+        if 'article' in data and 'action=edit' not in data['article']['url']:
             tmp['article'] = data['article']
         ret.append(tmp)
     return pages
@@ -29,8 +29,8 @@ res.sort(key=lambda x: len(x['pages']))
 # for i in res:
 # print(i['name'], len(i['pages']))
 
-char_filter = json.load(open('../../bangumi/moegirl_to_bgm.json', encoding='utf-8'))
-# char_filter = None
+# char_filter = json.load(open('../../bangumi/moegirl_to_bgm.json', encoding='utf-8'))
+char_filter = None
 
 char_index = {}
 attr_index = {}
@@ -39,21 +39,23 @@ for i in res:
     for j in i['pages']:
         page = j['page']
         url = j['url']
+        pg2 = '/'+page.replace(' ', '_')
+        assert pg2 == url
         if char_filter != None and page not in char_filter:
             continue
         cnt += 1
         if page not in char_index:
-            char_index[page] = j
+            char_index[page] = {'name': page}
         # else:
         #     current = char_index[page]
         #     if json.dumps(current) != json.dumps(j):
         #         print(j)
     if cnt > 0:
-        tmp = i.copy()
-        tmp.pop('pages')
+        tmp = {'name': i['name']}
+        if 'article' in i:
+            tmp['article'] = i['article']['page']
         attr_index[i['name']] = tmp
-# print(char_index)
-# print(attr_index)
+
 save_json(char_index, 'char_index.json')
 save_json(attr_index, 'attr_index.json')
 
