@@ -8,65 +8,41 @@ def save_json(data, path):
 
 
 special_map = {
-    '12393': '牧濑红莉栖',  # 牧瀬紅莉栖
-    '10452': '初音未来',  # 初音未来
-    '24094': '加藤惠(路人女主的养成方法)',  # 加藤惠
     '3': 'C.C.(CODE GEASS)',  # C.C.
-    '1': '鲁路修·vi·布里塔尼亚',  # 鲁路修·兰佩路基
-    '87968': '后藤独',  # 后藤一里
-    '16490': '结城明日奈',  # 亚丝娜／结城明日奈
-    '46465': '洛琪希·米格路迪亚',  # 洛琪希·米格路迪亚·格雷拉特
+    '1': '鲁路修·vi·布里塔尼亚',  # ルルーシュ・ランペルージ
+    '46465': '洛琪希·米格路迪亚',  # ロキシー・ミグルディア・グレイラット
     '10609': '立华奏',  # 立華かなで
-    '3218': '伊莉雅丝菲尔·冯·爱因兹贝伦',  # 伊莉雅斯菲尔·冯·爱因兹贝伦
-    '12929': None,  # 地球
-    '35681': '惠惠(为美好的世界献上祝福)',  # 惠惠
-    '1976': '赫萝',  # 赫萝
-    '10446': '丘比(魔法少女小圆)',  # 丘比
-    '35608': '爱蜜莉雅',  # 艾米莉娅
-    '12392': '冈部伦太郎',  # 冈部伦太郎
-    '35615': '雷姆(Re:从零开始的异世界生活)',  # 蕾姆
-    '3215': '间桐樱',  # 間桐桜
+    '12929': None,  # 地球君
+    '1976': '赫萝',  # ホロ
+    '64640': '宝多六花',  # 宝多六花
     '19529': '时崎狂三',  # 時崎狂三
-    '24093': '泽村·斯宾塞·英梨梨',  # 泽村·史宾瑟·英梨梨
-    '12381': '椎名真由理',  # 椎名まゆり
-    '116353': '露西(赛博朋克边缘行者)',  # 露西                            # TODO
+    '24093': '泽村·斯宾塞·英梨梨',  # 澤村・スペンサー・英梨々
     '14468': None,  # 圣光君
     '19546': '利威尔·阿克曼',  # 利威尔
-    '26090': '一色伊吕波',  # 一色彩羽
-    '14477': None,  # 班固米三八
+    '14477': None,  # (bgm38)
     '16369': '主人公(人类衰退之后)',  # 我
     '46464': '艾莉丝·伯雷亚斯·格雷拉特',  # 艾莉丝·格雷拉特
     '77': '斯派克·斯皮格尔',  # 史派克·斯皮格尔                                        # TODO
     '336': '中原岬',  # 中原岬                                            # TODO
     '79': '菲·瓦伦丁',  # 菲·瓦伦坦
-    '2765': '木之本樱',  # 木之本桜
     '606': '雨宫优子',  # 雨宮 優子
-    '1227': '吉尔伽美什(Fate)',  # 吉尔伽美什
-    '293': '奇尔希',  # 银
-    '229': '神乐(银魂)',  # 神乐
-    '50578': '东海帝王',  # 东海帝皇
     '2355': None,  # 妮亚                                                 # TODO
-    '35678': '阿库娅(为美好的世界献上祝福)',  # 阿克娅
-    '19915': '明石(四叠半神话大系)',  # 明石
-    '469': '琴吹䌷',  # 琴吹紬
-    '266': '金色暗影',  # 金色暗影/DARKNESS
-    '292': '黑(DARKER THAN BLACK)',  # 黑
     '11546': None,  # 羊驼
-    '16817': '梦梦·贝莉雅·戴比路克',  # 茉茉·贝莉雅·戴比路克
     '3216': '英灵卫宫',  # 卫宫
-    '16684': 'L·罗莱特',  # L
     '75': '猫咪老师',  # 喵先生/斑
-    '15499': '散华礼弥(角色)',  # 散华礼弥
-    '11909': '博士(日常)',  # 博士
-    # '485': '博丽灵梦',  # 博麗霊夢
     '10639': '一方通行',  # 一方通行
-    '53208': '绊爱'  # Kizuna AI
+    '88130': '南梦芽',  # 南夢芽
+    '5922': '天海春香',  # 天海春香
+    '53208': '绊爱',  # Kizuna AI
+    '64641': '新条茜'  # 新条アカネ
 }
+# special_map = {}
 
 revserse_special = set(special_map.values())
 
 bgm_index = json.load(open('bgm_index.json', encoding='utf-8'))
 bgm_chars = json.load(open('bgm_chars.json', encoding='utf-8'))
+bgm_subjects = json.load(open('bgm_subjects.json', encoding='utf-8'))
 moegirl_chars = json.load(open('../moegirl/preprocess/char_index.json', encoding='utf-8'))
 moe_split = {}
 
@@ -88,7 +64,7 @@ def conv(t):
     for i in t:
         s = converter2.convert(converter.convert(i))
         ret.append(s)
-    return ret
+    return ret+t
 
 
 def unique(l):
@@ -113,22 +89,6 @@ def multisplit(str, sp=',，/／'):
     return ret
 
 
-# def multimatch(bgm_name):
-#     ret = []
-#     for i in moegirl_chars:
-#         idx = i.find(bgm_name)
-#         if idx == 0:
-#             if len(bgm_name) == len(i):
-#                 ret.append(i)
-#             else:
-#                 if i[-1] == ')' and i[len(bgm_name)] == '(':
-#                     ret.append(i)
-#         elif idx > 0:
-#             if i[idx-1] == ':' and is_postfix(bgm_name, i):
-#                 ret.append(i)
-#     return ret
-
-
 def moegirl_split(name):
     cur = name
     pre = ''
@@ -144,6 +104,15 @@ def moegirl_split(name):
     return cur, pre, post
 
 
+def smatch(name, subjects):
+    if name == '':
+        return False
+    for i in subjects:
+        if name in i:
+            return True
+    return False
+
+
 def map_bgm(entry):
     id = str(entry['id'])
     if id in special_map:
@@ -152,6 +121,15 @@ def map_bgm(entry):
             return []
         else:
             return [special]
+
+    subjects = []
+    for i in bgm_subjects[id]:
+        if i['staff'] == '客串':
+            continue
+        if i['name_cn'] != 0:
+            subjects.append(i['name_cn'])
+        else:
+            subjects.append(i['name'])
 
     canon_name = []
     names = []
@@ -176,20 +154,35 @@ def map_bgm(entry):
     names.sort(key=lambda x: len(x)-x.isascii()*10, reverse=True)
     names = canon_name+names
 
-    ret = []
-    exact = []
+    subject_match = []
+    none_match = []
+    normal_match = []
     for i in names:
         if i in moe_split:
             for j in moe_split[i]:
                 if j[0] not in revserse_special:
-                    if j[0] == i:
-                        exact.append(j[0])
-                    ret.append(j[0])
-    ret = unique(ret)
-    exact = unique(exact)
-    if len(exact) > 0:
-        return exact
-    return ret
+                    if j[2] == '':
+                        none_match.append(j[0])
+                    elif smatch(j[1], subjects) or smatch(j[2], subjects):
+                        subject_match.append(j[0])
+                    else:
+                        normal_match.append(j[0])
+    subject_match = unique(subject_match)
+    none_match = unique(none_match)
+    normal_match = unique(normal_match)
+
+    # print(entry, subjects)
+    # print(names)
+    # print(subject_match)
+    # print(none_match)
+    # print(normal_match)
+
+    if len(subject_match) > 0:
+        return subject_match
+    if len(none_match) > 0:
+        return none_match
+
+    return normal_match
 
 
 for i in moegirl_chars:
@@ -207,18 +200,22 @@ nonecount = 0
 
 for cnt, i in enumerate(bgm_index):
     moegirl_ids = map_bgm(i)
-    if len(moegirl_ids) == 0:
-        nonecount += 1
-    elif len(moegirl_ids) > 1:
-        multicount += 1
     bgm_id = i['id']
-    print(cnt, bgm_id, i['name'], moegirl_ids)
-    # print('\'{}\':'.format(bgm_id), moegirl_ids, '#', i['name'])
+    if str(bgm_id) not in special_map:
+        if len(moegirl_ids) == 0:
+            nonecount += 1
+        elif len(moegirl_ids) > 1:
+            multicount += 1
+    if len(moegirl_ids) != 1:
+        pass
+        # print(cnt, bgm_id, i['name'], moegirl_ids)
+        # print('\'{}\':'.format(bgm_id), moegirl_ids, '#', i['name'])
     bgm2moegirl[bgm_id] = moegirl_ids
     for moegirl_id in moegirl_ids:
         if moegirl_id not in moegirl2bgm:
             moegirl2bgm[moegirl_id] = []
-        moegirl2bgm[moegirl_id].append(bgm_id)
+        if bgm_id not in moegirl2bgm[moegirl_id]:
+            moegirl2bgm[moegirl_id].append(bgm_id)
 
 print('successful map: {}/{}'.format(len(bgm_index)-nonecount, len(bgm_index)))
 print(f'multi={multicount} none={nonecount}')

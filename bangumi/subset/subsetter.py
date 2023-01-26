@@ -16,13 +16,14 @@ def topk(k):
         if str(i['id']) not in bgm2moegirl:
             continue
         moeid = bgm2moegirl[str(i['id'])]
-        print(moeid)
+        # print(moeid)
         if len(moeid) == 0:
             continue
         ret.append(moeid[0])
         cnt += 1
-        if cnt > k:
-            return ret
+        if cnt >= k:
+            break
+    print(f'k= {k} size={len(ret)}')
     return ret
 
 

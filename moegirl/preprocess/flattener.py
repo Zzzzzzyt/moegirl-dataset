@@ -30,7 +30,11 @@ res.sort(key=lambda x: len(x['pages']))
 # print(i['name'], len(i['pages']))
 
 # char_filter = json.load(open('../../bangumi/moegirl_to_bgm.json', encoding='utf-8'))
-char_filter = None
+
+
+def char_filter(page: str):
+    return page.startswith('Template:')
+
 
 char_index = {}
 attr_index = {}
@@ -41,7 +45,7 @@ for i in res:
         url = j['url']
         pg2 = '/'+page.replace(' ', '_')
         assert pg2 == url
-        if char_filter != None and page not in char_filter:
+        if char_filter(page):
             continue
         cnt += 1
         if page not in char_index:
@@ -72,7 +76,7 @@ for i in res:
     chars = []
     for j in i['pages']:
         page = j['page']
-        if char_filter != None and page not in char_filter:
+        if char_filter(page):
             continue
         chars.append(page)
         url = j['url']
