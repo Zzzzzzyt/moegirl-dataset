@@ -171,13 +171,16 @@ def merge(*output):
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:机动战士高达系列')[0], 'subset/gundam_out.json')
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:火影忍者')[0], 'subset/naruto_out.json')
 
-save_json(merge(
-    parse_index('https://zh.moegirl.org.cn/Category:孤独摇滚！')[0],
-    parse_index('https://zh.moegirl.org.cn/Category:新世纪福音战士')[0],
-    parse_index('https://zh.moegirl.org.cn/Category:少女终末旅行')[0],
-    parse_index('https://zh.moegirl.org.cn/Category:凉宫春日系列')[0],
-    parse_index('https://zh.moegirl.org.cn/Category:轻音少女')[0],
-    parse_index('https://zh.moegirl.org.cn/Category:幸运星')[0],
-    parse_index('https://zh.moegirl.org.cn/Category:中二病也要谈恋爱！')[0],
-    parse_index('https://zh.moegirl.org.cn/Category:东方正作人物')[0],
-), 'subset/zzzyt_out.json')
+# save_json(merge(
+#     parse_index('https://zh.moegirl.org.cn/Category:孤独摇滚！')[0],
+#     parse_index('https://zh.moegirl.org.cn/Category:新世纪福音战士')[0],
+#     parse_index('https://zh.moegirl.org.cn/Category:少女终末旅行')[0],
+#     parse_index('https://zh.moegirl.org.cn/Category:凉宫春日系列')[0],
+#     parse_index('https://zh.moegirl.org.cn/Category:轻音少女')[0],
+#     parse_index('https://zh.moegirl.org.cn/Category:幸运星')[0],
+#     parse_index('https://zh.moegirl.org.cn/Category:中二病也要谈恋爱！')[0],
+#     parse_index('https://zh.moegirl.org.cn/Category:东方正作人物')[0],
+# ), 'subset/zzzyt_out.json')
+
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:兽娘')[0], 'subset/furry_out.json')
+save_json(parse_index('https://zh.moegirl.org.cn/Category:LoveLive!系列')[0], 'subset/lovelive_out.json')
