@@ -15,6 +15,7 @@ special_map = {
     '12929': None,  # 地球君
     '1976': '赫萝',  # ホロ
     '64640': '宝多六花',  # 宝多六花
+    '35615': '雷姆(Re:从零开始的异世界生活)',  # レム
     '19529': '时崎狂三',  # 時崎狂三
     '24093': '泽村·斯宾塞·英梨梨',  # 澤村・スペンサー・英梨々
     '14468': None,  # 圣光君
@@ -126,10 +127,9 @@ def map_bgm(entry):
     for i in bgm_subjects[id]:
         if i['staff'] == '客串':
             continue
-        if i['name_cn'] != 0:
-            subjects.append(i['name_cn'])
-        else:
-            subjects.append(i['name'])
+        subjects.append(i['name_cn'])
+        subjects.append(i['name'])
+    subjects = unique(subjects)
 
     canon_name = []
     names = []
@@ -209,7 +209,7 @@ for cnt, i in enumerate(bgm_index):
     if len(moegirl_ids) != 1:
         pass
         # print(cnt, bgm_id, i['name'], moegirl_ids)
-        # print('\'{}\':'.format(bgm_id), moegirl_ids, '#', i['name'])
+        # print('\'{}\':'.format(bgm_id), moegirl_ids, '#', i['name'],bgm_subjects[str(bgm_id)][0]['name'])
     bgm2moegirl[bgm_id] = moegirl_ids
     for moegirl_id in moegirl_ids:
         if moegirl_id not in moegirl2bgm:
@@ -220,5 +220,5 @@ for cnt, i in enumerate(bgm_index):
 print('successful map: {}/{}'.format(len(bgm_index)-nonecount, len(bgm_index)))
 print(f'multi={multicount} none={nonecount}')
 
-save_json(bgm2moegirl, 'bgm2moegirl.json')
-save_json(moegirl2bgm, 'moegirl2bgm.json')
+# save_json(bgm2moegirl, 'bgm2moegirl.json')
+# save_json(moegirl2bgm, 'moegirl2bgm.json')
