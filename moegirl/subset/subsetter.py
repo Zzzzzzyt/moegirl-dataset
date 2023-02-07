@@ -30,6 +30,7 @@ def subset2(name):
 # subset2('touhou_new')
 # subset2('touhou_old')
 # subset2('toaru')
+subset2('railgun')
 # subset2('kyoani')
 # subset2('arknights')
 # subset2('genshin')
@@ -40,3 +41,5 @@ def subset2(name):
 # subset2('zzzyt')
 # subset2('furry')
 # subset2('lovelive')
+subset2('lol')
+subset2('vocaloid')

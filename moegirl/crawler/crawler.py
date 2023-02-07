@@ -141,6 +141,7 @@ def merge(*output):
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:东方旧作人物')[0], 'subset/touhou_old_out.json')
 
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:魔法禁书目录')[0],'subset/toaru_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:某科学的超电磁炮')[0], 'subset/railgun_out.json')
 
 # save_json(merge(
 #     parse_index('https://zh.moegirl.org.cn/Category:AIR')[0],
@@ -183,4 +184,6 @@ def merge(*output):
 # ), 'subset/zzzyt_out.json')
 
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:兽娘')[0], 'subset/furry_out.json')
-save_json(parse_index('https://zh.moegirl.org.cn/Category:LoveLive!系列')[0], 'subset/lovelive_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:LoveLive!系列')[0], 'subset/lovelive_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:英雄联盟')[0], 'subset/lol_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:VOCALOID角色')[0], 'subset/vocaloid_out.json')

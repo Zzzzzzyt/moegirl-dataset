@@ -8,6 +8,7 @@ def save_json(data, path):
 
 
 special_map = {
+    '10452': '初音未来',  # 初音ミク
     '3': 'C.C.(CODE GEASS)',  # C.C.
     '1': '鲁路修·vi·布里塔尼亚',  # ルルーシュ・ランペルージ
     '46465': '洛琪希·米格路迪亚',  # ロキシー・ミグルディア・グレイラット
@@ -206,10 +207,10 @@ for cnt, i in enumerate(bgm_index):
             nonecount += 1
         elif len(moegirl_ids) > 1:
             multicount += 1
-    if len(moegirl_ids) != 1:
-        pass
+    # if len(moegirl_ids) != 1:
+        # pass
         # print(cnt, bgm_id, i['name'], moegirl_ids)
-        # print('\'{}\':'.format(bgm_id), moegirl_ids, '#', i['name'],bgm_subjects[str(bgm_id)][0]['name'])
+    # print('\'{}\':'.format(bgm_id), moegirl_ids, '#', i['name'], bgm_subjects[str(bgm_id)][0]['name'])
     bgm2moegirl[bgm_id] = moegirl_ids
     for moegirl_id in moegirl_ids:
         if moegirl_id not in moegirl2bgm:
@@ -220,5 +221,5 @@ for cnt, i in enumerate(bgm_index):
 print('successful map: {}/{}'.format(len(bgm_index)-nonecount, len(bgm_index)))
 print(f'multi={multicount} none={nonecount}')
 
-# save_json(bgm2moegirl, 'bgm2moegirl.json')
-# save_json(moegirl2bgm, 'moegirl2bgm.json')
+save_json(bgm2moegirl, 'bgm2moegirl.json')
+save_json(moegirl2bgm, 'moegirl2bgm.json')
