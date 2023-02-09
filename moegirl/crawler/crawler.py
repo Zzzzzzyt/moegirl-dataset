@@ -173,6 +173,7 @@ def merge(*output):
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:火影忍者')[0], 'subset/naruto_out.json')
 
 # save_json(merge(
+#     parse_index('https://zh.moegirl.org.cn/Category:某科学的超电磁炮')[0],
 #     parse_index('https://zh.moegirl.org.cn/Category:孤独摇滚！')[0],
 #     parse_index('https://zh.moegirl.org.cn/Category:新世纪福音战士')[0],
 #     parse_index('https://zh.moegirl.org.cn/Category:少女终末旅行')[0],
@@ -186,4 +187,21 @@ def merge(*output):
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:兽娘')[0], 'subset/furry_out.json')
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:LoveLive!系列')[0], 'subset/lovelive_out.json')
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:英雄联盟')[0], 'subset/lol_out.json')
-# save_json(parse_index('https://zh.moegirl.org.cn/Category:VOCALOID角色')[0], 'subset/vocaloid_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:按歌声合成软件分类')[0], 'subset/vocaloid_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:名侦探柯南中角色')[0], 'subset/conan_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:赛马娘_Pretty_Derby中角色')[0], 'subset/derby_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:舰队Collection')[0], 'subset/kanC_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:战舰少女')[0], 'subset/kanR_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:碧蓝航线')[0], 'subset/kanB_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:蔚蓝档案')[0], 'subset/blue_archive_out.json')
+# save_json(merge(
+#     parse_index('https://zh.moegirl.org.cn/Category:Kanon')[0],
+#     parse_index('https://zh.moegirl.org.cn/Category:AIR')[0],
+#     parse_index('https://zh.moegirl.org.cn/Category:CLANNAD')[0]), 'subset/key3_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:宝可梦系列角色')[0], 'subset/pokemon_char_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:宝可梦')[0], 'subset/pokemon_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:彩虹小马')[0], 'subset/pony_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:偶像大师系列')[0], 'subset/idolmaster_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:偶像梦幻祭')[0], 'subset/ES_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:公主连结Re:Dive')[0], 'subset/PCR_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:RWBY')[0], 'subset/RWBY_out.json')

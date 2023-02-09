@@ -1,4 +1,5 @@
 import json
+import os
 
 
 def save_json(data, path):
@@ -23,23 +24,17 @@ def subset(out):
 
 def subset2(name):
     sub = subset(json.load(open(f'../crawler/subset/{name}_out.json', encoding='utf-8')))
+    out = f'{name}_subset.json'
+    if os.path.exists(out):
+        oldsub = json.load(open(out, encoding='utf-8'))
+        if set(oldsub) == set(sub):
+            print(f'subset {name} size={len(oldsub)} same:skipped')
+            return
     print(f'subset {name} size={len(sub)}')
-    save_json(sub, f'{name}_subset.json')
+    save_json(sub, out)
 
 
-# subset2('touhou_new')
-# subset2('touhou_old')
-# subset2('toaru')
-subset2('railgun')
-# subset2('kyoani')
-# subset2('arknights')
-# subset2('genshin')
-# subset2('fate')
-# subset2('jojo')
-# subset2('gundam')
-# subset2('naruto')
-# subset2('zzzyt')
-# subset2('furry')
-# subset2('lovelive')
-subset2('lol')
-subset2('vocaloid')
+l = os.listdir('../crawler/subset/')
+for i in l:
+    if i.endswith('_out.json'):
+        subset2(i.replace('_out.json', ''))
