@@ -156,3 +156,4 @@ bangumi/bgm_chars_120k.json
 bangumi/bgm_subjects_120k.json
 bangumi/120k_subjects/
 bangumi/120k_chars/
+moegirl/correlation/*.npy
