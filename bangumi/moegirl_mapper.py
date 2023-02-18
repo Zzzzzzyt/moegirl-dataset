@@ -1,5 +1,6 @@
 import json
 import opencc
+import os
 from tqdm import tqdm
 
 
@@ -61,10 +62,22 @@ for k, v in special_map.items():
     if v is not None:
         revserse_special[v] = k
 
-bgm_index = json.load(open('bgm_index_120k.json', encoding='utf-8'))
-bgm_chars = json.load(open('bgm_chars_120k.json', encoding='utf-8'))
-bgm_subjects = json.load(open('bgm_subjects_120k.json', encoding='utf-8'))
-# bgm_subjects.update(json.load(open('bgm_subjects_120k.json', encoding='utf-8')))
+
+use_120k = os.path.exists('bgm_chars_120k.json') and os.path.exists('bgm_subjects_120k.json') and os.path.exists('bgm_index_120k.json')
+
+bgm_index = None
+bgm_chars = None
+bgm_subjects = None
+if use_120k:
+    bgm_index = json.load(open('bgm_index_120k.json', encoding='utf-8'))
+    bgm_chars = json.load(open('bgm_chars_120k.json', encoding='utf-8'))
+    bgm_subjects = json.load(open('bgm_subjects_120k.json', encoding='utf-8'))
+else:
+    print('120k not found. falling back to 20k.')
+    bgm_index = json.load(open('bgm_index_20k.json', encoding='utf-8'))
+    bgm_chars = json.load(open('bgm_chars_20k.json', encoding='utf-8'))
+    bgm_subjects = json.load(open('bgm_subjects_20k.json', encoding='utf-8'))
+
 moegirl_chars = json.load(open('../moegirl/preprocess/char_index.json', encoding='utf-8'))
 moe_split = {}
 
