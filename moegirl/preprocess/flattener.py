@@ -2,7 +2,7 @@ import json
 
 
 def save_json(data, path):
-    json.dump(data, open(path, 'w', encoding='utf-8'), ensure_ascii=False)
+    json.dump(data, open(path, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 
 
 def dfs(data: dict, ret: list, depth=0):

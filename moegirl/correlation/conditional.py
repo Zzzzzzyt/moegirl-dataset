@@ -1,9 +1,10 @@
 import json
-import numpy
+import numpy as np
+from tqdm import tqdm
 
 attrs = json.load(open('attr_ids.json', encoding='utf-8'))
 chars = json.load(open('../preprocess/char_index.json', encoding='utf-8'))
-P = numpy.load(open('intersection.npy', 'rb'), allow_pickle=True)
+P = np.load(open('intersection.npy', 'rb'))
 attr_count = len(attrs)
 char_count = len(chars)
 attrmap = {}
@@ -28,18 +29,34 @@ def query_attr(x, limit=None):
 
 
 def calc(x, y):
+    pxy = P[x][y]
+    pxx = P[x][x]
+    pyy = P[y][y]
+    return ((pxy/pxx)/(pyy/char_count), pxy, pxx, pxy/pxx)
+
+
+def calc_name(x, y):
     xx = attrmap[x]
     yy = attrmap[y]
-    pxy = P[xx][yy]
-    pxx = P[xx][xx]
-    pyy = P[yy][yy]
-    return ((pxy/pxx)/(pyy/char_count), pxy, pxx, pxy/pxx, x, y)
+    res = calc(x, y)
+    return tuple(list(res)+[xx, yy])
+
+# hair_color_attr = json.load(open('../crawler/hair_color_attr.json', encoding='utf-8'))
+
+# tmp = query_attr('傲娇')
+# for i in tmp:
+#     # if i[-1] in hair_color_attr:
+#     if i[2] > 30 and i[3] > 0.01:
+#         print(i)
 
 
-hair_color_attr = json.load(open('../crawler/hair_color_attr.json', encoding='utf-8'))
+res = np.zeros(shape=[attr_count, attr_count], dtype=np.int32)
+with tqdm(total=attr_count*(attr_count-1)//2+attr_count) as pbar:
+    for i in range(attr_count):
+        for j in range(i, attr_count):
+            res[i][j] = calc(i, j)[0]
+            res[j][i] = res[i][j]
+            # result.append((attrs[i], attrs[j], chi2, table))
+            pbar.update(1)
 
-tmp = query_attr('傲娇')
-for i in tmp:
-    # if i[-1] in hair_color_attr:
-    if i[2] > 30 and i[3] > 0.01:
-        print(i)
+np.save(open('gain.npy', 'wb'), res)

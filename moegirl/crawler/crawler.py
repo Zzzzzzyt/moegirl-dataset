@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 
 
 def save_json(data, path):
-    json.dump(data, open(path, 'w', encoding='utf-8'), ensure_ascii=False)
+    json.dump(data, open(path, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 
 
 headers = {

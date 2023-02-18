@@ -43,4 +43,4 @@ for i in tqdm(range(len(attrs))):
         a.append((chi2, p, A, B, res))
 a.sort()
 print(a)
-json.dump(a, open('test.json', 'w', encoding='utf-8'), ensure_ascii=False)
+# json.dump(a, open('test.json', 'w', encoding='utf-8'), ensure_ascii=False)

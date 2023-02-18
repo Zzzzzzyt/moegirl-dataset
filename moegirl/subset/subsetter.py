@@ -3,7 +3,7 @@ import os
 
 
 def save_json(data, path):
-    json.dump(data, open(path, 'w', encoding='utf-8'), ensure_ascii=False)
+    json.dump(data, open(path, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 
 
 char_index = json.load(open('../preprocess/char_index.json', encoding='utf-8'))
@@ -11,20 +11,30 @@ char_index = json.load(open('../preprocess/char_index.json', encoding='utf-8'))
 moegirl2bgm = None
 
 
+def unique(a):
+    s = set(a)
+    ret = []
+    for i in a:
+        if i in s:
+            s.remove(i)
+            ret.append(i)
+    return ret
+
+
 def subset(out):
-    ret = set()
+    ret = []
     for i in out['pages']:
         name = i['page']
         if name in char_index and (moegirl2bgm == None or name in moegirl2bgm):
-            ret.add(name)
+            ret.append(name)
     for i in out['subcategories']:
-        ret.update(subset(i))
-    return list(ret)
+        ret.extend(subset(i))
+    return unique(ret)
 
 
 def subset2(name):
     sub = subset(json.load(open(f'../crawler/subset/{name}_out.json', encoding='utf-8')))
-    out = f'{name}_subset.json'
+    out = f'subset/{name}_subset.json'
     if os.path.exists(out):
         oldsub = json.load(open(out, encoding='utf-8'))
         if set(oldsub) == set(sub):

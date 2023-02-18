@@ -28,26 +28,29 @@ attr_count = len(attrs)
 print('char_count: {}'.format(char_count))
 print('attr_count: {}'.format(attr_count))
 
-data = np.zeros(shape=[attr_count, char_count], dtype=np.bool8)
+cross = np.zeros(shape=[attr_count, char_count], dtype=np.bool8)
+count = np.zeros((attr_count), dtype=np.int32)
 tot = []
 for i in range(attr_count):
     attr = attrs[i]
     for j in attr2char[attr]:
         charid = charmap[j]
-        data[i][charid] = True
-    tot.append(len(attr2char[attr]))
-
+        cross[i][charid] = True
+    count[i] = len(attr2char[attr])
 
 # result = []
 intersection = np.zeros(shape=[attr_count, attr_count], dtype=np.int32)
 with tqdm(total=attr_count*(attr_count-1)//2+attr_count) as pbar:
     for i in range(attr_count):
-        intersection[i][i] = data[i].sum()
+        intersection[i][i] = cross[i].sum()
+        pbar.update(1)
         for j in range(i+1, attr_count):
-            intersection[i][j] = (data[i] & data[j]).sum()
+            intersection[i][j] = (cross[i] & cross[j]).sum()
             intersection[j][i] = intersection[i][j]
             # result.append((attrs[i], attrs[j], chi2, table))
             pbar.update(1)
 
-json.dump(attrs, open('attr_ids.json', 'w', encoding='utf-8'), ensure_ascii=False)
-intersection.dump(open('intersection.npy', 'wb'))
+json.dump(attrs, open('attr_ids.json', 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
+np.save(open('intersection.npy', 'wb'), intersection, allow_pickle=False)
+np.save(open('cross.npy', 'wb'), cross, allow_pickle=False)
+np.save(open('count.npy', 'wb'), count, allow_pickle=False)

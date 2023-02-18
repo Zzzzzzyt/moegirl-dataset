@@ -19,48 +19,54 @@ requests.adapters.DEFAULT_RETRIES = 10
 
 
 def save_json(data, path):
-    json.dump(data, open(path, 'w', encoding='utf-8'), ensure_ascii=False)
+    json.dump(data, open(path, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 
 
-def safe_get(url, bar=None):
+def safe_get(url, bar=None, verbose=True):
     url = urllib.parse.unquote(url)
-    if bar is not None:
-        bar.write('GET: {} '.format(url), end='')
-    else:
-        print('GET: {} '.format(url), end='')
+    if verbose:
+        if bar is not None:
+            bar.write('GET: {} '.format(url), end='')
+        else:
+            print('GET: {} '.format(url), end='')
     r = requests.get(url, headers=headers)
     r.encoding = 'utf-8'
     elapsed = r.elapsed.total_seconds()
-    if bar is not None:
-        bar.write('{} in {:.3f}s'.format(r.status_code, elapsed))
-    else:
-        print('{} in {:.3f}s'.format(r.status_code, elapsed))
+    if verbose:
+        if bar is not None:
+            bar.write('{} in {:.3f}s'.format(r.status_code, elapsed))
+        else:
+            print('{} in {:.3f}s'.format(r.status_code, elapsed))
     if r.status_code != 200:
-        print('ERROR: {}'.format(r.status_code))
-        raise RuntimeError('Network error')
+        if verbose:
+            print('ERROR: {}'.format(r.status_code))
+        raise RuntimeError(r.status_code)
     if elapsed < cooldown:
         time.sleep(cooldown-elapsed)
     return r
 
 
-def safe_download(url, path, bar=None):
+def safe_download(url, path, bar=None, verbose=True):
     url = urllib.parse.unquote(url)
     r = requests.get(url, stream=True, headers=headers)
-    if bar is not None:
-        bar.write('Download {} '.format(url))
-    else:
-        print('Download {} '.format(url), end='')
+    if verbose:
+        if bar is not None:
+            bar.write('Download {} '.format(url))
+        else:
+            print('Download {} '.format(url), end='')
     if r.status_code != 200:
-        print('ERROR: {}'.format(r.status_code))
+        if verbose:
+            print('ERROR: {}'.format(r.status_code))
     else:
         with open(path, 'wb') as f:
             r.raw.decode_content = True
             shutil.copyfileobj(r.raw, f)
     elapsed = r.elapsed.total_seconds()
-    if bar is not None:
-        bar.write('{:.3f}s'.format(elapsed))
-    else:
-        print('{:.3f}s'.format(elapsed))
+    if verbose:
+        if bar is not None:
+            bar.write('{:.3f}s'.format(elapsed))
+        else:
+            print('{:.3f}s'.format(elapsed))
     if elapsed < cooldown:
         time.sleep(cooldown-elapsed)
     return r
@@ -81,7 +87,7 @@ def crawl_index(count):
             name = char.find('h3').contents[0].text.strip()
             print(id, avatar, name)
             ret.append({
-                'id': id,
+                'id': str(id),
                 'name': name,
                 'avatar': avatar,
             })
@@ -102,6 +108,25 @@ def crawl_characters(index):
     return ret, None
 
 
+def crawl_characters_id(index):
+    bar = tqdm(index, total=len(index))
+    ret = {}
+    try:
+        for i in bar:
+            bar.set_description('{} {}'.format(i, len(ret)))
+            try:
+                data = json.loads(safe_get(f'https://api.bgm.tv/v0/characters/{i}', bar, verbose=False).text)
+                ret[i] = data
+            except RuntimeError as e:
+                if str(e) == '404':
+                    continue
+                else:
+                    raise e
+    except BaseException as e:
+        return ret, e
+    return ret, None
+
+
 def crawl_subjects(index):
     bar = tqdm(index, total=len(index))
     ret = {}
@@ -116,12 +141,31 @@ def crawl_subjects(index):
     return ret, None
 
 
+def crawl_subjects_id(index):
+    bar = tqdm(index, total=len(index))
+    ret = {}
+    try:
+        for i in bar:
+            bar.set_description('{} {}'.format(i, len(ret)))
+            try:
+                data = json.loads(safe_get(f'https://api.bgm.tv/v0/characters/{i}/subjects', bar, verbose=False).text)
+                ret[i] = data
+            except RuntimeError as e:
+                if str(e) == '404':
+                    continue
+                else:
+                    raise e
+    except BaseException as e:
+        return ret, e
+    return ret, None
+
+
 def download_thumnail(index, chars):
     bar = tqdm(enumerate(index), total=len(index))
     for idx, i in bar:
         if idx >= len(chars):
             return
-        id = str(i['id'])
+        id = i['id']
         # print(idx, id, i['name'])
         bar.set_description('{} {} {}'.format(idx, id, i['name']))
         if idx < 200:
@@ -137,14 +181,40 @@ def download_thumnail(index, chars):
 if __name__ == '__main__':
     # index = crawl_index(1000)
     # save_json(index, 'bgm_index.json')
-    index = json.load(open("bgm_index.json", encoding='utf-8'))
+    # index = json.load(open("bgm_index.json", encoding='utf-8'))
+    # print(index)
     # chars, e = crawl_characters(index)
     # print(chars, e)
-    # save_json(chars, 'bgm_chars.json')
+    # save_json(chars, 'bgm_chars_20k.json')
 
-    subjects, e = crawl_subjects(index)
-    print(subjects, e)
-    save_json(subjects, 'bgm_subjects.json')
+    # subjects, e = crawl_subjects(index)
+    # print(subjects, e)
+    # save_json(subjects, 'bgm_subjects.json')
 
-    # chars = json.load(open('bgm_chars.json', encoding='utf-8'))
+    # chars = json.load(open('bgm_chars_20k.json', encoding='utf-8'))
     # download_thumnail(index, chars)
+
+    # for i in [11]:
+    #     print(f'crawl: {(i-1)*1000+1} - {i*1000}')
+    #     chars, e = crawl_characters_id(range((i-1)*1000+1, i*1000+1))
+    #     save_json(chars, f'120k/bgm_chars_120k_{i}.json')
+    #     if type(e) == KeyboardInterrupt:
+    #         break
+
+    dat = json.load(open('bgm_subjects_120k.json', encoding='utf-8'))
+    for i in range(1, 126530):
+        if str(i) not in dat:
+            try:
+                print(json.loads(safe_get(f'https://api.bgm.tv/v0/characters/{i}/subjects').text))
+            except RuntimeError as e:
+                if str(e) == '404':
+                    continue
+                else:
+                    raise e
+
+    # for i in list(range(102, 127)):
+    #     print(f'crawl: {(i-1)*1000+1} - {i*1000}')
+    #     subjects, e = crawl_subjects_id(range((i-1)*1000+1, i*1000+1))
+    #     save_json(subjects, f'120k_subjects/bgm_subjects_120k_{i}.json')
+    #     if type(e) == KeyboardInterrupt:
+    #         break

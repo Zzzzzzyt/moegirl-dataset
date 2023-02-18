@@ -17,9 +17,9 @@ def dfs(x):
     #     if tmp != None:
     #         x.pop('content')
     #         x.update(tmp)
-    sub=x['subcategories']
+    sub = x['subcategories']
     for i in sub:
-        tmp=i['content']
+        tmp = i['content']
         i.pop('content')
         i.update(tmp)
         dfs(i)
@@ -27,4 +27,4 @@ def dfs(x):
 
 dfs(data)
 
-json.dump(data, open('converted.json', 'w', encoding='utf-8',), ensure_ascii=False)
+json.dump(data, open('converted.json', 'w', encoding='utf-8',), ensure_ascii=False, separators=(',', ':'))

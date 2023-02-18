@@ -2,10 +2,10 @@ import json
 
 
 def save_json(data, path):
-    json.dump(data, open(path, 'w', encoding='utf-8'), ensure_ascii=False)
+    json.dump(data, open(path, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 
 
-bgm_index = json.load(open('../bgm_index.json', encoding='utf-8'))
+bgm_index = json.load(open('../bgm_index_120k.json', encoding='utf-8'))
 bgm2moegirl = json.load(open('../bgm2moegirl.json', encoding='utf-8'))
 char_index = json.load(open('../../moegirl/preprocess/char_index.json', encoding='utf-8'))
 
@@ -17,9 +17,9 @@ def topk(k):
     trueCnt = 0
     for i in bgm_index:
         trueCnt += 1
-        if str(i['id']) not in bgm2moegirl:
+        if i['id'] not in bgm2moegirl:
             continue
-        moeid = bgm2moegirl[str(i['id'])]
+        moeid = bgm2moegirl[i['id']]
         # print(moeid)
         if len(moeid) == 0:
             continue
