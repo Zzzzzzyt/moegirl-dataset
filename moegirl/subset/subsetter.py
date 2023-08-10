@@ -24,7 +24,7 @@ def unique(a):
 def subset(out):
     ret = []
     for i in out['pages']:
-        name = i['page']
+        name = i['name']
         if name in char_index and (moegirl2bgm == None or name in moegirl2bgm):
             ret.append(name)
     for i in out['subcategories']:
@@ -33,7 +33,7 @@ def subset(out):
 
 
 def subset2(name):
-    sub = subset(json.load(open(f'../crawler/subset/{name}_out.json', encoding='utf-8')))
+    sub = subset(json.load(open(f'../crawler/subset_uncensored/{name}_out.json', encoding='utf-8')))
     out = f'subset/{name}_subset.json'
     if os.path.exists(out):
         oldsub = json.load(open(out, encoding='utf-8'))
@@ -44,7 +44,7 @@ def subset2(name):
     save_json(sub, out)
 
 
-l = os.listdir('../crawler/subset/')
+l = os.listdir('../crawler/subset_uncensored/')
 for i in l:
     if i.endswith('_out.json'):
         subset2(i.replace('_out.json', ''))

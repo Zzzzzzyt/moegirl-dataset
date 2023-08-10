@@ -1,97 +1,135 @@
 import json
+import re
 import opencc
 import os
 from tqdm import tqdm
 
 
 def save_json(data, path):
-    json.dump(data, open(path, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
+    json.dump(data, open(path, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
 
 
 special_map = {
-    '10452': '初音未来',  # 初音ミク
-    '273': '阿尔托莉雅·潘德拉贡',  # アルトリア・ペンドラゴン
-    '3': 'C.C.(CODE GEASS)',  # C.C.
-    '1': '鲁路修·vi·布里塔尼亚',  # ルルーシュ・ランペルージ
-    '46465': '洛琪希·米格路迪亚',  # ロキシー・ミグルディア・グレイラット
-    '10609': '立华奏',  # 立華かなで
-    '12929': None,  # 地球君
-    '1976': '赫萝',  # ホロ
-    '64640': '宝多六花',  # 宝多六花
-    '35615': '雷姆(Re:从零开始的异世界生活)',  # レム
-    '19529': '时崎狂三',  # 時崎狂三
-    '24093': '泽村·斯宾塞·英梨梨',  # 澤村・スペンサー・英梨々
-    '116353': None,  # Lucy  TODO
-    '14468': None,  # 圣光君
-    '19546': '利威尔·阿克曼',  # 利威尔
-    '72355': '伊蕾娜',  # イレイナ
-    '14477': None,  # (bgm38)
-    '16369': '主人公(人类衰退之后)',  # 我
-    '57751': '02',  # ゼロツー
-    '46464': '艾莉丝·伯雷亚斯·格雷拉特',  # 艾莉丝·格雷拉特
-    '77': '斯派克·斯皮格尔',  # 史派克·斯皮格尔  TODO
-    '336': '中原岬',  # 中原岬  TODO
-    '79': '菲·瓦伦丁',  # 菲·瓦伦坦
-    '606': '雨宫优子',  # 雨宮 優子
-    '293': '奇尔希',  # 銀
-    '2355': None,  # ニア・テッペリン 妮亚  TODO
-    '11546': None,  # アルパカ 羊驼
-    '3216': '英灵卫宫',  # 卫宫
-    '75': '猫咪老师',  # 喵先生/斑
-    '10639': '一方通行',  # 一方通行
-    '88130': '南梦芽',  # 南夢芽
-    '16684': 'L·罗莱特',  # L
-    '5922': '天海春香',  # 天海春香
-    '53208': '绊爱',  # Kizuna AI
-    '64641': '新条茜',  # 新条アカネ
-    '57715': '芙拉蒂蕾娜·米利杰',  # ヴラディレーナ・ミリーゼ
-    '11926': '紫苑寺有子',  # アリス
-    '5928': '如月千早',  # 如月千早
-    '13375': '奈亚子',  # ニャルラトホテプ
-    '2902': '泰蕾莎·泰斯塔罗莎',  # テレサ・テスタロッサ
-    '71479': '阿尼亚·福杰',  # アーニャ
-    '223': '露易丝(零之使魔)',  # ルイズ・フランソワーズ・ル・ブラン・ド・ラ・ヴァリエール
-    '855': '爱尔奎特·布伦史塔德',  # アルクェイド・ブリュンスタッド
-    '116359': None,  # Rebecca TODO
-    '12423': None  # 杨威利ヤン・ウェンリー
+    "10452": "初音未来",  # 初音ミク
+    "273": "阿尔托莉雅·潘德拉贡",  # アルトリア・ペンドラゴン
+    "3": "C.C.(CODE GEASS)",  # C.C.
+    "1": "鲁路修·vi·布里塔尼亚",  # ルルーシュ・ランペルージ
+    "46465": "洛琪希·米格路迪亚",  # ロキシー・ミグルディア・グレイラット
+    "10609": "立华奏",  # 立華かなで
+    "12929": None,  # 地球君
+    "1976": "赫萝",  # ホロ
+    "64640": "宝多六花",  # 宝多六花
+    "35615": "雷姆(Re:从零开始的异世界生活)",  # レム
+    "19529": "时崎狂三",  # 時崎狂三
+    "24093": "泽村·斯宾塞·英梨梨",  # 澤村・スペンサー・英梨々
+    "116353": "露西(赛博朋克边缘行者)",  # Lucy  TODO
+    "14468": None,  # 圣光君
+    "19546": "利威尔·阿克曼",  # 利威尔
+    "72355": "伊蕾娜",  # イレイナ
+    "14477": None,  # (bgm38)
+    "16369": "主人公(人类衰退之后)",  # 我
+    "57751": "02",  # ゼロツー
+    "46464": "艾莉丝·伯雷亚斯·格雷拉特",  # 艾莉丝·格雷拉特
+    "77": "斯派克·斯皮格尔",  # 史派克·斯皮格尔  TODO
+    "336": "中原岬",  # 中原岬  TODO
+    "79": "菲·瓦伦丁",  # 菲·瓦伦坦
+    "606": "雨宫优子",  # 雨宮 優子
+    "293": "奇尔希",  # 銀
+    "2355": "机动战队:尼娅",  # ニア・テッペリン 妮亚  TODO
+    "11546": None,  # アルパカ 羊驼
+    "3216": "英灵卫宫",  # 卫宫
+    "75": "猫咪老师",  # 喵先生/斑
+    "10639": "一方通行",  # 一方通行
+    "88130": "南梦芽",  # 南夢芽
+    "16684": "L·罗莱特",  # L
+    "5922": "天海春香",  # 天海春香
+    "53208": "绊爱",  # Kizuna AI
+    "64641": "新条茜",  # 新条アカネ
+    "57715": "芙拉蒂蕾娜·米利杰",  # ヴラディレーナ・ミリーゼ
+    "11926": "紫苑寺有子",  # アリス
+    "5928": "如月千早",  # 如月千早
+    "13375": "奈亚子",  # ニャルラトホテプ
+    "2902": "泰蕾莎·泰斯塔罗莎",  # テレサ・テスタロッサ
+    "71479": "阿尼亚·福杰",  # アーニャ
+    "223": "露易丝(零之使魔)",  # ルイズ・フランソワーズ・ル・ブラン・ド・ラ・ヴァリエール
+    "855": "爱尔奎特·布伦史塔德",  # アルクェイド・ブリュンスタッド
+    "12423": None,  # 杨威利ヤン・ウェンリー
 }
 # special_map = {}
 
-revserse_special = {}
+revserse_special = {
+    "温妮莎": None,
+    "拉娜(原神)": None,
+    "阿佩普": None,
+    "太郎丸(原神)": None,
+    "查尔斯·狄更斯": None,
+    "亚丝拉琪(崩坏系列)": None,
+    "琥珀(崩坏系列)": None,
+    "德尔塔(崩坏3)": None,
+    "史丹": None,
+    "空(崩坏系列)": None,
+    "薇塔": None,
+    "岚(星穹铁道)": None,
+    "明日方舟:九": None,
+    "明日方舟:博士": 71016,
+    "明日方舟:福尔图娜": None,
+    "明日方舟:ACE": None,
+    "明日方舟:可萝尔": None,
+    "明日方舟:Scout": None,
+    "明日方舟:“剧作家”": None,
+    "明日方舟:米莎": 117894,
+    "明日方舟:皇帝": 70847,
+    "明日方舟:罗伊": None,
+    "明日方舟:郁金香": None,
+    "明日方舟:达莉娅": None,
+    # "明日方舟:科西切":89236,
+    # "明日方舟:文月":70846,
+    "明日方舟:火龙": None,
+    "明日方舟:杜玛": None,
+}
 for k, v in special_map.items():
     if v is not None:
         revserse_special[v] = k
 
 
-use_120k = os.path.exists('bgm_chars_120k.json') and os.path.exists('bgm_subjects_120k.json') and os.path.exists('bgm_index_120k.json')
+use_120k = (
+    os.path.exists("bgm_chars_120k.json") and os.path.exists("bgm_subjects_120k.json") and os.path.exists("bgm_index_120k.json")
+)
 
 bgm_index = None
 bgm_chars = None
 bgm_subjects = None
 if use_120k:
-    bgm_index = json.load(open('bgm_index_120k.json', encoding='utf-8'))
-    bgm_chars = json.load(open('bgm_chars_120k.json', encoding='utf-8'))
-    bgm_subjects = json.load(open('bgm_subjects_120k.json', encoding='utf-8'))
+    bgm_index = json.load(open("bgm_index_120k.json", encoding="utf-8"))
+    bgm_chars = json.load(open("bgm_chars_120k.json", encoding="utf-8"))
+    bgm_subjects = json.load(open("bgm_subjects_120k.json", encoding="utf-8"))
 else:
-    print('120k not found. falling back to 20k.')
-    bgm_index = json.load(open('bgm_index_20k.json', encoding='utf-8'))
-    bgm_chars = json.load(open('bgm_chars_20k.json', encoding='utf-8'))
-    bgm_subjects = json.load(open('bgm_subjects_20k.json', encoding='utf-8'))
+    print("120k not found. falling back to 20k.")
+    bgm_index = json.load(open("bgm_index_20k.json", encoding="utf-8"))
+    bgm_chars = json.load(open("bgm_chars_20k.json", encoding="utf-8"))
+    bgm_subjects = json.load(open("bgm_subjects_20k.json", encoding="utf-8"))
 
-moegirl_chars = json.load(open('../moegirl/preprocess/char_index.json', encoding='utf-8'))
-moe_split = {}
+print("loaded: bgm_index:", len(bgm_index))
+print("loaded: bgm_chars:", len(bgm_chars))
+print("loaded: bgm_subjects:", len(bgm_subjects))
+
+moegirl_chars = json.load(open("../moegirl/preprocess/char_index.json", encoding="utf-8"))
+print("loaded: moegirl_chars:", len(moegirl_chars))
+moegirl_extra = json.load(open("../moegirl/crawler2/extra_processed.json", encoding="utf-8"))
+print("loaded: moegirl_extra:", len(moegirl_extra))
+moe_lookup = {}
 
 
 def is_postfix(a, b):
     if len(a) < len(b):
-        offset = len(b)-len(a)
-        return b[offset-1] == ':' and a == b[offset:]
+        offset = len(b) - len(a)
+        return b[offset - 1] == ":" and a == b[offset:]
     else:
         return a == b
 
 
-converter = opencc.OpenCC('jp2t.json')
-converter2 = opencc.OpenCC('t2s.json')
+converter = opencc.OpenCC("jp2t.json")
+converter2 = opencc.OpenCC("t2s.json")
 
 
 def conv(t):
@@ -99,7 +137,7 @@ def conv(t):
     for i in t:
         s = converter2.convert(converter.convert(i))
         ret.append(s)
-    return ret+t
+    return ret + t
 
 
 def unique(l):
@@ -110,122 +148,192 @@ def unique(l):
     return ret
 
 
-def multisplit(str, sp=',，/／'):
+def multisplit(str, sp=",，/／"):
     ret = []
-    cur = ''
+    cur = ""
     for i in str:
         if i in sp:
             ret.append(cur.strip())
-            cur = ''
+            cur = ""
         else:
             cur += i
-    if cur != '':
+    if cur != "":
         ret.append(cur.strip())
     return ret
 
 
 def moegirl_split(name):
     cur = name
-    pre = ''
-    prepos = cur.find(':')
+    pre = ""
+    prepos = cur.find(":")
     if prepos != -1:
         pre = cur[:prepos]
-        cur = cur[prepos+1:]
-    post = ''
-    postpos = cur.find('(')
-    if postpos != -1 and cur[-1] == ')':
-        post = cur[postpos+1:-1]
+        cur = cur[prepos + 1 :]
+    post = ""
+    postpos = cur.find("(")
+    if postpos != -1 and cur[-1] == ")":
+        post = cur[postpos + 1 : -1]
         cur = cur[:postpos]
     return cur, pre, post
 
 
 def smatch(name, subjects):
-    if name == '':
-        return False
+    if name == "":
+        return 0
+    cnt = 0
     for i in subjects:
         if name in i:
-            return True
-    return False
+            cnt += 1
+    return cnt
 
 
 def map_bgm(entry):
-    id = str(entry['id'])
+    id = str(entry["id"])
     if id in special_map:
         special = special_map[id]
         if special is None:
             return []
         else:
-            return [special]
+            return [(special, 19260817)]
 
     subjects = []
     if id in bgm_subjects:
         for i in bgm_subjects[id]:
-            if i['staff'] == '客串':
+            if i["staff"] == "客串":
                 continue
-            subjects.append(i['name_cn'])
-            subjects.append(i['name'])
+            subjects.append(i["name_cn"])
+            subjects.append(i["name"])
         subjects = unique(subjects)
 
     canon_name = []
     names = []
     if id in bgm_chars:
         char = bgm_chars[id]
-        names.extend(multisplit(char['name']))
-        for i in char['infobox']:
-            if i['key'] == '简体中文名':
-                canon_name.extend(multisplit(i['value']))
-            elif i['key'] == '别名':
-                if type(i['value']) == str:
-                    names.extend(multisplit(i['value']))
+        names.extend(multisplit(char["name"]))
+        for i in char["infobox"]:
+            if i["key"] == "简体中文名":
+                if type(i["value"]) == str:
+                    names.extend(multisplit(i["value"]))
                 else:
-                    for j in i['value']:
-                        split = multisplit(j['v'])
+                    for split in i["value"]:
+                        split = multisplit(split["v"])
                         names.extend(split)
-    if 'name' in entry:
-        canon_name.extend(multisplit(entry['name']))
+            elif i["key"] == "别名":
+                if type(i["value"]) == str:
+                    names.extend(multisplit(i["value"]))
+                else:
+                    for split in i["value"]:
+                        split = multisplit(split["v"])
+                        names.extend(split)
+    if "name" in entry:
+        canon_name.extend(multisplit(entry["name"]))
 
     canon_name = unique(conv(canon_name))
     names = unique(conv(names))
-    canon_name.sort(key=lambda x: len(x)-x.isascii()*10, reverse=True)
-    names.sort(key=lambda x: len(x)-x.isascii()*10, reverse=True)
-    names = canon_name+names
+    canon_name.sort(key=lambda x: len(x) - x.isascii() * 10, reverse=True)
+    names.sort(key=lambda x: len(x) - x.isascii() * 10, reverse=True)
+    names = canon_name + names
 
-    subject_match = []
-    none_match = []
-    normal_match = []
+    match = []
     for i in names:
-        if i in moe_split:
-            for j in moe_split[i]:
-                if j[0] not in revserse_special:
-                    if j[2] == '':
-                        none_match.append(j[0])
-                    elif smatch(j[1], subjects) or smatch(j[2], subjects):
-                        subject_match.append(j[0])
+        if i in moe_lookup:
+            for j in moe_lookup[i]:
+                name = j[0]
+                if name not in revserse_special:
+                    split = j[2]
+                    if split is None:
+                        match.append((j[0], j[1]))
                     else:
-                        normal_match.append(j[0])
-    subject_match = unique(subject_match)
-    none_match = unique(none_match)
-    normal_match = unique(normal_match)
-
-    # print(entry, subjects)
-    # print(names)
-    # print(subject_match)
-    # print(none_match)
-    # print(normal_match)
-
-    if len(subject_match) > 0:
-        return subject_match
-    if len(none_match) > 0:
-        return none_match
-
-    return normal_match
+                        score = 0.5
+                        score += smatch(split[1], subjects) + smatch(split[2], subjects)
+                        if split[2] == "":
+                            score += 0.5
+                        match.append((j[0], score))
+    match.sort(reverse=True, key=lambda x: x[1])
+    dedupe = set()
+    match2 = []
+    for i in match:
+        if i[0] in dedupe:
+            continue
+        dedupe.add(i[0])
+        match2.append(i)
+    # print(match2)
+    birthday = None
+    bloodtype = None
+    height = None
+    if char["blood_type"]:
+        bloodtype = ["A", "B", "AB", "O"][char["blood_type"] - 1]
+    if char["birth_mon"] and char["birth_day"]:
+        birthday = [char["birth_year"], char["birth_mon"], char["birth_day"]]
+    for i in char["infobox"]:
+        match i["key"]:
+            case "生日":
+                if birthday is None:
+                    birthday = [None, None, None]
+                    if type(i["value"]) != str:
+                        continue
+                    m = re.search(r"((\d*)年)?((\d*)月)?((\d*)日)?", i["value"])
+                    if m:
+                        g = m.groups()
+                        if g[1]:
+                            birthday[0] = int(g[1])
+                        if g[3]:
+                            birthday[1] = int(g[3])
+                        if g[5]:
+                            birthday[2] = int(g[5])
+            case "血型":
+                if bloodtype is None:
+                    bloodtype = i["value"].replace("型", "")
+            case "身高":
+                if height is None:
+                    try:
+                        height = int(i["value"].replace("cm", ""))
+                    except Exception as e:
+                        pass
+    for idx, i in enumerate(match2):
+        mid = i[0]
+        score = i[1]
+        if mid not in moegirl_extra:
+            continue
+        char = moegirl_extra[mid]
+        if "生日" in char and birthday:
+            flag = True
+            for j in range(3):
+                if char["生日"][j] and birthday[j] and char["生日"][j] != birthday[j]:
+                    flag = False
+                    break
+            if flag:
+                score += 3
+        if "身高" in char and height:
+            if abs(char["身高"] - height) <= 1:
+                score += 1
+        if "血型" in char and bloodtype:
+            if char["血型"] == bloodtype:
+                score += 1
+        match2[idx] = (mid, score)
+    match2.sort(reverse=True, key=lambda x: x[1])
+    # print(match2)
+    # ret = list(map(lambda x: x[0], match2))
+    # ret = unique(ret)
+    return match2
 
 
 for i in moegirl_chars:
     name, pre, post = moegirl_split(i)
-    if name not in moe_split:
-        moe_split[name] = []
-    moe_split[name].append((i, pre, post))
+    if name not in moe_lookup:
+        moe_lookup[name] = []
+    moe_lookup[name].append((i, 1, (name, pre, post)))
+    if i in moegirl_extra:
+        char = moegirl_extra[i]
+        if "本名" in char:
+            for idx, j in enumerate(char["本名"]):
+                j = j.replace(" ", "").lower()
+                j = converter2.convert(converter.convert(j))
+                if "不明" in j or "未知" in j or "不详" in j:
+                    continue
+                if j not in moe_lookup:
+                    moe_lookup[j] = []
+                moe_lookup[j].append((i, 1 / (idx + 3), None))
 
 bgm2moegirl = {}
 moegirl2bgm = {}
@@ -234,42 +342,53 @@ moegirl2bgm = {}
 multicount = 0
 nonecount = 0
 
-print(f'subject map len={len(bgm_subjects)}')
-print(f'char map len={len(bgm_chars)}')
+print(f"subject map len={len(bgm_subjects)}")
+print(f"char map len={len(bgm_chars)}")
 
-for cnt, i in enumerate(bgm_index):
+for cnt, i in enumerate(tqdm(bgm_index)):
     moegirl_ids = map_bgm(i)
-    bgm_id = i['id']
+    bgm_id = i["id"]
     if bgm_id not in special_map:
         if len(moegirl_ids) == 0:
             nonecount += 1
         elif len(moegirl_ids) > 1:
             multicount += 1
     # if len(moegirl_ids) != 1:
-        # pass
-        # print(cnt, bgm_id, i['name'], moegirl_ids)
+    # pass
+    # print(cnt, bgm_id, i['name'], moegirl_ids)
     # print('\'{}\':'.format(bgm_id), moegirl_ids, '#', i['name'])
-    bgm2moegirl[bgm_id] = moegirl_ids
-    for moegirl_id in moegirl_ids:
+    tmp = []
+    # print(moegirl_ids)
+    for moegirl_id, score in moegirl_ids:
+        tmp.append(moegirl_id)
         if moegirl_id not in moegirl2bgm:
             moegirl2bgm[moegirl_id] = []
         if bgm_id not in moegirl2bgm[moegirl_id]:
-            moegirl2bgm[moegirl_id].append(bgm_id)
+            moegirl2bgm[moegirl_id].append((bgm_id, score, cnt))
+    bgm2moegirl[bgm_id] = tmp
 
 for k, v in revserse_special.items():
     # print(k, v)
-    moegirl2bgm[k] = [v]
+    if v is None:
+        moegirl2bgm[k] = []
+    else:
+        moegirl2bgm[k] = [(v, 19260817, -1)]
 
-print('successful bgm2moegirl: {}/{}'.format(len(bgm_index)-nonecount, len(bgm_index)))
-print(f'multi={multicount} none={nonecount}')
+print("successful bgm2moegirl: {}/{}".format(len(bgm_index) - nonecount, len(bgm_index)))
+print(f"multi={multicount} none={nonecount}")
 
 multicount2 = 0
 
-for i in moegirl2bgm.values():
-    if len(i) > 1:
+for k, v in moegirl2bgm.items():
+    v.sort(key=lambda x: x[2])
+    v.sort(reverse=True, key=lambda x: x[1])
+    if len(v) > 1:
+        print(list(map(lambda x: str([bgm_chars[x[0]]["name"]] + list(x)[1:]), v)))
         multicount2 += 1
-print('successful moegirl2bgm: {}/{}'.format(len(moegirl2bgm), len(moegirl_chars)))
-print(f'multi={multicount2} none={len(moegirl_chars)-len(moegirl2bgm)}')
+    moegirl2bgm[k] = list(map(lambda x: x[0], v))
 
-save_json(bgm2moegirl, 'bgm2moegirl.json')
-save_json(moegirl2bgm, 'moegirl2bgm.json')
+print("successful moegirl2bgm: {}/{}".format(len(moegirl2bgm), len(moegirl_chars)))
+print(f"multi={multicount2} none={len(moegirl_chars)-len(moegirl2bgm)}")
+
+save_json(bgm2moegirl, "bgm2moegirl.json")
+save_json(moegirl2bgm, "moegirl2bgm.json")

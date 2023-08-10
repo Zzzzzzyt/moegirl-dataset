@@ -25,7 +25,7 @@ headers = {
     'sec-ch-ua-mobile': '?0',
     'sec-ch-ua-platform': '"Windows"',
 }
-cooldown = 2
+cooldown = 3
 
 requests.adapters.DEFAULT_RETRIES = 3
 
@@ -42,6 +42,8 @@ def safe_get(url):
     print('{} in {:.3f}s'.format(r.status_code, elapsed))
     if r.status_code != 200:
         print('ERROR: {}'.format(r.status_code))
+        if elapsed < cooldown:
+            time.sleep(cooldown-elapsed)
         raise RuntimeError('Network error')
     if elapsed < cooldown:
         time.sleep(cooldown-elapsed)
@@ -69,28 +71,27 @@ def parse_index(url, depth=0, first_page=True, dedupe=set()):
             return ret, None, dedupe
         dedupe.add(url)
         soup = safe_soup(url)
-        if first_page or depth == 0:
-            subcategories_div = soup.find(id='mw-subcategories')
-            if subcategories_div != None:
-                for a in subcategories_div.find('div', class_='mw-content-ltr').find_all('a'):
-                    url = a['href']
-                    url = urllib.parse.unquote(url)
-                    ret2, err, dedupe2 = parse_index(add_prefix(url), depth+1, dedupe=dedupe)
-                    dedupe.update(dedupe2)
-                    tmp = {'name': a.string, 'url': url}
-                    tmp.update(ret2)
-                    ret['subcategories'].append(tmp)
+        subcategories_div = soup.find(id='mw-subcategories')
+        if subcategories_div != None:
+            for a in subcategories_div.find('div', class_='mw-content-ltr').find_all('a'):
+                url = a['href']
+                url = urllib.parse.unquote(url)
+                ret2, err, dedupe2 = parse_index(add_prefix(url), depth+1, dedupe=dedupe)
+                dedupe.update(dedupe2)
+                tmp = {'name': a.string, 'url': url}
+                tmp.update(ret2)
+                ret['subcategories'].append(tmp)
 
-                    if depth == 0 and len(ret['subcategories']) % 10 == 0:
-                        # checkpoint
-                        print(' CHECKPOINT '.center(40, '='))
-                        print('Root subcategory count: {}'.format(len(ret['subcategories'])))
-                        print('Page count: {}'.format(page_count))
-                        print('Character count: {}'.format(len(characters)))
-                        print(' CHECKPOINT END '.center(40, '='))
+                if depth == 0 and len(ret['subcategories']) % 10 == 0:
+                    # checkpoint
+                    print(' CHECKPOINT '.center(40, '='))
+                    print('Root subcategory count: {}'.format(len(ret['subcategories'])))
+                    print('Page count: {}'.format(page_count))
+                    print('Character count: {}'.format(len(characters)))
+                    print(' CHECKPOINT END '.center(40, '='))
 
-                    if err:
-                        raise err
+                if err:
+                    raise err
 
         pages_div = soup.find(id='mw-pages')
         if pages_div != None:
@@ -127,7 +128,66 @@ def parse_index(url, depth=0, first_page=True, dedupe=set()):
     return ret, None, dedupe
 
 
-def merge(*output):
+def merge(s, t, depth=0):
+    if 'name' in s:
+        assert 'url' in s
+    if 'name' in t:
+        assert 'url' in t
+    if 'name' in t:
+        if 'name' in s:
+            assert s['name'] == t['name']
+            assert s['url'] == t['url']
+        else:
+            s['name'] = t['name']
+            s['url'] = t['url']
+            print('  '*depth+'merge name: ', s['name'])
+            print('  '*depth+'merge url: ', s['url'])
+    # if 'name' in s:
+    #     print('  '*depth+'merging:', s['name'])
+    if 'article' in t:
+        if 'article' in s:
+            assert t['article']['page'] == s['article']['page']
+            assert t['article']['url'] == s['article']['url']
+        else:
+            s['article'] = t['article']
+            print('  '*depth+'merge article: ', s['article'])
+    if 'pages' in t:
+        if 'pages' not in s:
+            s['pages'] = []
+        tmp = []
+        for i in t['pages']:
+            flag = False
+            for j in s['pages']:
+                if j['page'] == i['page']:
+                    assert j['url'] == i['url']
+                    flag = True
+                    break
+            if not flag:
+                tmp.append(i)
+        if len(tmp) > 0 and 'name' in s:
+            print('  '*depth+'extra pages for '+s['name'], len(tmp))
+        s['pages'].extend(tmp)
+    if 'subcategories' in t:
+        if 'subcategories' not in s:
+            s['subcategories'] = []
+        tmp = []
+        for i in t['subcategories']:
+            flag = False
+            for jdx, j in enumerate(s['subcategories']):
+                if i['name'] == j['name']:
+                    assert i['url'] == j['url']
+                    s['subcategories'][jdx] = merge(j, i, depth+1)
+                    flag = True
+                    break
+            if not flag:
+                tmp.append(i)
+        if len(tmp) > 0 and 'name' in s:
+            print('  '*depth+'extra subcategories for '+s['name'], len(tmp))
+        s['subcategories'].extend(tmp)
+    return s
+
+
+def merge2(*output):
     ret = {'pages': [], 'subcategories': []}
     for i in output:
         ret['pages'].extend(i['pages'])
@@ -135,7 +195,34 @@ def merge(*output):
     return ret
 
 
-# save_json(parse_index('https://zh.moegirl.org.cn/Category:按角色特征分类')[0],'out.json')
+# filter1 = json.load(open('full1.json', encoding='utf-8'))
+# filter2 = json.load(open('full2.json', encoding='utf-8'))
+# filter3 = json.load(open('full3.json', encoding='utf-8'))
+# filter4 = json.load(open('full4.json', encoding='utf-8'))
+# filterset = set()
+
+# m = merge(filter1, filter2)
+# m = merge(m, filter3)
+# m = merge(m, filter4)
+# save_json(m, 'full.json')
+# def dfs(x):
+#     global filterset
+#     if len(x['subcategories']) < 20 and 'url' in x:
+#         filterset.add('https://zh.moegirl.org.cn'+x['url'])
+#     for i in x['subcategories']:
+#         dfs(i)
+
+
+# dfs(filter)
+# dfs(filter2)
+# dfs(filter3)
+# print(filterset)
+
+
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:按角色特征分类', dedupe=filterset)[0], 'by_attr.json')
+# parse_index('https://zh.moegirl.org.cn/Category:按着装特征分类', dedupe=filterset)
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:虚拟人物', dedupe=filterset)[0], 'full4.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:按声优分类')[0],'wtf.json')
 
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:东方正作人物')[0], 'subset/touhou_new_out.json')
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:东方旧作人物')[0], 'subset/touhou_old_out.json')
@@ -143,7 +230,7 @@ def merge(*output):
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:魔法禁书目录')[0],'subset/toaru_out.json')
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:某科学的超电磁炮')[0], 'subset/railgun_out.json')
 
-# save_json(merge(
+# save_json(merge2(
 #     parse_index('https://zh.moegirl.org.cn/Category:AIR')[0],
 #     parse_index('https://zh.moegirl.org.cn/Category:古典部系列')[0],
 #     parse_index('https://zh.moegirl.org.cn/Category:CLANNAD')[0],
@@ -162,17 +249,20 @@ def merge(*output):
 #     parse_index('https://zh.moegirl.org.cn/Category:小林家的龙女仆')[0],
 #     parse_index('https://zh.moegirl.org.cn/Category:幸运星')[0],
 #     parse_index('https://zh.moegirl.org.cn/Category:玉子市场')[0],
-#     parse_index('https://zh.moegirl.org.cn/Category:中二病也要谈恋爱！')[0]
+#     parse_index('https://zh.moegirl.org.cn/Category:中二病也要谈恋爱！')[0],
+#     parse_index('https://zh.moegirl.org.cn/Category:无彩限的怪灵世界')[0]
 # ), 'subset/kyoani_out.json')
 
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:明日方舟')[0], 'subset/arknights_out.json')
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:原神')[0], 'subset/genshin_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:崩坏3')[0], 'subset/honkai3_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:崩坏：星穹铁道')[0], 'subset/honkai_starrail_out.json')
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:Fate系列')[0], 'subset/fate_out.json')
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:JOJO的奇妙冒险')[0], 'subset/jojo_out.json')
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:机动战士高达系列')[0], 'subset/gundam_out.json')
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:火影忍者')[0], 'subset/naruto_out.json')
 
-# save_json(merge(
+# save_json(merge2(
 #     parse_index('https://zh.moegirl.org.cn/Category:某科学的超电磁炮')[0],
 #     parse_index('https://zh.moegirl.org.cn/Category:孤独摇滚！')[0],
 #     parse_index('https://zh.moegirl.org.cn/Category:新世纪福音战士')[0],
@@ -182,19 +272,20 @@ def merge(*output):
 #     parse_index('https://zh.moegirl.org.cn/Category:幸运星')[0],
 #     parse_index('https://zh.moegirl.org.cn/Category:中二病也要谈恋爱！')[0],
 #     parse_index('https://zh.moegirl.org.cn/Category:东方正作人物')[0],
+#     parse_index('https://zh.moegirl.org.cn/Category:玉子市场')[0],
 # ), 'subset/zzzyt_out.json')
 
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:兽娘')[0], 'subset/furry_out.json')
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:LoveLive!系列')[0], 'subset/lovelive_out.json')
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:英雄联盟')[0], 'subset/lol_out.json')
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:按歌声合成软件分类')[0], 'subset/vocaloid_out.json')
-# save_json(parse_index('https://zh.moegirl.org.cn/Category:名侦探柯南中角色')[0], 'subset/conan_out.json')
-# save_json(parse_index('https://zh.moegirl.org.cn/Category:赛马娘_Pretty_Derby中角色')[0], 'subset/derby_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:名侦探柯南角色')[0], 'subset/conan_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:赛马娘_Pretty_Derby角色')[0], 'subset/derby_out.json')
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:舰队Collection')[0], 'subset/kanC_out.json')
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:战舰少女')[0], 'subset/kanR_out.json')
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:碧蓝航线')[0], 'subset/kanB_out.json')
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:蔚蓝档案')[0], 'subset/blue_archive_out.json')
-# save_json(merge(
+# save_json(merge2(
 #     parse_index('https://zh.moegirl.org.cn/Category:Kanon')[0],
 #     parse_index('https://zh.moegirl.org.cn/Category:AIR')[0],
 #     parse_index('https://zh.moegirl.org.cn/Category:CLANNAD')[0]), 'subset/key3_out.json')
@@ -205,3 +296,8 @@ def merge(*output):
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:偶像梦幻祭')[0], 'subset/ES_out.json')
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:公主连结Re:Dive')[0], 'subset/PCR_out.json')
 # save_json(parse_index('https://zh.moegirl.org.cn/Category:RWBY')[0], 'subset/RWBY_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:BanG Dream!')[0], 'subset/bangdream_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:少女与战车')[0], 'subset/GUP_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:少女歌剧 Revue Starlight')[0], 'subset/revue_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:少女前线')[0], 'subset/girls_frontline_out.json')
+# save_json(parse_index('https://zh.moegirl.org.cn/Category:阴阳师(手游)')[0], 'subset/onmyoji_out.json')

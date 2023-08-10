@@ -34,8 +34,8 @@ def subset(fp, topk=len(attr_index)):
                 tmp.append(subattr_map[j])
         ret_char2attr.append(tmp)
 
-    print(subattr)
-    print(subchar)
+    # print(subattr)
+    # print(subchar)
     print('char_index: {}'.format(len(ret_char_index)))
     print('attr_index: {}'.format(len(ret_attr_index)))
     print(len(json.dumps(ret_char_index, ensure_ascii=False)))
