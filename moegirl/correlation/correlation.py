@@ -4,7 +4,7 @@ import scipy.stats
 
 char2attr = json.load(open('../preprocess/char2attr.json', encoding='utf-8'))
 attr2char = json.load(open('../preprocess/attr2char.json', encoding='utf-8'))
-attr_index = json.load(open('../preprocess/attr_index.json', encoding='utf-8'))
+attrs = json.load(open('../preprocess/attr_index.json', encoding='utf-8'))
 
 
 def calc_chi2(data, A, B):
@@ -29,7 +29,6 @@ def calc_chi2(data, A, B):
 # print(calc_chi2('金发', '败犬'))
 
 
-attrs = list(attr_index.keys())
 attrs = list(filter(lambda x: len(attr2char[x]) >= 500, attrs))
 print(attrs)
 a = []

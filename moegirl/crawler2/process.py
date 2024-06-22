@@ -7,19 +7,10 @@ from tqdm import tqdm
 from bs4 import MarkupResemblesLocatorWarning
 import re
 
-warnings.filterwarnings(
-    "ignore", category=MarkupResemblesLocatorWarning, module="bs4")
+from utils.file import save_json, save_json_pretty
+
+warnings.filterwarnings("ignore", category=MarkupResemblesLocatorWarning, module="bs4")
 warnings.simplefilter("always", UserWarning)
-
-
-def save_json(data, path):
-    json.dump(
-        data,
-        open(path, "w", encoding="utf-8"),
-        ensure_ascii=False,
-        separators=(",", ":"),
-    )
-
 
 converter = opencc.OpenCC("t2s.json")
 
@@ -256,8 +247,7 @@ def extract_text(
             elif name == "astrology":
                 ret.append(
                     calc_zodiac(
-                        int(str(code.get(1).value)), int(
-                            str(code.get(2).value))
+                        int(str(code.get(1).value)), int(str(code.get(2).value))
                     )
                 )
             elif (
@@ -280,8 +270,7 @@ def extract_text(
             elif len(code.params) == 0:
                 pass
             else:
-                warnings.warn("Unkown template name: " +
-                              name + "\n" + str(code))
+                warnings.warn("Unkown template name: " + name + "\n" + str(code))
         elif isinstance(code, mwp.nodes.wikilink.Wikilink):
             if wikilink or code.text is None:
                 ret.append(str(code.title).strip())
@@ -345,8 +334,7 @@ def parse_moe(val, raw):
     global attrs
     val = conv(remove_html(val))
     # print(val)
-    res = extract_text(mwp.parse(val), strict_root=True,
-                       agressive=True, wikilink=True)
+    res = extract_text(mwp.parse(val), strict_root=True, agressive=True, wikilink=True)
     ret = []
     for i in res:
         s = i.strip()
@@ -586,8 +574,7 @@ def parse_age(val, raw):
     return ret
 
 
-bwh_re1 = re.compile(
-    r"B[:：]?(\d+).*?W[:：]?(\d+).*?H[:：]?(\d+)", flags=re.IGNORECASE)
+bwh_re1 = re.compile(r"B[:：]?(\d+).*?W[:：]?(\d+).*?H[:：]?(\d+)", flags=re.IGNORECASE)
 bwh_re2 = re.compile(r"B[:：]?(\d+)", flags=re.IGNORECASE)
 bwh_re3 = re.compile(r"(\d+).*?(\d+).*?(\d+)", flags=re.IGNORECASE)
 
@@ -628,20 +615,46 @@ def remove_lang(s):
     return chain_replace(s, ["[中]", "[日]", "[英]"])
 
 
+def parse_seyuu_final(val):
+    ret = extract_text(mwp.parse(val))
+    ret2 = []
+    for idx, i in enumerate(ret):
+        if idx != len(ret) - 1 and ret[idx + 1] == '》':
+            continue
+        if i.endswith(':') or i.endswith('：') or i.endswith('】') or i.endswith(']'):
+            continue
+        if i == '不明' or i == '无':
+            continue
+        if i.startswith('{{') and i.endswith('}}'):
+            ret2.append(i.split('|')[-1])
+        elif '/' in i:
+            ret2.extend(i.split('/'))
+        elif '&' in i:
+            ret2.extend(i.split('&'))
+        else:
+            ret2.append(i)
+    ret = ret2
+    ret = map(lambda x: lstrip_cat(x.strip("→").strip("-")), ret)
+    ret = map(lambda x: chain_replace(x, "《》/\\-()（）【】⌈⌋⌊⌉[]{},，、&；;"), ret)
+    ret = filter(
+        lambda x: x not in ['PV', 'CM', 'OVA', 'TV']
+        and '电影' not in x
+        and '动画' not in x,
+        ret,
+    )
+    ret = filter(lambda x: len(x) > 0, ret)
+    ret = list(ret)
+    ret = unique(ret)
+    return ret
+
+
 def parse_seyuu(val, raw):
     val = val.strip()
     val = conv(val)
     if "<" in val or "{" in val or "[" in val or "," in val:
         val = strip_parenthesis(val)
         val = remove_lang(val)
-        ret = extract_text(mwp.parse(val))
-        ret = map(
-            lambda x: lstrip_cat(x.strip("→").strip("-")), ret
-        )
-        ret = map(lambda x: chain_replace(x, "《》/\\-()（）【】⌈⌋⌊⌉[]{},，、"), ret)
-        ret = filter(lambda x: len(x) > 0, ret)
-        ret = list(ret)
-        ret = unique(ret)
+        ret = parse_seyuu_final(val)
         return ret
     else:
         return [strip_parenthesis(val)]
@@ -663,12 +676,7 @@ def parse_multiple_seyuu(val, raw):
                     ret.append(str(j.value))
         return ret
 
-    ret = extract_text(mwp.parse(val))
-    ret = map(lambda x: lstrip_cat(x.strip("→").strip("-")), ret)
-    ret = map(lambda x: chain_replace(x, "《》/\\-()（）【】⌈⌋⌊⌉[]{},，、"), ret)
-    ret = filter(lambda x: len(x) > 0, ret)
-    ret = list(ret)
-    ret = unique(ret)
+    ret = parse_seyuu_final(val)
     return ret
 
 
@@ -712,8 +720,7 @@ def parse_color(val, raw):
     val = "".join(extract_text(mwp.parse(val)))
     ret = multisplit(val, "/→+-~左右或,，、 ")
     ret = map(
-        lambda x: x.rstrip("瞳").rstrip("发").rstrip(
-            "色") if len(x) <= 4 else x, ret
+        lambda x: x.rstrip("瞳").rstrip("发").rstrip("色") if len(x) <= 4 else x, ret
     )
     ret = filter(lambda x: len(x) > 0, ret)
     ret = list(ret)
@@ -765,6 +772,7 @@ def parse_birthday(val, raw):
 
 d = dict()
 attrs = json.load(open("../preprocess/attr_index.json", encoding="utf-8"))
+attrs = set(attrs)
 extra = json.load(open("extra_info.json", encoding="utf-8"))
 out = {}
 

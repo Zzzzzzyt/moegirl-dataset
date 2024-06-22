@@ -1,14 +1,12 @@
 import json
 
-
-def save_json(data, path):
-    json.dump(data, open(path, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
+from utils.file import save_json
 
 
-bgm_index = json.load(open('../bgm_index_120k.json', encoding='utf-8'))
+bgm_index = json.load(open('../bgm_index_160k.json', encoding='utf-8'))
 bgm2moegirl = json.load(open('../bgm2moegirl.json', encoding='utf-8'))
 char_index = json.load(open('../../moegirl/preprocess/char_index.json', encoding='utf-8'))
-
+char_index=set(char_index)
 
 def topk(k):
     st = set()

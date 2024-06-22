@@ -11,20 +11,21 @@ def subset(fp, topk=len(attr_index)):
     ret_attr_index = []
     ret_char2attr = []
 
-    subattr = list(attr_index.keys())
+    # subattr = list(attr_index.keys())
+    subattr = attr_index.copy()
     subattr.sort(key=lambda x: len(attr2char[x]))
     subattr = subattr[-topk:]
     subattr_map = {}
     for i, attr in enumerate(subattr):
         subattr_map[attr] = i
-        ret_attr_index.append(attr_index[attr])
+        ret_attr_index.append(attr)
 
     subchar = []
     for i in char_index:
         for j in char2attr[i]:
             if j in subattr:
                 subchar.append(i)
-                ret_char_index.append(char_index[i])
+                ret_char_index.append(i)
                 break
 
     for i in subchar:
@@ -44,7 +45,7 @@ def subset(fp, topk=len(attr_index)):
     ret = {
         'char_index': ret_char_index,
         'attr_index': ret_attr_index,
-        'char2attr': ret_char2attr
+        'char2attr': ret_char2attr,
     }
     json.dump(ret, fp, ensure_ascii=False, separators=(',', ':'))
 

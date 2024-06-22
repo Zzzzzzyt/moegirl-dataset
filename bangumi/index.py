@@ -1,12 +1,10 @@
 import json
 from functools import cmp_to_key
 
-
-def save_json(data, path):
-    json.dump(data, open(path, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
+from utils.file import save_json
 
 
-bgm_chars = json.load(open('bgm_chars_120k.json', encoding='utf-8'))
+bgm_chars = json.load(open('bgm_chars_160k.json', encoding='utf-8'))
 ret = []
 
 for k, v in bgm_chars.items():
@@ -31,4 +29,4 @@ for rank, i in enumerate(ret):
 
 print(ret[0])
 print(ret[-1])
-save_json(ret, 'bgm_index_120k.json')
+save_json(ret, 'bgm_index_160k.json')

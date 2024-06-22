@@ -6,6 +6,11 @@ import time
 import shutil
 from bs4 import BeautifulSoup
 from tqdm import tqdm
+from urllib3 import Retry
+from requests.adapters import HTTPAdapter
+
+from utils.network import safe_get, safe_soup, safe_download
+from utils.file import save_json
 
 headers = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
@@ -15,90 +20,39 @@ headers = {
     'User-Agent': 'Zzzyt/MoeRanker (https://github.com/Zzzzzzyt/MoeRanker)',
 }
 cooldown = 2
+TIMEOUT = 10
 
-requests.adapters.DEFAULT_RETRIES = 10
+# requests.adapters.DEFAULT_RETRIES = 10
 
-
-def save_json(data, path):
-    print('saving to {}'.format(path))
-    json.dump(data, open(path, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
-
-
-def safe_get(url, bar: tqdm = None, verbose=True):
-    url = urllib.parse.unquote(url)
-    if verbose:
-        if bar is not None:
-            bar.write('GET: {} '.format(url))
-        else:
-            print('GET: {} '.format(url), end='')
-    r = requests.get(url, headers=headers)
-    r.encoding = 'utf-8'
-    elapsed = r.elapsed.total_seconds()
-    if verbose:
-        if bar is not None:
-            bar.write('{} in {:.3f}s'.format(r.status_code, elapsed))
-        else:
-            print('{} in {:.3f}s'.format(r.status_code, elapsed))
-    if r.status_code != 200:
-        # if verbose:
-        #     if bar is not None:
-        #         bar.write('ERROR: {}'.format(r.status_code))
-        #     else:
-        #         print('ERROR: {}'.format(r.status_code))
-        if elapsed < cooldown:
-            time.sleep(cooldown-elapsed)
-        raise RuntimeError(r.status_code)
-    if elapsed < cooldown:
-        time.sleep(cooldown-elapsed)
-    return r
-
-
-def safe_download(url, path, bar=None, verbose=True):
-    url = urllib.parse.unquote(url)
-    r = requests.get(url, stream=True, headers=headers)
-    if verbose:
-        if bar is not None:
-            bar.write('Download {} '.format(url))
-        else:
-            print('Download {} '.format(url), end='')
-    if r.status_code != 200:
-        if verbose:
-            print('ERROR: {}'.format(r.status_code))
-    else:
-        with open(path, 'wb') as f:
-            r.raw.decode_content = True
-            shutil.copyfileobj(r.raw, f)
-    elapsed = r.elapsed.total_seconds()
-    if verbose:
-        if bar is not None:
-            bar.write('{:.3f}s'.format(elapsed))
-        else:
-            print('{:.3f}s'.format(elapsed))
-    if elapsed < cooldown:
-        time.sleep(cooldown-elapsed)
-    return r
-
-
-def safe_soup(url) -> BeautifulSoup:
-    return BeautifulSoup(safe_get(url).text, 'html.parser')
+ses = requests.Session()
+retry = Retry(total=10)
+ses.mount('https', HTTPAdapter(max_retries=retry))
 
 
 def crawl_index(count):
     ret = []
+    bar = tqdm(range(count))
     try:
-        for i in range(count):
-            soup = safe_soup(f'https://bgm.tv/character?orderby=collects&page={i+1}')
+        for i in bar:
+            soup = safe_soup(
+                f'https://bgm.tv/character?orderby=collects&page={i+1}',
+                bar,
+                cooldown=cooldown,
+            )
             chars = soup.find(id='columnCrtBrowserB').find_all('div')[1]
             for char in chars.children:
                 id = int(char.find('a')['href'].replace('/character/', ''))
-                avatar = 'https:'+char.find('img')['src']
+                avatar = 'https:' + char.find('img')['src']
                 name = char.find('h3').find('a').text.strip()
-                print(id, avatar, name)
-                ret.append({
-                    'id': str(id),
-                    'name': name,
-                    'avatar': avatar,
-                })
+                # print(id, avatar, name)
+                bar.write(f'{id} {avatar} {name}')
+                ret.append(
+                    {
+                        'id': str(id),
+                        'name': name,
+                        'avatar': avatar,
+                    }
+                )
     except Exception as e:
         print(e)
     return ret
@@ -111,69 +65,44 @@ def crawl_characters(index):
         for i in bar:
             id = i['id']
             bar.set_description('{} {}'.format(i['name'], id))
-            data = json.loads(safe_get(f'https://api.bgm.tv/v0/characters/{id}', bar).text)
+            data = json.loads(
+                safe_get(f'https://api.bgm.tv/v0/characters/{id}', bar).text,
+                cooldown=cooldown,
+            )
             ret[id] = data
-    except BaseException as e:
-        return ret, e
-    return ret, None
-
-
-def crawl_characters_id(index, filter: dict = None):
-    bar = tqdm(index, total=len(index))
-    ret = {}
-    try:
-        for i in bar:
-            bar.set_description('{} {}'.format(i, len(ret)))
-            if filter is not None and str(i) in filter:
-                continue
-            try:
-                data = json.loads(safe_get(f'https://api.bgm.tv/v0/characters/{i}', bar, verbose=True).text)
-                ret[i] = data
-            except RuntimeError as e:
-                # bar.write(str(e))
-                if str(e) == '404':
-                    continue
-                else:
-                    raise e
     except BaseException as e:
         print(e)
         return ret, e
     return ret, None
 
 
-def crawl_subjects(index):
+def crawl_bangumi_id(index, url, ret: dict = {}):
     bar = tqdm(index, total=len(index))
-    ret = {}
     try:
-        for i in bar:
-            id = i['id']
-            bar.set_description('{} {}'.format(i['name'], id))
-            data = json.loads(safe_get(f'https://api.bgm.tv/v0/characters/{id}/subjects', bar).text)
-            ret[id] = data
-    except BaseException as e:
-        return ret, e
-    return ret, None
-
-
-def crawl_subjects_id(index, filter: dict = None):
-    bar = tqdm(index, total=len(index))
-    ret = {}
-    try:
-        for i in bar:
-            bar.set_description('{} {}'.format(i, len(ret)))
-            if filter is not None and str(i) in filter:
+        for idx, i in enumerate(bar):
+            bar.set_description('{} {}'.format(i, idx))
+            if str(i) in ret:
                 continue
             try:
-                data = json.loads(safe_get(f'https://api.bgm.tv/v0/characters/{i}/subjects', bar, verbose=True).text)
-                ret[i] = data
-            except RuntimeError as e:
-                # bar.write(str(e))
-                if str(e) == '404':
-                    continue
+                res = safe_get(
+                    url.format(i),
+                    bar,
+                    headers=headers,
+                    verbose=True,
+                    cooldown=cooldown,
+                )
+                ret[i] = res.json()
+            except KeyboardInterrupt as e:
+                raise e
+            except requests.HTTPError as e:
+                if e.response.status_code == 404:
+                    # continue
+                    ret[i] = {}
+                    # return {}, None
                 else:
                     raise e
     except BaseException as e:
-        print(e)
+        bar.write(str(e))
         return ret, e
     return ret, None
 
@@ -184,8 +113,10 @@ def download_thumnail(index, chars):
         if idx >= len(chars):
             return
         id = i['id']
-        if os.path.exists('images/{}-avatar.jpg'.format(id)) and os.path.exists('images/{}-large.jpg'.format(id)):
-            bar.write('skip: '+i['name'])
+        if os.path.exists('images/{}-avatar.jpg'.format(id)) and os.path.exists(
+            'images/{}-large.jpg'.format(id)
+        ):
+            bar.write('skip: ' + i['name'])
             continue
         # print(idx, id, i['name'])
         bar.set_description('{} {} {}'.format(idx, id, i['name']))
@@ -193,7 +124,9 @@ def download_thumnail(index, chars):
             images = chars[str(id)]['images']
             if images['large'] == '':
                 continue
-            avatar = images['large'].replace('https://lain.bgm.tv/pic/crt/l/', 'https://lain.bgm.tv/pic/crt/g/')
+            avatar = images['large'].replace(
+                'https://lain.bgm.tv/pic/crt/l/', 'https://lain.bgm.tv/pic/crt/g/'
+            )
             safe_download(avatar, 'images/{}-avatar.jpg'.format(id), bar)
             # safe_download(images['small'], 'images/{}-small.jpg'.format(id),bar)
             # safe_download(images['grid'], 'images/{}-grid.jpg'.format(id),bar)
@@ -203,70 +136,50 @@ def download_thumnail(index, chars):
             print(e)
 
 
-# index = crawl_index(1000)
-# save_json(index, 'bgm_index.json')
-index = json.load(open("bgm_index_120k.json", encoding='utf-8'))
-# print(index)
-# chars, e = crawl_characters(index)
-# print(chars, e)
-# save_json(chars, 'bgm_chars_20k.json')
+# index = crawl_index(9999)
+# save_json(index, 'bgm_index_20k_new.json')
+# index = json.load(open("bgm_index_20k.json", encoding='utf-8'))
+# # print(index)
+# chars, e = crawl_characters(index[17600:])
+# # print(chars, e)
+# save_json(chars, 'bgm_chars_20k_2.json')
 
 # subjects, e = crawl_subjects(index)
 # print(subjects, e)
 # save_json(subjects, 'bgm_subjects.json')
 
-chars = json.load(open('bgm_chars_120k.json', encoding='utf-8'))
-download_thumnail(index[:10000], chars)
+# chars = json.load(open('bgm_chars_120k.json', encoding='utf-8'))
+# download_thumnail(index[:10000], chars)
 
-# for i in list(range(1, 136)):
+for i in list(range(20, 161)):
+    print(f'crawl: {(i-1)*1000+1} - {i*1000}')
+    fname = f'160k_chars/bgm_chars_160k_{i}.json'
+    if os.path.exists(fname):
+        crawled = json.load(open(fname, encoding='utf-8'))
+    else:
+        crawled = {}
+    subjects, e = crawl_bangumi_id(
+        range((i - 1) * 1000 + 1, i * 1000 + 1),
+        'https://api.bgm.tv/v0/characters/{}',
+        crawled,
+    )
+    save_json(subjects, fname)
+    if type(e) == KeyboardInterrupt:
+        break
+
+
+# for i in list(range(1, 161)):
 #     print(f'crawl: {(i-1)*1000+1} - {i*1000}')
-#     chars, e = crawl_characters_id(range((i-1)*1000+1, i*1000+1))
-#     save_json(chars, f'120k_chars/bgm_chars_120k_{i}.json')
+#     fname = f'160k_subjects/bgm_subjects_160k_{i}.json'
+#     if os.path.exists(fname):
+#         crawled = json.load(open(fname, encoding='utf-8'))
+#     else:
+#         crawled = {}
+#     subjects, e = crawl_bangumi_id(
+#         range((i - 1) * 1000 + 1, i * 1000 + 1),
+#         'https://api.bgm.tv/v0/characters/{}/subjects',
+#         crawled,
+#     )
+#     save_json(subjects, fname)
 #     if type(e) == KeyboardInterrupt:
 #         break
-
-# for i in list(range(1, 136)):
-#     print(f're-crawl: {(i-1)*1000+1} - {i*1000}')
-#     crawled = json.load(open(f'120k_chars/bgm_chars_120k_{i}.json', encoding='utf-8'))
-#     subjects, e = crawl_characters_id(range((i-1)*1000+1, i*1000+1), crawled)
-#     save_json(subjects, f'120k_chars_re/bgm_chars_120k_{i}.json')
-#     if type(e) == KeyboardInterrupt:
-#         break
-
-
-# dat = json.load(open('bgm_subjects_120k.json', encoding='utf-8'))
-# for i in range(1, 126530):
-#     if str(i) not in dat:
-#         try:
-#             print(json.loads(safe_get(f'https://api.bgm.tv/v0/characters/{i}/subjects').text))
-#         except RuntimeError as e:
-#             if str(e) == '404':
-#                 continue
-#             else:
-#                 raise e
-
-# for i in list(range(134, 136)):
-#     print(f'crawl: {(i-1)*1000+1} - {i*1000}')
-#     subjects, e = crawl_subjects_id(range((i-1)*1000+1, i*1000+1))
-#     save_json(subjects, f'120k_subjects/bgm_subjects_120k_{i}.json')
-#     if type(e) == KeyboardInterrupt:
-#         break
-
-# for i in list(range(1, 136)):
-#     print(f're-crawl: {(i-1)*1000+1} - {i*1000}')
-#     crawled = json.load(open(f'120k_subjects/bgm_subjects_120k_{i}.json', encoding='utf-8'))
-#     subjects, e = crawl_subjects_id(range((i-1)*1000+1, i*1000+1), crawled)
-#     print(len(subjects))
-#     save_json(subjects, f'120k_subjects_re/bgm_subjects_120k_{i}.json')
-#     if type(e) == KeyboardInterrupt:
-#         break
-
-# c = json.load(open('bgm_chars_120k.json', encoding='utf-8'))
-# s = json.load(open('bgm_subjects_120k.json', encoding='utf-8'))
-
-# for i in c:
-#     # if i not in s:
-#     id = str(c[i]['id'])
-#     name = c[i]['name']
-#     if i != id:
-#         print(i, id, name, i in s)

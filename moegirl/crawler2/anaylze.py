@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 attrs = json.load(open('../preprocess/attr_index.json', encoding='utf-8'))
+attrs = set(attrs)
 extra = json.load(open('extra_processed.json', encoding='utf-8'))
 
 d = dict()

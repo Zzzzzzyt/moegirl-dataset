@@ -2,7 +2,9 @@ import json
 import numpy as np
 from tqdm import tqdm
 
-attrs = json.load(open("attr_ids.json", encoding="utf-8"))
+from utils.file import save_json
+
+attrs = json.load(open("../preprocess/attr_index.json", encoding="utf-8"))
 chars = json.load(open("../preprocess/char_index.json", encoding="utf-8"))
 gain = np.load(open("gain.npy", "rb"))
 count = np.load(open("count.npy", "rb"))
@@ -23,7 +25,7 @@ for i in range(attr_count):
     # a goddess gave me this formula
     s = (np.maximum(np.log2(gain[i]), 0) * weight * contain[i]).sum()
     # nerf rare attributes
-    s *= min(np.log2(count[i]/3 + 500) - 8.5, 1)
+    s *= min(np.log2(count[i] / 3 + 500) - 8.5, 1)
     importance[i] = s
 
 importance /= importance[attrmap["黑发"]]
@@ -42,5 +44,5 @@ for i in res:
         print(i[0], i[2], count[i[1]])
     out[i[2]] = round(importance[i[1]], 5)
 print(out["蝴蝶结"], count[attrmap["蝴蝶结"]])
-json.dump(out, open("importance.json", "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+save_json(out, 'importance.json')
 np.save(open("importance.npy", "wb"), importance, allow_pickle=False)

@@ -4,6 +4,8 @@ import requests
 import urllib.parse
 import time
 
+from utils.file import save_json
+
 headers = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
     "Accept-Encoding": "gzip, deflate, br",
@@ -14,15 +16,6 @@ headers = {
 cooldown = 2
 
 requests.adapters.DEFAULT_RETRIES = 10
-
-
-def save_json(data, path):
-    json.dump(
-        data,
-        open(path, "w", encoding="utf-8"),
-        ensure_ascii=False,
-        separators=(",", ":"),
-    )
 
 
 def safe_get302(url, bar=None, verbose=True):
@@ -59,7 +52,7 @@ print("subset len={}".format(len(subset)))
 mapping = json.load(open("moegirl2bgm.json", encoding="utf-8"))
 print("mapping len={}".format(len(mapping)))
 
-chars = json.load(open("bgm_chars_120k.json", encoding="utf-8"))
+chars = json.load(open("bgm_chars_160k.json", encoding="utf-8"))
 res = {}
 for i in subset:
     if i in mapping:

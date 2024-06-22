@@ -11,18 +11,13 @@ from tqdm import tqdm
 from bs4 import MarkupResemblesLocatorWarning
 import re
 
+from urllib3 import Retry
+from requests.adapters import HTTPAdapter
+
+from utils.network import safe_get, title_to_url
+from utils.file import save_json
 
 warnings.filterwarnings("ignore", category=MarkupResemblesLocatorWarning, module="bs4")
-
-
-def save_json(data, path):
-    json.dump(
-        data,
-        open(path, "w", encoding="utf-8"),
-        ensure_ascii=False,
-        separators=(",", ":"),
-    )
-
 
 headers = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
@@ -40,10 +35,15 @@ headers = {
     "sec-ch-ua-mobile": "?0",
     "sec-ch-ua-platform": '"Windows"',
 }
-cooldown = 3
 
-requests.adapters.DEFAULT_RETRIES = 3
+from dotenv import load_dotenv, find_dotenv
 
+load_dotenv(find_dotenv(raise_error_if_not_found=True), verbose=True)
+cookies = os.getenv("MOEGIRL_COOKIES")
+print('cookies:', cookies)
+print()
+headers['Cookie'] = cookies
+cooldown = 8
 
 converter = opencc.OpenCC("t2s.json")
 
@@ -99,21 +99,6 @@ def remove_html(str):
     return soup.get_text()
 
 
-def safe_get(url):
-    # url = urllib.parse.unquote(url)
-    print("GET: {} ".format(url), end="")
-    r = requests.get(url, headers=headers)
-    r.encoding = "utf-8"
-    elapsed = r.elapsed.total_seconds()
-    print("{} in {:.3f}s".format(r.status_code, elapsed))
-    if r.status_code != 200:
-        print("ERROR: {}".format(r.status_code))
-        raise RuntimeError("Network error")
-    if elapsed < cooldown:
-        time.sleep(cooldown - elapsed)
-    return r
-
-
 def parse_moe(val):
     # print(val.nodes)
     ret = []
@@ -158,8 +143,9 @@ def parse_image_tab(val):
             for j in vals.filter_templates(recursive=False):
                 if j.name == "到pixiv" or j.name == "lj":
                     continue
-                assert j.name == "图片外链"
-                tmp["url"] = j.params[0].strip()
+                # assert j.name == "图片外链"
+                if j.name == "图片外链":
+                    tmp["url"] = j.params[0].strip()
             for j in vals.filter_wikilinks(recursive=False):
                 tmp["url"] = j.title.strip()
             if "url" not in tmp:
@@ -185,34 +171,17 @@ def gen_cache_name(name):
     name = name.replace("|", "")
     name = name.replace("<", "")
     name = name.replace(">", "")
-    return "raw/{}.json".format(name)
+    return name
 
 
 def parse(name):
     cache_name = gen_cache_name(name)
+    cache_name = f'raw2/{cache_name}.txt'
     if os.path.exists(cache_name):
         # print('cache hit: '+cache_name)
-        res = json.load(open(cache_name, encoding="utf-8"))
+        wikitext = open(cache_name, encoding="utf-8").read()
     else:
-        url = "https://zh.moegirl.org.cn/api.php?action=query&prop=revisions&titles={}&rvprop=content&format=json".format(
-            urllib.parse.quote(name.replace(" ", "_"))
-        )
-        res = safe_get(url).json()
-        save_json(res, cache_name)
-    res = res["query"]
-    res = res["pages"]
-    res = list(res.values())[0]
-    if "missing" in res:
-        return None
-    # if 'pageid' not in res:
-    #     print(name)
-    #     if os.path.exists(cache_name):
-    #         os.remove(cache_name)
-    #     return parse(name)
-    pageid = res["pageid"]
-    title = res["title"]
-    assert len(res["revisions"]) == 1
-    wikitext = res["revisions"][0]["*"]
+        return
     wikicode = mwp.parse(wikitext)
     try:
         for i in wikicode.filter_templates(recursive=False):
@@ -220,8 +189,8 @@ def parse(name):
             if "人物信息" in t or "替身信息" in t:
                 # print(i)
                 char = {}
-                char["title"] = title
-                char["pageid"] = pageid
+                char["title"] = name
+                # char["pageid"] = pageid
                 char["image"] = []
                 # char['萌点'] = []
                 tmpimage = {"url": "", "alt": ""}
@@ -273,18 +242,46 @@ def parse(name):
     return None
 
 
-char_index = json.load(open("raw_chars.json", encoding="utf-8"))
-extra_info = {}
-bar = tqdm(char_index)
-for idx, char in enumerate(bar):
-    name = char["name"]
-    # print(name, idx, '/', len(char_index))
+def crawl(name, bar):
+    cache_name = gen_cache_name(name)
+    cache_name = f'raw2/{cache_name}.txt'
+    if os.path.exists(cache_name):
+        # bar.write(name + ' exists.')
+        return
+    url = "https://zh.moegirl.org.cn/index.php?title={}&action=edit".format(
+        title_to_url(name)
+    )
     try:
-        p = parse(name)
-        if p is not None:
-            extra_info[name] = p
-    except KeyboardInterrupt as e:
-        break
-    bar.update(1)
-bar.close()
-save_json(extra_info, 'extra_info.json')
+        res = safe_get(url, bar, headers=headers, cooldown=cooldown).text
+        # print(res)
+        soup = BeautifulSoup(res, features="html.parser")
+        # print(soup)
+        t = soup.find('textarea').contents[0]
+
+        open(cache_name, 'w', encoding='utf8').write(t)
+    except Exception as err:
+        print(err)
+        # print(soup)
+    # print(t)
+
+
+char_index = json.load(open("../preprocess/char_index.json", encoding="utf-8"))
+with tqdm(char_index) as bar:
+    for i in bar:
+        bar.set_description(i)
+        # crawl(i, bar)
+
+# extra_info = {}
+# bar = tqdm(char_index)
+# for idx, char in enumerate(bar):
+#     name = char["name"]
+#     # print(name, idx, '/', len(char_index))
+#     try:
+#         p = parse(name)
+#         if p is not None:
+#             extra_info[name] = p
+#     except KeyboardInterrupt as e:
+#         break
+#     bar.update(1)
+# bar.close()
+# save_json(extra_info, 'extra_info.json')

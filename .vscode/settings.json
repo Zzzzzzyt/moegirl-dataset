@@ -1,0 +1,20 @@
+{
+    "black-formatter.args": [
+        "--skip-string-normalization"
+    ],
+    "cSpell.words": [
+        "bangumi",
+        "dedupe",
+        "honkai",
+        "jojo",
+        "kyoani",
+        "moegirl",
+        "naruto",
+        "onmyoji",
+        "RWBY",
+        "touhou",
+        "uncensor",
+        "vocaloid"
+    ],
+    "cSpell.language": "en"
+}

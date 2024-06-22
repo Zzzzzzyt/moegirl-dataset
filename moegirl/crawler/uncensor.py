@@ -1,9 +1,7 @@
 import json
 import os
 
-
-def save_json(data, path):
-    json.dump(data, open(path, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
+from utils.file import save_json
 
 
 def uncensor(name, url):
@@ -25,11 +23,13 @@ def dfs(data):
     assert ('name' in data) ^ ('url' in data) == False
     if 'name' in data and 'url' in data:
         data['name'], data['url'] = uncensor(data['name'], data['url'])
-    for i in data['pages']:
-        i['name'], i['url'] = uncensor(i['page'], i['url'])
-        del(i['page'])
-    for i in data['subcategories']:
-        dfs(i)
+    if 'pages' in data:
+        for i in data['pages']:
+            i['name'], i['url'] = uncensor(i['page'], i['url'])
+            del(i['page'])
+    if 'subcategories' in data:
+        for i in data['subcategories']:
+            dfs(i)
 
 
 def parse(fin, fout):
@@ -43,3 +43,5 @@ parse('full.json', 'uncensored.json')
 
 for i in os.listdir('subset'):
     parse('subset/'+i, 'subset_uncensored/'+i)
+
+# parse('subject.json', 'subject_uncensored.json')

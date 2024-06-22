@@ -4,9 +4,7 @@ import opencc
 import os
 from tqdm import tqdm
 
-
-def save_json(data, path):
-    json.dump(data, open(path, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+from utils.file import save_json
 
 
 special_map = {
@@ -92,19 +90,21 @@ for k, v in special_map.items():
         revserse_special[v] = k
 
 
-use_120k = (
-    os.path.exists("bgm_chars_120k.json") and os.path.exists("bgm_subjects_120k.json") and os.path.exists("bgm_index_120k.json")
+use_160k = (
+    os.path.exists("bgm_chars_160k.json")
+    and os.path.exists("bgm_subjects_160k.json")
+    and os.path.exists("bgm_index_160k.json")
 )
 
 bgm_index = None
 bgm_chars = None
 bgm_subjects = None
-if use_120k:
-    bgm_index = json.load(open("bgm_index_120k.json", encoding="utf-8"))
-    bgm_chars = json.load(open("bgm_chars_120k.json", encoding="utf-8"))
-    bgm_subjects = json.load(open("bgm_subjects_120k.json", encoding="utf-8"))
+if use_160k:
+    bgm_index = json.load(open("bgm_index_160k.json", encoding="utf-8"))
+    bgm_chars = json.load(open("bgm_chars_160k.json", encoding="utf-8"))
+    bgm_subjects = json.load(open("bgm_subjects_160k.json", encoding="utf-8"))
 else:
-    print("120k not found. falling back to 20k.")
+    print("160k not found. falling back to 20k.")
     bgm_index = json.load(open("bgm_index_20k.json", encoding="utf-8"))
     bgm_chars = json.load(open("bgm_chars_20k.json", encoding="utf-8"))
     bgm_subjects = json.load(open("bgm_subjects_20k.json", encoding="utf-8"))
@@ -113,11 +113,18 @@ print("loaded: bgm_index:", len(bgm_index))
 print("loaded: bgm_chars:", len(bgm_chars))
 print("loaded: bgm_subjects:", len(bgm_subjects))
 
-moegirl_chars = json.load(open("../moegirl/preprocess/char_index.json", encoding="utf-8"))
+moegirl_chars = json.load(
+    open("../moegirl/preprocess/char_index.json", encoding="utf-8")
+)
 print("loaded: moegirl_chars:", len(moegirl_chars))
-moegirl_extra = json.load(open("../moegirl/crawler2/extra_processed.json", encoding="utf-8"))
+moegirl_extra = json.load(
+    open("../moegirl/crawler2/extra_processed.json", encoding="utf-8")
+)
 print("loaded: moegirl_extra:", len(moegirl_extra))
-moe_lookup = {}
+char2subject = json.load(
+    open("../moegirl/preprocess/char2subject.json", encoding="utf-8")
+)
+print("loaded: char2subject:", len(char2subject))
 
 
 def is_postfix(a, b):
@@ -153,12 +160,15 @@ def multisplit(str, sp=",，/／"):
     cur = ""
     for i in str:
         if i in sp:
-            ret.append(cur.strip())
+            cur = cur.strip()
+            if cur != "":
+                ret.append(cur)
             cur = ""
         else:
             cur += i
+    cur = cur.strip()
     if cur != "":
-        ret.append(cur.strip())
+        ret.append(cur)
     return ret
 
 
@@ -177,12 +187,12 @@ def moegirl_split(name):
     return cur, pre, post
 
 
-def smatch(name, subjects):
-    if name == "":
+def smatch(moename, subjects):
+    if moename == "":
         return 0
     cnt = 0
     for i in subjects:
-        if name in i:
+        if i.startswith(moename):
             cnt += 1
     return cnt
 
@@ -203,6 +213,7 @@ def map_bgm(entry):
                 continue
             subjects.append(i["name_cn"])
             subjects.append(i["name"])
+        subjects = filter(lambda x: len(x) > 0, subjects)
         subjects = unique(subjects)
 
     canon_name = []
@@ -233,23 +244,34 @@ def map_bgm(entry):
     canon_name.sort(key=lambda x: len(x) - x.isascii() * 10, reverse=True)
     names.sort(key=lambda x: len(x) - x.isascii() * 10, reverse=True)
     names = canon_name + names
+    names = unique(names)
 
     match = []
     for i in names:
         if i in moe_lookup:
             for j in moe_lookup[i]:
-                name = j[0]
-                if name not in revserse_special:
-                    split = j[2]
-                    if split is None:
-                        match.append((j[0], j[1]))
-                    else:
-                        score = 0.5
-                        score += smatch(split[1], subjects) + smatch(split[2], subjects)
-                        if split[2] == "":
-                            score += 0.5
-                        match.append((j[0], score))
+                moeid = j[0]
+                score = j[1]
+                if moeid in revserse_special:
+                    continue
+                moesub = moe_subjects[moeid]
+                # print(moeid, moesub)
+                if len(moesub) > 0 and len(subjects) > 0:
+                    subscore = 0
+                    for k in moesub:
+                        subscore += smatch(k, subjects)
+                    # if subscore == 0:
+                    #     continue
+                    score += subscore * 2
+                match.append((moeid, score, moesub))
     match.sort(reverse=True, key=lambda x: x[1])
+    # print()
+    # print(names)
+    # print(subjects)
+    # for i in match:
+    #     print(i)
+    # input()
+
     dedupe = set()
     match2 = []
     for i in match:
@@ -306,7 +328,7 @@ def map_bgm(entry):
                 score += 3
         if "身高" in char and height:
             if abs(char["身高"] - height) <= 1:
-                score += 1
+                score += 3
         if "血型" in char and bloodtype:
             if char["血型"] == bloodtype:
                 score += 1
@@ -318,22 +340,49 @@ def map_bgm(entry):
     return match2
 
 
+for k, v in char2subject.items():
+    tmp = []
+    for i in v[1:]:
+        if i.endswith('的页面'):
+            continue
+        if i.endswith('系列角色'):
+            tmp.append(i[:-4])
+        elif i.endswith('系列'):
+            tmp.append(i[:-2])
+        if i not in tmp:
+            tmp.append(i)
+    char2subject[k] = tmp
+
+
+moe_lookup = {}
+moe_subjects = {}
 for i in moegirl_chars:
     name, pre, post = moegirl_split(i)
+
+    subjects = []
+    if pre != "":
+        subjects.append(pre)
+    if i in char2subject:
+        subjects.extend(char2subject[i])
+    if post != "":
+        subjects.append(post)
+    subjects = unique(subjects)
+    moe_subjects[i] = subjects
+
     if name not in moe_lookup:
         moe_lookup[name] = []
-    moe_lookup[name].append((i, 1, (name, pre, post)))
+    moe_lookup[name].append((i, 1))
     if i in moegirl_extra:
         char = moegirl_extra[i]
         if "本名" in char:
             for idx, j in enumerate(char["本名"]):
-                j = j.replace(" ", "").lower()
+                j = j.replace(" ", "").lower().strip('"\'')
                 j = converter2.convert(converter.convert(j))
                 if "不明" in j or "未知" in j or "不详" in j:
                     continue
                 if j not in moe_lookup:
                     moe_lookup[j] = []
-                moe_lookup[j].append((i, 1 / (idx + 3), None))
+                moe_lookup[j].append((i, 1 / (idx + 2)))
 
 bgm2moegirl = {}
 moegirl2bgm = {}
@@ -359,7 +408,8 @@ for cnt, i in enumerate(tqdm(bgm_index)):
     # print('\'{}\':'.format(bgm_id), moegirl_ids, '#', i['name'])
     tmp = []
     # print(moegirl_ids)
-    for moegirl_id, score in moegirl_ids:
+    for res in moegirl_ids:
+        moegirl_id, score = res[0], res[1]
         tmp.append(moegirl_id)
         if moegirl_id not in moegirl2bgm:
             moegirl2bgm[moegirl_id] = []
@@ -374,21 +424,29 @@ for k, v in revserse_special.items():
     else:
         moegirl2bgm[k] = [(v, 19260817, -1)]
 
-print("successful bgm2moegirl: {}/{}".format(len(bgm_index) - nonecount, len(bgm_index)))
+print(
+    "successful bgm2moegirl: {}/{}".format(len(bgm_index) - nonecount, len(bgm_index))
+)
 print(f"multi={multicount} none={nonecount}")
 
 multicount2 = 0
 
+moegirl2bgm2={}
 for k, v in moegirl2bgm.items():
+    v = v.copy()
     v.sort(key=lambda x: x[2])
     v.sort(reverse=True, key=lambda x: x[1])
+    # if len(v) > 1:
+    #     v = list(filter(lambda x: x[1] > 1, v))
+    # if len(v) == 0:
+        # continue
     if len(v) > 1:
-        print(list(map(lambda x: str([bgm_chars[x[0]]["name"]] + list(x)[1:]), v)))
+        print(k, list(map(lambda x: str([bgm_chars[x[0]]["name"]] + list(x)), v)))
         multicount2 += 1
-    moegirl2bgm[k] = list(map(lambda x: x[0], v))
+    moegirl2bgm2[k] = list(map(lambda x: x[0], v))
 
-print("successful moegirl2bgm: {}/{}".format(len(moegirl2bgm), len(moegirl_chars)))
-print(f"multi={multicount2} none={len(moegirl_chars)-len(moegirl2bgm)}")
+print("successful moegirl2bgm: {}/{}".format(len(moegirl2bgm2), len(moegirl_chars)))
+print(f"multi={multicount2} none={len(moegirl_chars)-len(moegirl2bgm2)}")
 
 save_json(bgm2moegirl, "bgm2moegirl.json")
-save_json(moegirl2bgm, "moegirl2bgm.json")
+save_json(moegirl2bgm2, "moegirl2bgm.json")

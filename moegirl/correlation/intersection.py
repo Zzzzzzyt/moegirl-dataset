@@ -6,21 +6,17 @@ from tqdm import tqdm
 
 attr2char = json.load(open('../preprocess/attr2char.json', encoding='utf-8'))
 
-char_index = json.load(open('../preprocess/char_index.json', encoding='utf-8'))
-attr_index = json.load(open('../preprocess/attr_index.json', encoding='utf-8'))
+chars = json.load(open('../preprocess/char_index.json', encoding='utf-8'))
+attrs = json.load(open('../preprocess/attr_index.json', encoding='utf-8'))
 
-chars = []
 charmap = {}
-attrs = []
 attrmap = {}
-for i in char_index:
-    charmap[i] = len(chars)
-    chars.append(i)
-for i in attr_index:
+for idx,i in enumerate(chars):
+    charmap[i] = idx
+for idx,i in enumerate(attrs):
     # if len(attr2char[i]) < 100:
     #     continue
-    attrmap[i] = len(attrs)
-    attrs.append(i)
+    attrmap[i] = idx
 
 char_count = len(chars)
 attr_count = len(attrs)
@@ -50,7 +46,7 @@ with tqdm(total=attr_count*(attr_count-1)//2+attr_count) as pbar:
             # result.append((attrs[i], attrs[j], chi2, table))
             pbar.update(1)
 
-json.dump(attrs, open('attr_ids.json', 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
+# json.dump(attrs, open('attr_ids.json', 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 np.save(open('intersection.npy', 'wb'), intersection, allow_pickle=False)
 np.save(open('cross.npy', 'wb'), cross, allow_pickle=False)
 np.save(open('count.npy', 'wb'), count, allow_pickle=False)

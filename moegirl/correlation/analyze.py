@@ -10,11 +10,11 @@ from mplfonts import use_font
 
 use_font('Noto Sans CJK SC')
 
-attrs = json.load(open('attr_ids.json', encoding='utf-8'))
+attrs = json.load(open('../preprocess/attr_index.json', encoding='utf-8'))
 chars = json.load(open('../preprocess/char_index.json', encoding='utf-8'))
 P = np.load(open('intersection.npy', 'rb'))
 gain = np.load(open('gain.npy', 'rb'))
-phi = np.load(open('phi.npy', 'rb'))
+chi2 = np.load(open('chi2.npy', 'rb'))
 attr_count = len(attrs)
 char_count = len(chars)
 attrmap = {}
@@ -35,14 +35,16 @@ for i in bgm_index:
         l.append((mapped[0], i['id']))
 
 char2attr = json.load(open('../preprocess/char2attr.json', encoding='utf-8'))
-subset = json.load(open('../subset/subset/jojo_subset.json', encoding='utf-8'))
+# subset=list(char2attr.keys())
+subset = json.load(open('../subset/subset/blue_archive_subset.json', encoding='utf-8'))
+# subset = json.load(open('../subset/subset/jojo_subset.json', encoding='utf-8'))
 # touhou_set += json.load(open('../subset/subset/touhou_old_subset.json', encoding='utf-8'))
 
 # attrid = attrmap['傲娇']
 # res = []
 # for i in range(attr_count):
 #     # if i[-1] in hair_color_attr:
-#     # print(i, attrs[i], phi[attrid][i])
+#     # print(i, attrs[i], chi2[attrid][i])
 #     if P[i][attrid]>=20:
 #         res.append((gain[i][attrid], attrs[i], P[i][attrid]))
 # res.sort()

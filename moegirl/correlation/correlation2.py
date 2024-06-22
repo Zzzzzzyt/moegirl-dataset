@@ -2,7 +2,7 @@ import json
 import numpy as np
 from tqdm import tqdm
 
-attrs = json.load(open("attr_ids.json", encoding="utf-8"))
+attrs = json.load(open("../preprocess/attr_index.json", encoding="utf-8"))
 chars = json.load(open("../preprocess/char_index.json", encoding="utf-8"))
 P = np.load(open("intersection.npy", "rb"))
 attr_count = len(attrs)
@@ -39,15 +39,15 @@ def calc(x, y):
     return ((pxy / pxx) / (pyy / char_count), pxy, pxx, pxy / pxx)
 
 
-def calc_phi(x, y):
+def calc_chi2(x, y):
     pxx = float(P[x][x])
     pyy = float(P[y][y])
     p11 = float(P[x][y])
     p10 = pxx - p11
     p01 = pyy - p11
     p00 = char_count - p11 - p10 - p01
-    phi = (p11 * p00 - p10 * p01) / (pxx * pyy * (char_count - pxx) * (char_count - pyy)) ** 0.5
-    return phi
+    chi2 = (p11 * p00 - p10 * p01) / (pxx * pyy * (char_count - pxx) * (char_count - pyy)) ** 0.5
+    return chi2
 
 
 def calc_name(x, y):
@@ -67,15 +67,15 @@ def calc_name(x, y):
 
 
 gain = np.zeros(shape=[attr_count, attr_count], dtype=np.float32)
-phi = np.zeros(shape=[attr_count, attr_count], dtype=np.float32)
+chi2 = np.zeros(shape=[attr_count, attr_count], dtype=np.float32)
 contain = np.zeros(shape=[attr_count, attr_count], dtype=np.bool8)
 with tqdm(total=attr_count * (attr_count - 1) // 2 + attr_count) as pbar:
     for i in range(attr_count):
         for j in range(i, attr_count):
             gain[i][j] = calc(i, j)[0]
             gain[j][i] = gain[i][j]
-            phi[i][j] = calc_phi(i, j)
-            phi[j][i] = phi[i][j]
+            chi2[i][j] = calc_chi2(i, j)
+            chi2[j][i] = chi2[i][j]
             # result.append((attrs[i], attrs[j], chi2, table))
             if i == j:
                 contain[i][j] = True
@@ -91,4 +91,4 @@ with tqdm(total=attr_count * (attr_count - 1) // 2 + attr_count) as pbar:
 
 np.save(open("contain.npy", "wb"), contain)
 np.save(open("gain.npy", "wb"), gain)
-np.save(open("phi.npy", "wb"), phi)
+np.save(open("chi2.npy", "wb"), chi2)
