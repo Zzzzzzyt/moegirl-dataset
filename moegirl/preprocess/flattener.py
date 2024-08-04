@@ -35,6 +35,7 @@ def dfs(data: dict, ret: dict, stk: list, no_further: bool = False):
     global attr_index, attr_index_set
     global cv_index, cv_index_set
     global char_index, char_index_set
+    global attr2article
     if "name" in data and not no_further:
         attr_name = data["name"]
         if (
@@ -52,6 +53,16 @@ def dfs(data: dict, ret: dict, stk: list, no_further: bool = False):
             else:
                 attr_index_set.add(attr_name)
                 attr_index.append(attr_name)
+                if 'article' in data:
+                    url = data['article']['url']
+                    if 'redlink' not in url:
+                        attr2article[attr_name] = url
+                    # print(data['article'])
+                else:
+                    for i in range(len(stk) - 1, -1, -1):
+                        if stk[i] in attr2article:
+                            attr2article[attr_name] = attr2article[stk[i]]
+                            break
             stk.append(attr_name)
         # if attr_name not in ['按角色特征分类', '按声优分类']:
     # print(stk)
@@ -72,6 +83,7 @@ def dfs(data: dict, ret: dict, stk: list, no_further: bool = False):
         dfs(i, ret, stk.copy(), no_further)
 
 
+attr2article = {}
 attr_index = []
 attr_index_set = set()
 char_index = []
@@ -131,12 +143,26 @@ for k, v in cv2char.items():
         print("wtf???", k)
 
 attr_index2 = []
+attr2article2 = {}
 for name in attr_index:
     if name not in attr2char:
         continue
     if len(attr2char[name]) == 0:
         continue
     attr_index2.append(name)
+    if name in attr2article:
+        attr2article2[name] = attr2article[name]
+    else:
+        if name.startswith('第一人称'):
+            attr2article2[name] = '/特殊第一人称'
+        elif name.startswith('第二人称'):
+            attr2article2[name] = '/特殊第二人称'
+        elif name in ['AB型', 'A型', 'B型', 'O型']:
+            attr2article2[name] = '/ABO血型'
+        elif name in ['RH-O型', 'RH型']:
+            attr2article2[name] = '/稀有血型'
+        else:
+            print('no article:', name)
 # attr_index2.sort()
 # attr_index2 = dict(sorted(attr_index2, key=lambda x: len(attr2char[x])))
 
@@ -160,6 +186,7 @@ for name in cv_index:
 # cv_index2.sort()
 # cv_index2 = dict(sorted(char_index2, key=lambda x: len(cv2char[x])))
 
+
 attr2char = dict(sorted(attr2char.items(), key=lambda x: len(x[1])))
 char2attr = dict(sorted(char2attr.items(), key=lambda x: len(x[1])))
 save_json(attr2char, "attr2char.json")
@@ -168,8 +195,11 @@ save_json(char2cv, "char2cv.json")
 save_json(cv2char, "cv2char.json")
 
 print("attribute count: {}".format(len(attr_index2)))
+print("article count: {}".format(len(attr2article2)))
 print("cv count: {}".format(len(cv_index2)))
 print("character count: {}".format(len(char_index2)))
+
 save_json(char_index2, "char_index.json")
 save_json(attr_index2, "attr_index.json")
 save_json(cv_index2, "cv_index.json")
+save_json(attr2article2, "attr2article.json")
