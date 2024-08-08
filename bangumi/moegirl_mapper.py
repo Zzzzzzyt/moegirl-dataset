@@ -4,7 +4,7 @@ import opencc
 import os
 from tqdm import tqdm
 
-from utils.file import save_json
+from utils.file import load_json, save_json
 
 
 special_map = {
@@ -52,39 +52,72 @@ special_map = {
     "223": "露易丝(零之使魔)",  # ルイズ・フランソワーズ・ル・ブラン・ド・ラ・ヴァリエール
     "855": "爱尔奎特·布伦史塔德",  # アルクェイド・ブリュンスタッド
     "12423": None,  # 杨威利ヤン・ウェンリー
+    '87184': 'トワ',
 }
 # special_map = {}
 
 revserse_special = {
-    "温妮莎": None,
-    "拉娜(原神)": None,
-    "阿佩普": None,
-    "太郎丸(原神)": None,
-    "查尔斯·狄更斯": None,
-    "亚丝拉琪(崩坏系列)": None,
-    "琥珀(崩坏系列)": None,
-    "德尔塔(崩坏3)": None,
-    "史丹": None,
-    "空(崩坏系列)": None,
-    "薇塔": None,
-    "岚(星穹铁道)": None,
-    "明日方舟:九": None,
-    "明日方舟:博士": 71016,
-    "明日方舟:福尔图娜": None,
-    "明日方舟:ACE": None,
-    "明日方舟:可萝尔": None,
-    "明日方舟:Scout": None,
-    "明日方舟:“剧作家”": None,
-    "明日方舟:米莎": 117894,
-    "明日方舟:皇帝": 70847,
-    "明日方舟:罗伊": None,
-    "明日方舟:郁金香": None,
-    "明日方舟:达莉娅": None,
-    # "明日方舟:科西切":89236,
-    # "明日方舟:文月":70846,
-    "明日方舟:火龙": None,
-    "明日方舟:杜玛": None,
+    # "温妮莎": None,
+    # "拉娜(原神)": None,
+    # "阿佩普": None,
+    # "太郎丸(原神)": None,
+    # "查尔斯·狄更斯": None,
+    # "亚丝拉琪(崩坏系列)": None,
+    # "琥珀(崩坏系列)": None,
+    # "德尔塔(崩坏3)": None,
+    # "史丹": None,
+    # "空(崩坏系列)": None,
+    # "薇塔": None,
+    # "岚(星穹铁道)": None,
+    # "明日方舟:九": None,
+    # "明日方舟:博士": "71016",
+    # "明日方舟:福尔图娜": None,
+    # "明日方舟:ACE": None,
+    # "明日方舟:可萝尔": None,
+    # "明日方舟:Scout": None,
+    # "明日方舟:“剧作家”": None,
+    # "明日方舟:米莎": 117894,
+    # "明日方舟:皇帝": 70847,
+    # "明日方舟:罗伊": None,
+    # "明日方舟:郁金香": None,
+    # "明日方舟:达莉娅": None,
+    # # "明日方舟:科西切":89236,
+    # # "明日方舟:文月":70846,
+    # "明日方舟:火龙": None,
+    # "明日方舟:杜玛": None,
+    '碧蓝航线:22': '10849',
+    '碧蓝航线:33': '10850',
+    'Towa': '87184',
+    'トワ': '87184',
+    '小不点(LoveLive!)': '110647',
+    '芙蕾雅(上古卷轴)': None,
+    '菲兹·艾贝琳': None,
 }
+
+# bgm <-> moegirl
+subject_map = [
+    (['原神'], ['原神']),
+    (['崩坏3'], ['崩坏3']),
+    (['崩坏：星穹铁道'], ['崩坏：星穹铁道']),
+    (['阴阳师'], ['阴阳师(手游)']),
+    (['舰队Collection'], ['舰队Collection舰娘']),
+    (['战舰少女R'], ['战舰少女']),
+    (['明日方舟'], ['明日方舟角色']),
+    (['碧蓝航线'], ['碧蓝航线']),
+    (['Blue Archive'], ['蔚蓝档案']),
+    (['ONE PIECE'], ['海贼王']),
+]
+
+subject_special = {}
+
+subject_reverse_special = {}
+
+for k, v in subject_map:
+    for i in k:
+        subject_special[i] = set(v)
+    for i in v:
+        subject_reverse_special[i] = set(k)
+
 for k, v in special_map.items():
     if v is not None:
         revserse_special[v] = k
@@ -100,30 +133,24 @@ bgm_index = None
 bgm_chars = None
 bgm_subjects = None
 if use_160k:
-    bgm_index = json.load(open("bgm_index_160k.json", encoding="utf-8"))
-    bgm_chars = json.load(open("bgm_chars_160k.json", encoding="utf-8"))
-    bgm_subjects = json.load(open("bgm_subjects_160k.json", encoding="utf-8"))
+    bgm_index = load_json("bgm_index_160k.json")
+    bgm_chars = load_json("bgm_chars_160k.json")
+    bgm_subjects = load_json("bgm_subjects_160k.json")
 else:
     print("160k not found. falling back to 20k.")
-    bgm_index = json.load(open("bgm_index_20k.json", encoding="utf-8"))
-    bgm_chars = json.load(open("bgm_chars_20k.json", encoding="utf-8"))
-    bgm_subjects = json.load(open("bgm_subjects_20k.json", encoding="utf-8"))
+    bgm_index = load_json("bgm_index_20k.json")
+    bgm_chars = load_json("bgm_chars_20k.json")
+    bgm_subjects = load_json("bgm_subjects_20k.json")
 
 print("loaded: bgm_index:", len(bgm_index))
 print("loaded: bgm_chars:", len(bgm_chars))
 print("loaded: bgm_subjects:", len(bgm_subjects))
 
-moegirl_chars = json.load(
-    open("../moegirl/preprocess/char_index.json", encoding="utf-8")
-)
+moegirl_chars = load_json("../moegirl/preprocess/char_index.json")
 print("loaded: moegirl_chars:", len(moegirl_chars))
-moegirl_extra = json.load(
-    open("../moegirl/crawler2/extra_processed.json", encoding="utf-8")
-)
+moegirl_extra = load_json("../moegirl/crawler2/extra_processed.json")
 print("loaded: moegirl_extra:", len(moegirl_extra))
-char2subject = json.load(
-    open("../moegirl/preprocess/char2subject.json", encoding="utf-8")
-)
+char2subject = load_json("../moegirl/preprocess/char2subject.json")
 print("loaded: char2subject:", len(char2subject))
 
 
@@ -206,15 +233,12 @@ def map_bgm(entry):
         else:
             return [(special, 19260817)]
 
-    subjects = []
-    if id in bgm_subjects:
-        for i in bgm_subjects[id]:
-            if i["staff"] == "客串":
-                continue
-            subjects.append(i["name_cn"])
-            subjects.append(i["name"])
-        subjects = filter(lambda x: len(x) > 0, subjects)
-        subjects = unique(subjects)
+    subjects = bgm_subjects2[id]
+
+    moe_subjects_special = set()
+    for i in subjects:
+        if i in subject_special:
+            moe_subjects_special.update(subject_special[i])
 
     canon_name = []
     names = []
@@ -256,21 +280,33 @@ def map_bgm(entry):
                     continue
                 moesub = moe_subjects[moeid]
                 # print(moeid, moesub)
-                if len(moesub) > 0 and len(subjects) > 0:
-                    subscore = 0
+                if len(moe_subjects_special) == 0:
+                    if len(moesub) > 0 and len(subjects) > 0:
+                        subscore = 0
+                        for k in moesub:
+                            subscore += smatch(k, subjects)
+                        # if subscore == 0:
+                        #     continue
+                        score += subscore * 2
+                    match.append((moeid, score, moesub))
+                else:
+                    flag = False
                     for k in moesub:
-                        subscore += smatch(k, subjects)
-                    # if subscore == 0:
-                    #     continue
-                    score += subscore * 2
-                match.append((moeid, score, moesub))
+                        if k in moe_subjects_special:
+                            flag = True
+                    if flag:
+                        match.append((moeid, score + 100, moesub))
     match.sort(reverse=True, key=lambda x: x[1])
-    # print()
-    # print(names)
-    # print(subjects)
-    # for i in match:
-    #     print(i)
-    # input()
+
+    # if len(moe_subjects_special):
+    # if '莫里' in names:
+    # if 'bilibili-33' in names:
+    #     print()
+    #     print('names', names)
+    #     print('subjects', subjects)
+    #     for i in match:
+    #         print(i)
+    #     input()
 
     dedupe = set()
     match2 = []
@@ -338,6 +374,22 @@ def map_bgm(entry):
     # ret = list(map(lambda x: x[0], match2))
     # ret = unique(ret)
     return match2
+
+
+bgm_subjects2 = {}
+
+for entry in bgm_index:
+    id = str(entry["id"])
+    subjects = []
+    if id in bgm_subjects:
+        for i in bgm_subjects[id]:
+            # if i["staff"] == "客串":
+            #     continue
+            subjects.append(i["name_cn"])
+            subjects.append(i["name"])
+        subjects = filter(lambda x: len(x) > 0, subjects)
+        subjects = unique(subjects)
+    bgm_subjects2[entry["id"]] = subjects
 
 
 for k, v in char2subject.items():
@@ -417,6 +469,33 @@ for cnt, i in enumerate(tqdm(bgm_index)):
             moegirl2bgm[moegirl_id].append((bgm_id, score, cnt))
     bgm2moegirl[bgm_id] = tmp
 
+for k, v in moegirl2bgm.items():
+    if k not in char2subject:
+        continue
+    moesub = char2subject[k]
+    bgmsub = set()
+    for sub in moesub:
+        if sub in subject_reverse_special:
+            bgmsub.update(subject_reverse_special[sub])
+    if len(bgmsub) > 0:
+        # print(moesub)
+        # print(bgmsub)
+        # print(k, list(map(lambda x: [bgm_chars[x[0]]["name"]] + list(x), v)))
+        v2 = []
+        for i in v:
+            # print(v, bgm_subjects2[i[0]])
+            flag = False
+            for j in bgm_subjects2[i[0]]:
+                if j in bgmsub:
+                    flag = True
+                    break
+            if flag:
+                v2.append(i)
+        moegirl2bgm[k] = v2
+        # print(list(map(lambda x: [bgm_chars[x[0]]["name"]] + list(x), v2)))
+        # print()
+
+
 for k, v in revserse_special.items():
     # print(k, v)
     if v is None:
@@ -431,17 +510,17 @@ print(f"multi={multicount} none={nonecount}")
 
 multicount2 = 0
 
-moegirl2bgm2={}
+moegirl2bgm2 = {}
 for k, v in moegirl2bgm.items():
     v = v.copy()
     v.sort(key=lambda x: x[2])
     v.sort(reverse=True, key=lambda x: x[1])
     # if len(v) > 1:
     #     v = list(filter(lambda x: x[1] > 1, v))
-    # if len(v) == 0:
-        # continue
+    if len(v) == 0:
+        continue
     if len(v) > 1:
-        print(k, list(map(lambda x: str([bgm_chars[x[0]]["name"]] + list(x)), v)))
+        # print(k, list(map(lambda x: str([bgm_chars[x[0]]["name"]] + list(x)), v)))
         multicount2 += 1
     moegirl2bgm2[k] = list(map(lambda x: x[0], v))
 
@@ -450,3 +529,5 @@ print(f"multi={multicount2} none={len(moegirl_chars)-len(moegirl2bgm2)}")
 
 save_json(bgm2moegirl, "bgm2moegirl.json")
 save_json(moegirl2bgm2, "moegirl2bgm.json")
+
+os.system('python -u img_preloader.py')
