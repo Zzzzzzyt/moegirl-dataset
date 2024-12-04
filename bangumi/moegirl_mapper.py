@@ -224,7 +224,7 @@ def smatch(moename, subjects):
     return cnt
 
 
-def map_bgm(entry):
+def map_bgm(entry, verbose=False):
     id = str(entry["id"])
     if id in special_map:
         special = special_map[id]
@@ -237,6 +237,8 @@ def map_bgm(entry):
 
     moe_subjects_special = set()
     for i, w in subjects:
+        if w < 0.5:
+            continue
         if i in subject_special:
             moe_subjects_special.update(subject_special[i])
 
@@ -280,16 +282,16 @@ def map_bgm(entry):
                     continue
                 moesub = moe_subjects[moeid]
                 # print(moeid, moesub)
-                if len(moe_subjects_special) == 0:
-                    if len(moesub) > 0 and len(subjects) > 0:
-                        subscore = 0
-                        for k in moesub:
-                            subscore += smatch(k, subjects)
-                        # if subscore == 0:
-                        #     continue
-                        score += subscore * 2
-                    match.append((moeid, score, moesub))
-                else:
+                if len(moesub) > 0 and len(subjects) > 0:
+                    subscore = 0
+                    for k in moesub:
+                        subscore += smatch(k, subjects)
+                    # if subscore == 0:
+                    #     continue
+                    score += subscore * 2
+                match.append((moeid, score, moesub))
+
+                if len(moe_subjects_special) > 0:
                     flag = False
                     for k in moesub:
                         if k in moe_subjects_special:
@@ -298,24 +300,20 @@ def map_bgm(entry):
                         match.append((moeid, score + 100, moesub))
     match.sort(reverse=True, key=lambda x: x[1])
 
-    # if len(moe_subjects_special):
-    # if '莫里' in names:
-    # if 'bilibili-33' in names:
-    #     print()
-    #     print('names', names)
-    #     print('subjects', subjects)
-    #     for i in match:
-    #         print(i)
-    #     input()
-
-    dedupe = set()
+    dedupe = {}
     match2 = []
     for i in match:
         if i[0] in dedupe:
-            continue
-        dedupe.add(i[0])
-        match2.append(i)
-    # print(match2)
+            dedupe[i[0]] = (i[0], max(i[1], dedupe[i[0]][1]), i[2])
+        else:
+            dedupe[i[0]] = i
+
+    for k, v in dedupe.items():
+        match2.append(v)
+
+    if verbose:
+        print('first stage:', match2)
+
     birthday = None
     bloodtype = None
     height = None
@@ -370,7 +368,10 @@ def map_bgm(entry):
                 score += 1
         match2[idx] = (mid, score)
     match2.sort(reverse=True, key=lambda x: x[1])
-    # print(match2)
+
+    if verbose:
+        print('second stage:', match2)
+
     # ret = list(map(lambda x: x[0], match2))
     # ret = unique(ret)
     return match2
@@ -439,9 +440,12 @@ for i in moegirl_chars:
                     moe_lookup[j] = []
                 moe_lookup[j].append((i, 1 / (idx + 2)))
 
+# print(map_bgm(bgm_index[64], verbose=True))
+# os._exit(0)
+
 bgm2moegirl = {}
 moegirl2bgm = {}
-# bgm_index = bgm_index[:250]
+# bgm_index = bgm_index[:200]
 
 multicount = 0
 nonecount = 0
@@ -457,8 +461,6 @@ for cnt, i in enumerate(tqdm(bgm_index)):
             nonecount += 1
         elif len(moegirl_ids) > 1:
             multicount += 1
-    # if len(moegirl_ids) != 1:
-    # pass
     # print(cnt, bgm_id, i['name'], moegirl_ids)
     # print('\'{}\':'.format(bgm_id), moegirl_ids, '#', i['name'])
     tmp = []
