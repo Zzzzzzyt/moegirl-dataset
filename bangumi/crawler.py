@@ -16,16 +16,16 @@ headers = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
     'Accept-Encoding': 'gzip, deflate, br',
     'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7',
-    'Connection': 'keep-alive',
     'User-Agent': 'Zzzyt/MoeRanker (https://github.com/Zzzzzzyt/MoeRanker)',
+    # 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
 }
-cooldown = 2
+cooldown = 3
 TIMEOUT = 10
 
 # requests.adapters.DEFAULT_RETRIES = 10
 
 ses = requests.Session()
-retry = Retry(total=10)
+retry = Retry(total=10, backoff_factor=cooldown, backoff_max=10)
 ses.mount('https', HTTPAdapter(max_retries=retry))
 
 
@@ -38,6 +38,7 @@ def crawl_index(count):
                 f'https://bgm.tv/character?orderby=collects&page={i+1}',
                 bar,
                 cooldown=cooldown,
+                headers=headers,
             )
             chars = soup.find(id='columnCrtBrowserB').find_all('div')[1]
             for char in chars.children:
@@ -66,8 +67,12 @@ def crawl_characters(index):
             id = i['id']
             bar.set_description('{} {}'.format(i['name'], id))
             data = json.loads(
-                safe_get(f'https://api.bgm.tv/v0/characters/{id}', bar).text,
-                cooldown=cooldown,
+                safe_get(
+                    f'https://api.bgm.tv/v0/characters/{id}',
+                    bar,
+                    headers=headers,
+                    cooldown=cooldown,
+                ).text,
             )
             ret[id] = data
     except BaseException as e:
@@ -137,12 +142,12 @@ def download_thumnail(index, chars):
 
 
 # index = crawl_index(9999)
-# save_json(index, 'bgm_index_20k_new.json')
-# index = json.load(open("bgm_index_20k.json", encoding='utf-8'))
+# save_json(index, 'bgm_index_20k.json')
+index = json.load(open("bgm_index_20k.json", encoding='utf-8'))
 # # print(index)
-# chars, e = crawl_characters(index[17600:])
+# chars, e = crawl_characters(index)
 # # print(chars, e)
-# save_json(chars, 'bgm_chars_20k_2.json')
+# save_json(chars, 'bgm_chars_20k.json')
 
 # subjects, e = crawl_subjects(index)
 # print(subjects, e)
@@ -151,7 +156,12 @@ def download_thumnail(index, chars):
 # chars = json.load(open('bgm_chars_120k.json', encoding='utf-8'))
 # download_thumnail(index[:10000], chars)
 
-for i in list(range(20, 161)):
+# set20k = set()
+# for i in index:
+#     id = i['id']
+#     set20k.add(id)
+
+for i in list(range(1, 169)):
     print(f'crawl: {(i-1)*1000+1} - {i*1000}')
     fname = f'160k_chars/bgm_chars_160k_{i}.json'
     if os.path.exists(fname):
@@ -167,19 +177,28 @@ for i in list(range(20, 161)):
     if type(e) == KeyboardInterrupt:
         break
 
-
-# for i in list(range(1, 161)):
-#     print(f'crawl: {(i-1)*1000+1} - {i*1000}')
+# for i in range(1,169):
 #     fname = f'160k_subjects/bgm_subjects_160k_{i}.json'
 #     if os.path.exists(fname):
 #         crawled = json.load(open(fname, encoding='utf-8'))
-#     else:
-#         crawled = {}
-#     subjects, e = crawl_bangumi_id(
-#         range((i - 1) * 1000 + 1, i * 1000 + 1),
-#         'https://api.bgm.tv/v0/characters/{}/subjects',
-#         crawled,
-#     )
-#     save_json(subjects, fname)
-#     if type(e) == KeyboardInterrupt:
-#         break
+#         for id in set20k:
+#             if id in crawled:
+#                 del crawled[id]
+#         save_json(crawled, fname)
+
+
+for i in list(range(1, 169)):
+    print(f'crawl: {(i-1)*1000+1} - {i*1000}')
+    fname = f'160k_subjects/bgm_subjects_160k_{i}.json'
+    if os.path.exists(fname):
+        crawled = json.load(open(fname, encoding='utf-8'))
+    else:
+        crawled = {}
+    subjects, e = crawl_bangumi_id(
+        range((i - 1) * 1000 + 1, i * 1000 + 1),
+        'https://api.bgm.tv/v0/characters/{}/subjects',
+        crawled,
+    )
+    save_json(subjects, fname)
+    if type(e) == KeyboardInterrupt:
+        break

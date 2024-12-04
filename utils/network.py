@@ -10,7 +10,7 @@ from requests.adapters import HTTPAdapter
 requests.adapters.DEFAULT_RETRIES = 3
 
 global_session = requests.Session()
-retry = Retry(total=10)
+retry = Retry(total=10, backoff_factor=3, backoff_max=10)
 global_session.mount('https', HTTPAdapter(max_retries=retry))
 global_session.mount('http', HTTPAdapter(max_retries=retry))
 

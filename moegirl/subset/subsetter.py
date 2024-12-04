@@ -45,7 +45,7 @@ def dfs(d):
 #     print(i)
 
 save_json(
-    list(dfs(load_json('../crawler/subset/vocaloid.json'))), 'vocaloid_subset.json'
+    list(dfs(load_json('../crawler/subset/vocaloid.json'))), 'subset/vocaloid_subset.json'
 )
 
 save_json(

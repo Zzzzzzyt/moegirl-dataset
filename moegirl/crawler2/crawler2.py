@@ -43,7 +43,7 @@ cookies = os.getenv("MOEGIRL_COOKIES")
 print('cookies:', cookies)
 print()
 headers['Cookie'] = cookies
-cooldown = 8
+cooldown = 5
 
 converter = opencc.OpenCC("t2s.json")
 
@@ -176,7 +176,7 @@ def gen_cache_name(name):
 
 def parse(name):
     cache_name = gen_cache_name(name)
-    cache_name = f'raw2/{cache_name}.txt'
+    cache_name = f'raw/{cache_name}.txt'
     if os.path.exists(cache_name):
         # print('cache hit: '+cache_name)
         wikitext = open(cache_name, encoding="utf-8").read()
@@ -244,7 +244,7 @@ def parse(name):
 
 def crawl(name, bar):
     cache_name = gen_cache_name(name)
-    cache_name = f'raw2/{cache_name}.txt'
+    cache_name = f'raw/{cache_name}.txt'
     if os.path.exists(cache_name):
         # bar.write(name + ' exists.')
         return
@@ -266,22 +266,21 @@ def crawl(name, bar):
 
 
 char_index = json.load(open("../preprocess/char_index.json", encoding="utf-8"))
-with tqdm(char_index) as bar:
-    for i in bar:
-        bar.set_description(i)
-        # crawl(i, bar)
+# with tqdm(char_index) as bar:
+#     for i in bar:
+#         bar.set_description(i)
+#         crawl(i, bar)
 
-# extra_info = {}
-# bar = tqdm(char_index)
-# for idx, char in enumerate(bar):
-#     name = char["name"]
-#     # print(name, idx, '/', len(char_index))
-#     try:
-#         p = parse(name)
-#         if p is not None:
-#             extra_info[name] = p
-#     except KeyboardInterrupt as e:
-#         break
-#     bar.update(1)
-# bar.close()
-# save_json(extra_info, 'extra_info.json')
+extra_info = {}
+bar = tqdm(char_index)
+for idx, name in enumerate(bar):
+    # print(name, idx, '/', len(char_index))
+    try:
+        p = parse(name)
+        if p is not None:
+            extra_info[name] = p
+    except KeyboardInterrupt as e:
+        break
+    bar.update(1)
+bar.close()
+save_json(extra_info, 'extra_info.json')

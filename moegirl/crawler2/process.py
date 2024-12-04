@@ -174,8 +174,13 @@ def extract_text(
                 or name == "魔女文字"
                 or name.startswith("文字描边")
                 or name == "writing-mode"
+                or name == "文字模糊"
+                or name == "填空幕"
+                or name == "toggle 内联按钮"
+                or name == "文字外发光"
+                or name == "tja"
             ):
-                if len(code.params) > 0:
+                if len(code.params) >= 1:
                     ret.extend(extract_text(code.get(1).value))
                 else:
                     warnings.warn(
@@ -188,8 +193,10 @@ def extract_text(
                 name == "切换显示"
                 or name == "color"
                 or name == "coloredlink"
+                or name == "colorlink"
                 or name == "lang"
                 or name == "gradient_text"
+                or name == "cj"
             ):
                 ret.extend(extract_text(code.get(2).value))
             elif name == "ruby" or name == "rubyh":
@@ -242,8 +249,6 @@ def extract_text(
                         ret.extend(extract_text(code.get(3).value))
                     else:
                         ret.extend(extract_text(code.get(2).value))
-            elif name == "文字模糊":
-                ret.extend(extract_text(code.get(1).value))
             elif name == "astrology":
                 ret.append(
                     calc_zodiac(
@@ -265,6 +270,8 @@ def extract_text(
                 or name == "regionicon"
                 or name == "图片外链"
                 or name == "color_block/wl"
+                or name == "space"
+                or name == "nbsp"
             ):
                 pass
             elif len(code.params) == 0:

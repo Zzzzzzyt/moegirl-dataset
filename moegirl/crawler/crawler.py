@@ -59,6 +59,21 @@ RESET = '\033[0m'
 GREY = '\033[2m'
 
 
+def uncensor(name, url):
+    url2 = name.replace(' ', '_')
+    if url.startswith('/Category:'):
+        if '/Category:' + url2 != url:
+            ret = url[10:].replace('_', ' ')
+            print(url, url2, ret)
+            return ret, url
+    else:
+        if '/' + url2 != url:
+            ret = url[1:].replace('_', ' ')
+            print(url, url2, ret)
+            return ret, url
+    return name, url
+
+
 def parse_index(url, ret, stk=[], filter_function=None):
     global page_count
     if 'finished2' in ret:
@@ -102,6 +117,9 @@ def parse_index(url, ret, stk=[], filter_function=None):
                         'name': a.string,
                         'url': urllib.parse.unquote(a['href']),
                     }
+                    ret['article']['name'], ret['article']['url'] = uncensor(
+                        ret['article']['name'], ret['article']['url']
+                    )
 
                 subcategories_div = soup.find(id='mw-subcategories')
                 if subcategories_div != None:
@@ -116,6 +134,7 @@ def parse_index(url, ret, stk=[], filter_function=None):
                             'pages': [],
                             'subcategories': [],
                         }
+                        tmp['name'], tmp['url'] = uncensor(tmp['name'], tmp['url'])
                         ret['subcategories'].append(tmp)
 
                 pages_div = soup.find(id='mw-pages')
@@ -125,7 +144,9 @@ def parse_index(url, ret, stk=[], filter_function=None):
                     ):
                         url2 = a['href']
                         url2 = urllib.parse.unquote(url2)
-                        ret['pages'].append({'name': a.string, 'url': url2})
+                        tmp = {'name': a.string, 'url': url2}
+                        tmp['name'], tmp['url'] = uncensor(tmp['name'], tmp['url'])
+                        ret['pages'].append(tmp)
                         page_count += 1
 
                 next = soup.find_all('a', text='下一页')
@@ -261,19 +282,26 @@ def parse_index2(url, **args):
     return ret
 
 
-# def filter_func(stk):
-#     if len(stk) == 0:
-#         return True
-#     url = stk[-1]
-#     if url.endswith('模板'):
-#         return False
-#     if url.endswith('音乐作品'):
-#         return False
-#     if url.endswith('音乐'):
-#         if len(stk) >= 2 and url.replace('音乐', '') == stk[-2]:
-#             return False
-#     return True
+def filter_func(stk):
+    if len(stk) == 0:
+        return True
+    url = stk[-1]
+    if url.endswith('模板'):
+        return False
+    if url.endswith('音乐作品'):
+        return False
+    if url.endswith('音乐'):
+        if len(stk) >= 2 and url.replace('音乐', '') == stk[-2]:
+            return False
+    return True
 
+def filter_func2(stk):
+    if len(stk) == 0:
+        return True
+    url = stk[-1]
+    if '虚拟UP主组合' in url:
+        return False
+    return True
 
 # ret = load_json('subjects2.json')
 # # ret = {}
@@ -291,7 +319,7 @@ def parse_index2(url, **args):
 # parse_index('https://zh.moegirl.org.cn/Category:按着装特征分类', dedupe=filterset)
 # save_json(
 #     parse_index('https://zh.moegirl.org.cn/Category:虚拟人物', dedupe=filterset)[0],
-#     'temp/full3.json',
+#     'temp/full.json',
 # )
 
 # ret = load_json('attrs2.json')
@@ -300,13 +328,13 @@ def parse_index2(url, **args):
 #     parse_index(
 #         'https://zh.moegirl.org.cn/Category:虚拟人物',
 #         ret,
-#         # filter_function=filter_func,
+#         filter_function=filter_func2,
 #     )
 # except BaseException as e:
 #     pass
 # save_json(ret, 'attrs2.json')
 
-save_json(
-    parse_index2('https://zh.moegirl.org.cn/Category:按歌声合成软件分类'),
-    'subset/vocaloid.json',
-)
+# save_json(
+#     parse_index2('https://zh.moegirl.org.cn/Category:按歌声合成软件分类'),
+#     'subset/vocaloid.json',
+# )
