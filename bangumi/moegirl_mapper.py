@@ -218,9 +218,9 @@ def smatch(moename, subjects):
     if moename == "":
         return 0
     cnt = 0
-    for i in subjects:
-        if i.startswith(moename):
-            cnt += 1
+    for name, w in subjects:
+        if name == moename:
+            cnt += w
     return cnt
 
 
@@ -236,7 +236,7 @@ def map_bgm(entry):
     subjects = bgm_subjects2[id]
 
     moe_subjects_special = set()
-    for i in subjects:
+    for i, w in subjects:
         if i in subject_special:
             moe_subjects_special.update(subject_special[i])
 
@@ -383,12 +383,15 @@ for entry in bgm_index:
     subjects = []
     if id in bgm_subjects:
         for i in bgm_subjects[id]:
-            # if i["staff"] == "客串":
-            #     continue
-            subjects.append(i["name_cn"])
-            subjects.append(i["name"])
-        subjects = filter(lambda x: len(x) > 0, subjects)
-        subjects = unique(subjects)
+            score = 1
+            if i["staff"] == "客串":
+                score = 0.3
+            subjects.append((i["name_cn"], score))
+            subjects.append((i["name"], score * 0.5))
+
+    subjects = list(filter(lambda x: len(x[0]) > 0, subjects))
+    subjects.sort(key=lambda x: x[1], reverse=True)
+    subjects = unique(subjects)
     bgm_subjects2[entry["id"]] = subjects
 
 
@@ -459,14 +462,12 @@ for cnt, i in enumerate(tqdm(bgm_index)):
     # print(cnt, bgm_id, i['name'], moegirl_ids)
     # print('\'{}\':'.format(bgm_id), moegirl_ids, '#', i['name'])
     tmp = []
-    # print(moegirl_ids)
     for res in moegirl_ids:
         moegirl_id, score = res[0], res[1]
         tmp.append(moegirl_id)
         if moegirl_id not in moegirl2bgm:
             moegirl2bgm[moegirl_id] = []
-        if bgm_id not in moegirl2bgm[moegirl_id]:
-            moegirl2bgm[moegirl_id].append((bgm_id, score, cnt))
+        moegirl2bgm[moegirl_id].append((bgm_id, score, cnt))
     bgm2moegirl[bgm_id] = tmp
 
 for k, v in moegirl2bgm.items():
@@ -485,7 +486,7 @@ for k, v in moegirl2bgm.items():
         for i in v:
             # print(v, bgm_subjects2[i[0]])
             flag = False
-            for j in bgm_subjects2[i[0]]:
+            for j, w in bgm_subjects2[i[0]]:
                 if j in bgmsub:
                     flag = True
                     break
