@@ -153,7 +153,7 @@ index = json.load(open("bgm_index_20k.json", encoding='utf-8'))
 # print(subjects, e)
 # save_json(subjects, 'bgm_subjects.json')
 
-# chars = json.load(open('bgm_chars_120k.json', encoding='utf-8'))
+# chars = json.load(open('bgm_chars_160k.json', encoding='utf-8'))
 # download_thumnail(index[:10000], chars)
 
 # set20k = set()

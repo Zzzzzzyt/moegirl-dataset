@@ -4,4 +4,4 @@
 
 从[萌娘百科](https://zh.moegirl.org.cn/)与[Bangumi](https://bgm.tv/)爬取并整理的数据
 
-Bangumi 120k数据集较大，暂不提供
+Bangumi 160k数据集较大，暂不提供

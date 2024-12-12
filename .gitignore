@@ -152,12 +152,8 @@ cython_debug/
 #.idea/
 
 bangumi/images/
-bangumi/bgm_chars_120k.json
-bangumi/bgm_subjects_120k.json
 bangumi/bgm_chars_160k.json
 bangumi/bgm_subjects_160k.json
-bangumi/120k_subjects/
-bangumi/120k_chars/
 bangumi/160k_subjects/
 bangumi/160k_chars/
 moegirl/correlation/*.npy
