@@ -297,7 +297,7 @@ def map_bgm(entry, verbose=False):
                         if k in moe_subjects_special:
                             flag = True
                     if flag:
-                        match.append((moeid, score + 100, moesub))
+                        match.append((moeid, score + 1000, moesub))
     match.sort(reverse=True, key=lambda x: x[1])
 
     dedupe = {}
@@ -372,8 +372,30 @@ def map_bgm(entry, verbose=False):
     if verbose:
         print('second stage:', match2)
 
-    # ret = list(map(lambda x: x[0], match2))
-    # ret = unique(ret)
+    if len(match2) > 1:
+        mains = {}
+        for i in range(len(match2)):
+            name, pre, post = moegirl_split(match2[i][0])
+            if pre == "" and post == "" and match2[i][1] >= 3:
+                mains[name] = i
+        for main, idx in mains.items():
+            cnt = 0
+            wsum = 0
+            for i in match2:
+                name, pre, post = moegirl_split(i[0])
+                if name == main:
+                    cnt += 1
+                    wsum += i[1]
+            if cnt >= 2:
+                if verbose:
+                    print('possinle main:', main)
+                l = list(match2[idx])
+                l[1] = wsum
+                match2[idx] = tuple(l)
+            match2.sort(reverse=True, key=lambda x: x[1])
+            if verbose:
+                print('third stage:', match2)
+    
     return match2
 
 
@@ -445,7 +467,7 @@ for i in moegirl_chars:
 
 bgm2moegirl = {}
 moegirl2bgm = {}
-# bgm_index = bgm_index[:200]
+# bgm_index = bgm_index[:20000]
 
 multicount = 0
 nonecount = 0
@@ -454,7 +476,7 @@ print(f"subject map len={len(bgm_subjects)}")
 print(f"char map len={len(bgm_chars)}")
 
 for cnt, i in enumerate(tqdm(bgm_index)):
-    moegirl_ids = map_bgm(i)
+    moegirl_ids = map_bgm(i, verbose=False)
     bgm_id = i["id"]
     if bgm_id not in special_map:
         if len(moegirl_ids) == 0:
