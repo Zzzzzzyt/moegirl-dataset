@@ -57,34 +57,6 @@ special_map = {
 # special_map = {}
 
 revserse_special = {
-    # "温妮莎": None,
-    # "拉娜(原神)": None,
-    # "阿佩普": None,
-    # "太郎丸(原神)": None,
-    # "查尔斯·狄更斯": None,
-    # "亚丝拉琪(崩坏系列)": None,
-    # "琥珀(崩坏系列)": None,
-    # "德尔塔(崩坏3)": None,
-    # "史丹": None,
-    # "空(崩坏系列)": None,
-    # "薇塔": None,
-    # "岚(星穹铁道)": None,
-    # "明日方舟:九": None,
-    # "明日方舟:博士": "71016",
-    # "明日方舟:福尔图娜": None,
-    # "明日方舟:ACE": None,
-    # "明日方舟:可萝尔": None,
-    # "明日方舟:Scout": None,
-    # "明日方舟:“剧作家”": None,
-    # "明日方舟:米莎": 117894,
-    # "明日方舟:皇帝": 70847,
-    # "明日方舟:罗伊": None,
-    # "明日方舟:郁金香": None,
-    # "明日方舟:达莉娅": None,
-    # # "明日方舟:科西切":89236,
-    # # "明日方舟:文月":70846,
-    # "明日方舟:火龙": None,
-    # "明日方舟:杜玛": None,
     '碧蓝航线:22': '10849',
     '碧蓝航线:33': '10850',
     'Towa': '87184',
@@ -106,6 +78,43 @@ subject_map = [
     (['碧蓝航线'], ['碧蓝航线']),
     (['Blue Archive'], ['蔚蓝档案']),
     (['ONE PIECE'], ['海贼王']),
+    (
+        [
+            "东方灵异传 ～ Highly Responsive to Prayers.",
+            "东方封魔录 ～ the Story of Eastern Wonderland.",
+            "东方梦时空 ～ Phantasmagoria of Dim. Dream.",
+            "东方幻想乡 ～ Lotus Land Story.",
+            "东方怪绮谈 ～ Mystic Square.",
+            "东方红魔乡 ～ the Embodiment of Scarlet Devil.",
+            "东方妖妖梦 ～ Perfect Cherry Blossom.",
+            "东方永夜抄 ～ Imperishable Night.",
+            "东方花映塚 ～ Phantasmagoria of Flower View.",
+            "东方文花帖 ～ Shoot the Bullet.",
+            "东方风神录 ～ Mountain of Faith.",
+            "东方地灵殿 ～ Subterranean Animism.",
+            "东方星莲船 ～ Undefined Fantastic Object.",
+            "Double Spoiler ～ 东方文花帖",
+            "妖精大战争 ~ 东方三月精",
+            "东方神灵庙 ～ Ten Desires.",
+            "东方辉针城 ～ Double Dealing Character.",
+            "东方绀珠传 ～ Legacy of Lunatic Kingdom.",
+            "东方天空璋 ～ Hidden Star in Four Seasons.",
+            "东方鬼形兽 ～ Wily Beast and Weakest Creature.",
+            "东方虹龙洞 ～ Unconnected Marketeers.",
+            "弹幕狂们的黑市 ～ 100th Black Market.",
+            "东方兽王园 ～ Unfinished Dream of All Living Ghost.",
+            "东方凭依华 ～ Antinomy of Common Flowers.",
+            "东方萃梦想 ～ Immaterial and Missing Power.",
+            "东方绯想天 ～ Scarlet Weather Rhapsody.",
+            "东方非想天则 ～ 追寻特大型人偶之谜",
+            "东方深秘录 ～ Urban Legend in Limbo.",
+            "弹幕天邪鬼 ～ Impossible Spell Card.",
+            "东方心绮楼 ～ Hopeless Masquerade.",
+            "秘封噩梦日记 ～ Violet Detector.",
+            "东方刚欲异闻 ～ 被水淹没的沉愁地狱",
+        ],
+        ['东方Project'],
+    ),
 ]
 
 subject_special = {}
@@ -366,7 +375,7 @@ def map_bgm(entry, verbose=False):
         if "血型" in char and bloodtype:
             if char["血型"] == bloodtype:
                 score += 1
-        match2[idx] = (mid, score)
+        match2[idx] = (mid, score, i[2])
     match2.sort(reverse=True, key=lambda x: x[1])
 
     if verbose:
@@ -389,13 +398,11 @@ def map_bgm(entry, verbose=False):
             if cnt >= 2:
                 if verbose:
                     print('possinle main:', main)
-                l = list(match2[idx])
-                l[1] = wsum
-                match2[idx] = tuple(l)
+                match2[idx] = (match2[idx][0], wsum, match2[idx][2])
             match2.sort(reverse=True, key=lambda x: x[1])
             if verbose:
                 print('third stage:', match2)
-    
+
     return match2
 
 
@@ -462,97 +469,96 @@ for i in moegirl_chars:
                     moe_lookup[j] = []
                 moe_lookup[j].append((i, 1 / (idx + 2)))
 
-# print(map_bgm(bgm_index[64], verbose=True))
-# os._exit(0)
+if __name__ == "__main__":
+    bgm2moegirl = {}
+    moegirl2bgm = {}
+    # bgm_index = bgm_index[:20000]
 
-bgm2moegirl = {}
-moegirl2bgm = {}
-# bgm_index = bgm_index[:20000]
+    multicount = 0
+    nonecount = 0
 
-multicount = 0
-nonecount = 0
+    print(f"subject map len={len(bgm_subjects)}")
+    print(f"char map len={len(bgm_chars)}")
 
-print(f"subject map len={len(bgm_subjects)}")
-print(f"char map len={len(bgm_chars)}")
+    for cnt, i in enumerate(tqdm(bgm_index)):
+        moegirl_ids = map_bgm(i, verbose=False)
+        bgm_id = i["id"]
+        if bgm_id not in special_map:
+            if len(moegirl_ids) == 0:
+                nonecount += 1
+            elif len(moegirl_ids) > 1:
+                multicount += 1
+        # print(cnt, bgm_id, i['name'], moegirl_ids)
+        # print('\'{}\':'.format(bgm_id), moegirl_ids, '#', i['name'])
+        tmp = []
+        for res in moegirl_ids:
+            moegirl_id, score = res[0], res[1]
+            tmp.append(moegirl_id)
+            if moegirl_id not in moegirl2bgm:
+                moegirl2bgm[moegirl_id] = []
+            moegirl2bgm[moegirl_id].append((bgm_id, score, cnt))
+        bgm2moegirl[bgm_id] = tmp
 
-for cnt, i in enumerate(tqdm(bgm_index)):
-    moegirl_ids = map_bgm(i, verbose=False)
-    bgm_id = i["id"]
-    if bgm_id not in special_map:
-        if len(moegirl_ids) == 0:
-            nonecount += 1
-        elif len(moegirl_ids) > 1:
-            multicount += 1
-    # print(cnt, bgm_id, i['name'], moegirl_ids)
-    # print('\'{}\':'.format(bgm_id), moegirl_ids, '#', i['name'])
-    tmp = []
-    for res in moegirl_ids:
-        moegirl_id, score = res[0], res[1]
-        tmp.append(moegirl_id)
-        if moegirl_id not in moegirl2bgm:
-            moegirl2bgm[moegirl_id] = []
-        moegirl2bgm[moegirl_id].append((bgm_id, score, cnt))
-    bgm2moegirl[bgm_id] = tmp
+    for k, v in moegirl2bgm.items():
+        if k not in char2subject:
+            continue
+        moesub = char2subject[k]
+        bgmsub = set()
+        for sub in moesub:
+            if sub in subject_reverse_special:
+                bgmsub.update(subject_reverse_special[sub])
+        if len(bgmsub) > 0:
+            # print(moesub)
+            # print(bgmsub)
+            # print(k, list(map(lambda x: [bgm_chars[x[0]]["name"]] + list(x), v)))
+            v2 = []
+            for i in v:
+                # print(v, bgm_subjects2[i[0]])
+                flag = False
+                for j, w in bgm_subjects2[i[0]]:
+                    if j in bgmsub:
+                        flag = True
+                        break
+                if flag:
+                    v2.append(i)
+            moegirl2bgm[k] = v2
+            # print(list(map(lambda x: [bgm_chars[x[0]]["name"]] + list(x), v2)))
+            # print()
 
-for k, v in moegirl2bgm.items():
-    if k not in char2subject:
-        continue
-    moesub = char2subject[k]
-    bgmsub = set()
-    for sub in moesub:
-        if sub in subject_reverse_special:
-            bgmsub.update(subject_reverse_special[sub])
-    if len(bgmsub) > 0:
-        # print(moesub)
-        # print(bgmsub)
-        # print(k, list(map(lambda x: [bgm_chars[x[0]]["name"]] + list(x), v)))
-        v2 = []
-        for i in v:
-            # print(v, bgm_subjects2[i[0]])
-            flag = False
-            for j, w in bgm_subjects2[i[0]]:
-                if j in bgmsub:
-                    flag = True
-                    break
-            if flag:
-                v2.append(i)
-        moegirl2bgm[k] = v2
-        # print(list(map(lambda x: [bgm_chars[x[0]]["name"]] + list(x), v2)))
-        # print()
+    for k, v in revserse_special.items():
+        # print(k, v)
+        if v is None:
+            moegirl2bgm[k] = []
+        else:
+            moegirl2bgm[k] = [(v, 19260817, -1)]
 
+    print(
+        "successful bgm2moegirl: {}/{}".format(
+            len(bgm_index) - nonecount, len(bgm_index)
+        )
+    )
+    print(f"multi={multicount} none={nonecount}")
 
-for k, v in revserse_special.items():
-    # print(k, v)
-    if v is None:
-        moegirl2bgm[k] = []
-    else:
-        moegirl2bgm[k] = [(v, 19260817, -1)]
+    multicount2 = 0
 
-print(
-    "successful bgm2moegirl: {}/{}".format(len(bgm_index) - nonecount, len(bgm_index))
-)
-print(f"multi={multicount} none={nonecount}")
+    moegirl2bgm2 = {}
+    for k, v in moegirl2bgm.items():
+        v = v.copy()
+        v.sort(key=lambda x: x[2])
+        v.sort(reverse=True, key=lambda x: x[1])
+        # if len(v) > 1:
+        #     v = list(filter(lambda x: x[1] > 1, v))
+        if len(v) == 0:
+            continue
+        if len(v) > 1:
+            # print(k, list(map(lambda x: str([bgm_chars[x[0]]["name"]] + list(x)), v)))
+            multicount2 += 1
+        moegirl2bgm2[k] = list(map(lambda x: x[0], v))
 
-multicount2 = 0
+    print("successful moegirl2bgm: {}/{}".format(len(moegirl2bgm2), len(moegirl_chars)))
+    print(f"multi={multicount2} none={len(moegirl_chars)-len(moegirl2bgm2)}")
 
-moegirl2bgm2 = {}
-for k, v in moegirl2bgm.items():
-    v = v.copy()
-    v.sort(key=lambda x: x[2])
-    v.sort(reverse=True, key=lambda x: x[1])
-    # if len(v) > 1:
-    #     v = list(filter(lambda x: x[1] > 1, v))
-    if len(v) == 0:
-        continue
-    if len(v) > 1:
-        # print(k, list(map(lambda x: str([bgm_chars[x[0]]["name"]] + list(x)), v)))
-        multicount2 += 1
-    moegirl2bgm2[k] = list(map(lambda x: x[0], v))
+    save_json(bgm2moegirl, "bgm2moegirl.json")
+    save_json(moegirl2bgm2, "moegirl2bgm.json")
 
-print("successful moegirl2bgm: {}/{}".format(len(moegirl2bgm2), len(moegirl_chars)))
-print(f"multi={multicount2} none={len(moegirl_chars)-len(moegirl2bgm2)}")
-
-save_json(bgm2moegirl, "bgm2moegirl.json")
-save_json(moegirl2bgm2, "moegirl2bgm.json")
-
-os.system('python -u img_preloader.py')
+    os.system('python -u img_preloader.py')
