@@ -108,6 +108,10 @@ revserse_special = {
     '洞爷湖仙人': None,
     '帕克(成龙历险记)': None,
     '小白(猪猪侠)': None,
+    '贝塔(摩尔庄园)': None,
+    '皮诺(Fate)': None,
+    '托尔(魔法禁书目录)': None,
+    '主人公(火焰之纹章_风花雪月)': '69218',
 }
 
 # bgm <-> moegirl
@@ -162,6 +166,11 @@ subject_map = [
     (['梦王国与沉睡的100名王子'], ['梦王国与沉睡的100王子']),
     (['美少女花骑士'], ['美少女花骑士']),
     (['东京放学后召唤师'], ['东京放课后召唤师']),
+    (
+        ['坎特伯雷公主与骑士唤醒冠军之剑的奇幻冒险'],
+        ['坎特伯雷公主与骑士唤醒冠军之剑的奇幻冒险'],
+    ),
+    (['公主连结 Re:Dive'], ['公主连结Re:Dive']),
 ]
 
 subject_special = {}
@@ -547,9 +556,9 @@ if __name__ == "__main__":
         bgm2moegirl[bgm_id] = tmp
 
     for k, v in moegirl2bgm.items():
-        if k not in char2subject:
+        if k not in moe_subjects:
             continue
-        moesub = char2subject[k]
+        moesub = moe_subjects[k]
         bgmsub = set()
         for sub in moesub:
             if sub in subject_reverse_special:

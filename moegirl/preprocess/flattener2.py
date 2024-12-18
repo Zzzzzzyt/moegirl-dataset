@@ -3,7 +3,7 @@ from utils.network import title_to_url
 
 
 chars = set(load_json('char_index.json'))
-data = load_json('../crawler/subjects.json')
+subjects = load_json('../crawler/subjects.json')
 
 
 def dfs(data, ret, stk: list = []):
@@ -37,10 +37,19 @@ def dfs(data, ret, stk: list = []):
         stk.pop()
 
 
-ret = {}
-dfs(data, ret, [])
+char2subject = {}
+dfs(subjects, char2subject, [])
 # for k, v in ret.items():
 # print(k, v)
 print('all:', len(chars))
-print('found:', len(ret))
-save_json(ret, 'char2subject.json')
+print('found:', len(char2subject))
+save_json(char2subject, 'char2subject.json')
+
+subject_index = []
+for i in subjects['subcategories'][3:]:
+    for j in i['subcategories']:
+        name, url = j['name'], j['url']
+        assert '/Category:' + name.replace(' ', '_') == url
+        subject_index.append(name)
+
+save_json(subject_index, 'subject_index.json')

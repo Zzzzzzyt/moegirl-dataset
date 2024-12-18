@@ -1,6 +1,6 @@
 from utils.file import save_json, load_json
 
-subjects = load_json('../preprocess/char2subject.json')
+char2subject = load_json('../preprocess/char2subject.json')
 chars = set(load_json('../preprocess/char_index.json'))
 
 
@@ -8,7 +8,7 @@ def gen(tags):
     if type(tags) == str:
         tags = [tags]
     ret = []
-    for k, v in subjects.items():
+    for k, v in char2subject.items():
         for i in tags:
             if i in v:
                 ret.append(k)
@@ -45,7 +45,8 @@ def dfs(d):
 #     print(i)
 
 save_json(
-    list(dfs(load_json('../crawler/subset/vocaloid.json'))), 'subset/vocaloid_subset.json'
+    list(dfs(load_json('../crawler/subset/vocaloid.json'))),
+    'subset/vocaloid_subset.json',
 )
 
 save_json(
