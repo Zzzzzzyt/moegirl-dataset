@@ -179,6 +179,13 @@ def extract_text(
                 or name == "toggle 内联按钮"
                 or name == "文字外发光"
                 or name == "tja"
+                or name == '瞳色'
+                or name == '发色'
+                or name == 'eye color'
+                or name == 'hair color'
+                or name == 'eye_color'
+                or name == 'hair_color'
+                or name == 'rainbow text'
             ):
                 if len(code.params) >= 1:
                     ret.extend(extract_text(code.get(1).value))
@@ -256,7 +263,7 @@ def extract_text(
                     )
                 )
             elif (
-                name == "注释"
+                '注释' in name
                 or name == "refn"
                 or name == "#invoke:housamo"
                 or name == "ps"
@@ -783,7 +790,6 @@ attrs = set(attrs)
 extra = json.load(open("extra_info.json", encoding="utf-8"))
 out = {}
 
-s = set()
 cnt = 0
 cntt = 0
 for k, v in extra.items():
@@ -868,8 +874,9 @@ for k, v in extra.items():
     # print('\n\n\n')
 # print(cnt, cntt)
 
-print(s)
+print('Valid size:', len(out))
 save_json(out, "extra_processed.json")
+
 
 """
 ('讨厌', 371)

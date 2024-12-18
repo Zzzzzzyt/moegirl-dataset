@@ -57,6 +57,7 @@ special_map = {
 # special_map = {}
 
 revserse_special = {
+    '胡桃(莉可丽丝)': '108666',
     '碧蓝航线:22': '10849',
     '碧蓝航线:33': '10850',
     'Towa': '87184',
@@ -64,6 +65,41 @@ revserse_special = {
     '小不点(LoveLive!)': '110647',
     '芙蕾雅(上古卷轴)': None,
     '菲兹·艾贝琳': None,
+    '小小兔': '6684',
+    '梦王国与沉睡的100王子:阿尔弗雷德': '157300',
+    '文豪与炼金术师:太宰治': '76133',
+    '米勒(虚拟UP主)': None,
+    '茶茶丸': None,
+    '秋田小町': None,
+    '苏苏(个人势)': None,
+    '里克(王国之心)': '15850',
+    '刑天(京剧猫)': None,
+    '我的魔塔:刷子': None,
+    '我(光与夜之恋)': '97750',
+    '修女(星之梦)': None,
+    '阿杰(快乐星猫)': None,
+    '克劳德(侠盗猎车)': '72922',
+    '幻书启世录:桃乐丝': None,
+    '小月(巴啦啦小魔仙)': None,
+    'Abigail(Rainimator)': None,
+    '拉娜(坎公骑冠剑)': None,
+    '天国(少女兵器)': None,
+    '塞巴斯蒂安(COCOTAMA)': None,
+    '格林笔记:白雪姬': '67888',
+    '女儿(中国式家长)': None,
+    '优子(老爹餐厅系列)': None,
+    '小吉(快乐星猫)': None,
+    '夏洛克·福尔摩斯(歌舞伎町夏洛克)': '67109',
+    '木叶(女忍者椿的心事)': '107238',
+    'Ruby(VOCALOID)': None,
+    '八戒(唐山葬)': None,
+    '月光(海底囚人)': None,
+    '丹尼(JOJO的奇妙冒险)': None,
+    '春日野丽': '7859',
+    '妈妈(hap系列)': None,
+    'Isla(海底囚人)': None,
+    '机动战队:优子': '2354',
+    '汤姆(万圣街)': None,
 }
 
 # bgm <-> moegirl
@@ -115,6 +151,8 @@ subject_map = [
         ],
         ['东方Project'],
     ),
+    (['梦王国与沉睡的100名王子'], ['梦王国与沉睡的100王子']),
+    (['美少女花骑士'], ['美少女花骑士']),
 ]
 
 subject_special = {}
@@ -526,11 +564,10 @@ if __name__ == "__main__":
             # print()
 
     for k, v in revserse_special.items():
-        # print(k, v)
         if v is None:
             moegirl2bgm[k] = []
         else:
-            moegirl2bgm[k] = [(v, 19260817, -1)]
+            moegirl2bgm[k] = [(v, 998244353, -1)]
 
     print(
         "successful bgm2moegirl: {}/{}".format(

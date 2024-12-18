@@ -181,12 +181,28 @@ def parse(name):
         # print('cache hit: '+cache_name)
         wikitext = open(cache_name, encoding="utf-8").read()
     else:
-        return
+        return None
     wikicode = mwp.parse(wikitext)
     try:
         for i in wikicode.filter_templates(recursive=False):
+            if len(i.params) < 3:
+                continue
             t = i.name
-            if "人物信息" in t or "替身信息" in t:
+            params = list(map(lambda x: str(x.name).strip(), i.params))
+            if (
+                "人物信息" in t
+                or '角色信息' in t
+                or "替身信息" in t
+                or '信息栏' in t
+                or '宠物信息' in t
+                or '基本信息' in t
+                or 'Infobox' in t
+                or t == 'FlowerKnightGirl'
+                or t == 'PvZ2植物'
+                or '姓名' in params
+                or '本名' in params
+                or '名字' in params
+            ):
                 # print(i)
                 char = {}
                 char["title"] = name
@@ -215,9 +231,8 @@ def parse(name):
                         #     char['别号'] = names
                         case _:
                             pvalue = str(pvalue).strip()
-                            if pvalue == "":
-                                continue
-                            char[pname] = pvalue
+                            if pvalue != "":
+                                char[pname] = pvalue
                 if tmpimage["url"] != "":
                     char["image"].insert(0, tmpimage)
                 # print(char)
@@ -273,14 +288,18 @@ char_index = json.load(open("../preprocess/char_index.json", encoding="utf-8"))
 
 extra_info = {}
 bar = tqdm(char_index)
+cnt = 0
 for idx, name in enumerate(bar):
     # print(name, idx, '/', len(char_index))
     try:
         p = parse(name)
         if p is not None:
             extra_info[name] = p
+            cnt += 1
+        else:
+            bar.write(f'No output: {name}')
     except KeyboardInterrupt as e:
         break
-    bar.update(1)
 bar.close()
+print('Valid extra:', cnt)
 save_json(extra_info, 'extra_info.json')
