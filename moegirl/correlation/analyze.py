@@ -5,13 +5,14 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import PIL.Image as Image
+from utils.file import load_json
 
 from mplfonts import use_font
 
 use_font('Noto Sans CJK SC')
 
-attrs = json.load(open('../preprocess/attr_index.json', encoding='utf-8'))
-chars = json.load(open('../preprocess/char_index.json', encoding='utf-8'))
+attrs = load_json('../preprocess/attr_index.json')
+chars = load_json('../preprocess/char_index.json')
 P = np.load(open('intersection.npy', 'rb'))
 gain = np.load(open('gain.npy', 'rb'))
 chi2 = np.load(open('chi2.npy', 'rb'))
@@ -21,22 +22,22 @@ attrmap = {}
 for i in range(len(attrs)):
     attrmap[attrs[i]] = i
 
-hair_color_attr = json.load(open('../crawler/hair_color_attr.json', encoding='utf-8'))
+hair_color_attr = load_json('../crawler/hair_color_attr.json')
 # hair_color_attr.sort(key=lambda x: P[attrmap[x]][attrmap[x]], reverse=True)
-eye_color_attr = json.load(open('../crawler/eye_color_attr.json', encoding='utf-8'))
+eye_color_attr = load_json('../crawler/eye_color_attr.json')
 # eye_color_attr.sort(key=lambda x: P[attrmap[x]][attrmap[x]], reverse=True)
 
-bgm2moegirl = json.load(open('../../bangumi/bgm2moegirl.json', encoding='utf-8'))
-bgm_index = json.load(open('../../bangumi/bgm_index_160k.json', encoding='utf-8'))
+bgm2moegirl = load_json('../../bangumi/bgm2moegirl.json')
+bgm_index = load_json('../../bangumi/bgm_index_160k.json')
 l = []
 for i in bgm_index:
     mapped = bgm2moegirl[i['id']]
     if len(mapped) > 0:
         l.append((mapped[0], i['id']))
 
-char2attr = json.load(open('../preprocess/char2attr.json', encoding='utf-8'))
+char2attr = load_json('../preprocess/char2attr.json')
 # subset=list(char2attr.keys())
-subset = json.load(open('../subset/subset/blue_archive_subset.json', encoding='utf-8'))
+subset = load_json('../subset/subset/blue_archive_subset.json')
 # subset = json.load(open('../subset/subset/jojo_subset.json', encoding='utf-8'))
 # touhou_set += json.load(open('../subset/subset/touhou_old_subset.json', encoding='utf-8'))
 
@@ -93,14 +94,30 @@ plt.yticks(np.arange(len(hair_color_attr)), labels=hair_color_attr)
 plt.xticks(np.arange(len(eye_color_attr)), labels=eye_color_attr)
 for i in range(len(hair_color_attr)):
     for j in range(len(eye_color_attr)):
-        plt.text(j, i, hair_eye[i, j], ha='center', va='center', color='black' if hair_eye[i][j] > mx*0.8 else 'white')
+        plt.text(
+            j,
+            i,
+            hair_eye[i, j],
+            ha='center',
+            va='center',
+            color='black' if hair_eye[i][j] > mx * 0.8 else 'white',
+        )
 
 
 plt.subplot(1, 2, 2)
-plt.yticks((np.arange(0, len(hair_color_attr)*75, 75)+75/2)[::-1]*2, labels=hair_color_attr)
-plt.xticks((np.arange(0, len(eye_color_attr)*75, 75)+75/2)*2, labels=eye_color_attr)
+plt.yticks(
+    (np.arange(0, len(hair_color_attr) * 75, 75) + 75 / 2)[::-1] * 2,
+    labels=hair_color_attr,
+)
+plt.xticks(
+    (np.arange(0, len(eye_color_attr) * 75, 75) + 75 / 2) * 2, labels=eye_color_attr
+)
 
-img = Image.new('RGB', (len(eye_color_attr)*75*2, len(hair_color_attr)*75*2), (255, 255, 255))
+img = Image.new(
+    'RGB',
+    (len(eye_color_attr) * 75 * 2, len(hair_color_attr) * 75 * 2),
+    (255, 255, 255),
+)
 
 offsetx = [0, 75, 0, 75]
 offsety = [0, 0, 75, 75]
@@ -114,17 +131,23 @@ for i in range(len(hair_color_attr)):
             if os.path.exists(fname):
                 try:
                     img2 = Image.open(fname)
-                    img.paste(img2, (j*75*2+offsetx[cnt], (len(hair_color_attr)-1-i)*75*2+offsety[cnt]))
+                    img.paste(
+                        img2,
+                        (
+                            j * 75 * 2 + offsetx[cnt],
+                            (len(hair_color_attr) - 1 - i) * 75 * 2 + offsety[cnt],
+                        ),
+                    )
                     cnt += 1
                 except Exception as e:
                     print(e)
         # # plt.text(j, i, char[i][j][0], fontsize=10, wrap=True, ha='center', va='center', color='black' if hair_eye[i][j] > 1500 else 'white')
 
 imgarray = np.array(img)
-for i in range(len(eye_color_attr)-1):
-    imgarray[(i+1)*75*2-1:(i+1)*75*2+1, :] = 0
-for i in range(len(hair_color_attr)-1):
-    imgarray[:, (i+1)*75*2-1:(i+1)*75*2+1] = 0
+for i in range(len(eye_color_attr) - 1):
+    imgarray[(i + 1) * 75 * 2 - 1 : (i + 1) * 75 * 2 + 1, :] = 0
+for i in range(len(hair_color_attr) - 1):
+    imgarray[:, (i + 1) * 75 * 2 - 1 : (i + 1) * 75 * 2 + 1] = 0
 plt.imshow(imgarray)
 
 # # img.show()

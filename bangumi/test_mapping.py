@@ -93,3 +93,6 @@ for i in bgm_index:
 # test_moe('凯伊(坎公骑冠剑)')
 # test_moe('托尔(魔法禁书目录)')
 # test_moe('主人公(火焰之纹章_风花雪月)')
+print(map_bgm(bgm_entry['35614'], verbose=True))
+print(map_bgm(bgm_entry['108666'], verbose=True))
+print(map_bgm(bgm_entry['91909'], verbose=True))
