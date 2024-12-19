@@ -62,7 +62,7 @@ special_map = {
 }
 # special_map = {}
 
-revserse_special = {
+reverse_special = {
     '胡桃(莉可丽丝)': '108666',
     '碧蓝航线:22': '10849',
     '碧蓝航线:33': '10850',
@@ -197,12 +197,8 @@ for k, v in subject_map:
         subject_reverse_special[i] = set(k)
 
 for k, v in special_map.items():
-    if v is not None:
-        revserse_special[v] = k
-
-for k, v in revserse_special.items():
-    if v is not None and v not in special_map:
-        special_map[v] = k
+    if v is not None and v not in reverse_special:
+        reverse_special[v] = k
 
 
 use_160k = (
@@ -360,7 +356,7 @@ def map_bgm(entry, verbose=False):
             for j in moe_lookup[i]:
                 moeid = j[0]
                 score = j[1]
-                if moeid in revserse_special:
+                if moeid in reverse_special:
                     continue
                 moesub = moe_subjects[moeid]
                 # print(moeid, moesub)
@@ -598,7 +594,7 @@ if __name__ == "__main__":
             # print(list(map(lambda x: [bgm_chars[x[0]]["name"]] + list(x), v2)))
             # print()
 
-    for k, v in revserse_special.items():
+    for k, v in reverse_special.items():
         if v is None:
             moegirl2bgm[k] = []
         else:
