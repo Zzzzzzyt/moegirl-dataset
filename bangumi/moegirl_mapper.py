@@ -56,6 +56,9 @@ special_map = {
     '35614': '拉姆(Re:从零开始的异世界生活)',
     '15420': None,
     '108666': '胡桃(莉可丽丝)',
+    '70504': '鹭宫诗织',
+    '91297': '雨(主播女孩重度依赖)',
+    '22783': None,  # 春日步(阿滋漫画大王)
 }
 # special_map = {}
 
@@ -120,6 +123,8 @@ revserse_special = {
     '猫猫(七色战记)': None,
     '猫猫(药师少女的独语)': '61330',
     '碧翠丝(Re:从零开始的异世界生活)': '35616',
+    '电次(电锯人)': '71335',
+    '凛(Muse Dash)': None,
 }
 
 # bgm <-> moegirl
@@ -194,6 +199,10 @@ for k, v in subject_map:
 for k, v in special_map.items():
     if v is not None:
         revserse_special[v] = k
+
+for k, v in revserse_special.items():
+    if v is not None and v not in special_map:
+        special_map[v] = k
 
 
 use_160k = (

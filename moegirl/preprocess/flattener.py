@@ -8,7 +8,7 @@ from utils.file import save_json
 def char_filter(char_name):
     # if random.random() > 0.01:
     #     return True
-    return char_name.startswith("Template:")
+    return char_name.startswith("Template:") or char_name.startswith("User:")
 
 
 def attr_filter(attr_name):
