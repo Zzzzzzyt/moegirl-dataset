@@ -27,8 +27,8 @@ def test_bgm(k):
 
 
 bgm_entry = {}
-for i in bgm_index:
-    bgm_entry[i['id']] = i
+for entry in bgm_index:
+    bgm_entry[entry['id']] = entry
 
 # test_moe('碧蓝航线:33')
 # test_moe('Towa')

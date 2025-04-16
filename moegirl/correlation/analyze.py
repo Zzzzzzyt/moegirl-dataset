@@ -28,7 +28,7 @@ eye_color_attr = load_json('../crawler/eye_color_attr.json')
 # eye_color_attr.sort(key=lambda x: P[attrmap[x]][attrmap[x]], reverse=True)
 
 bgm2moegirl = load_json('../../bangumi/bgm2moegirl.json')
-bgm_index = load_json('../../bangumi/bgm_index_160k.json')
+bgm_index = load_json('../../bangumi/bgm_index_full.json')
 l = []
 for i in bgm_index:
     mapped = bgm2moegirl[i['id']]

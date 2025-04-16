@@ -152,11 +152,14 @@ cython_debug/
 #.idea/
 
 bangumi/images/
-bangumi/bgm_chars_160k.json
-bangumi/bgm_subjects_160k.json
-bangumi/160k_subjects/
-bangumi/160k_chars/
+bangumi/bgm_chars_full.json
+bangumi/bgm_index_full.json
+bangumi/bgm_subjects_full.json
+bangumi/crawler/160k_subjects/
+bangumi/crawler/160k_chars/
 moegirl/correlation/*.npy
 moegirl/crawler2/raw*/
 moegirl/crawler2/extra_info.json
 moegirl/image/images
+bangumi/dump_converter/*.zip
+bangumi/dump_converter/*.jsonlines

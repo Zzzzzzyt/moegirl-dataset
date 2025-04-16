@@ -3,7 +3,7 @@ import json
 from utils.file import save_json
 
 
-bgm_index = json.load(open('../bgm_index_160k.json', encoding='utf-8'))
+bgm_index = json.load(open('../bgm_index_full.json', encoding='utf-8'))
 bgm2moegirl = json.load(open('../bgm2moegirl.json', encoding='utf-8'))
 moegirl2bgm = json.load(open('../moegirl2bgm.json', encoding='utf-8'))
 char_index = json.load(

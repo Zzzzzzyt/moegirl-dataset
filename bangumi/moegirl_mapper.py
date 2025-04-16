@@ -204,34 +204,19 @@ subject_special = {}
 subject_reverse_special = {}
 
 for k, v in subject_map:
-    for i in k:
-        subject_special[i] = set(v)
-    for i in v:
-        subject_reverse_special[i] = set(k)
+    for entry in k:
+        subject_special[entry] = set(v)
+    for entry in v:
+        subject_reverse_special[entry] = set(k)
 
 for k, v in special_map.items():
     if v is not None and v not in reverse_special:
         reverse_special[v] = k
 
 
-use_160k = (
-    os.path.exists("bgm_chars_160k.json")
-    and os.path.exists("bgm_subjects_160k.json")
-    and os.path.exists("bgm_index_160k.json")
-)
-
-bgm_index = None
-bgm_chars = None
-bgm_subjects = None
-if use_160k:
-    bgm_index = load_json("bgm_index_160k.json")
-    bgm_chars = load_json("bgm_chars_160k.json")
-    bgm_subjects = load_json("bgm_subjects_160k.json")
-else:
-    print("160k not found. falling back to 20k.")
-    bgm_index = load_json("bgm_index_20k.json")
-    bgm_chars = load_json("bgm_chars_20k.json")
-    bgm_subjects = load_json("bgm_subjects_20k.json")
+bgm_index = load_json("bgm_index_full.json")
+bgm_chars = load_json("bgm_chars_full.json")
+bgm_subjects = load_json("bgm_subjects_full.json")
 
 print("loaded: bgm_index:", len(bgm_index))
 print("loaded: bgm_chars:", len(bgm_chars))
@@ -442,20 +427,20 @@ def map_bgm(entry, verbose=False):
         score = i[1]
         if mid not in moegirl_extra:
             continue
-        char = moegirl_extra[mid]
-        if "生日" in char and birthday:
+        char2 = moegirl_extra[mid]
+        if "生日" in char2 and birthday:
             flag = True
             for j in range(3):
-                if char["生日"][j] and birthday[j] and char["生日"][j] != birthday[j]:
+                if char2["生日"][j] and birthday[j] and char2["生日"][j] != birthday[j]:
                     flag = False
                     break
             if flag:
                 score += 3
-        if "身高" in char and height:
-            if abs(char["身高"] - height) <= 1:
+        if "身高" in char2 and height:
+            if abs(char2["身高"] - height) <= 1:
                 score += 3
-        if "血型" in char and bloodtype:
-            if char["血型"] == bloodtype:
+        if "血型" in char2 and bloodtype:
+            if char2["血型"] == bloodtype:
                 score += 1
         match2[idx] = (mid, score, i[2])
     match2.sort(reverse=True, key=lambda x: x[1])
@@ -494,53 +479,53 @@ for entry in bgm_index:
     id = str(entry["id"])
     subjects = []
     if id in bgm_subjects:
-        for i in bgm_subjects[id]:
+        for entry in bgm_subjects[id]:
             score = 1
-            if i["staff"] == "客串":
+            if entry["staff"] == "客串":
                 score = 0.3
-            subjects.append((i["name_cn"], score))
-            subjects.append((i["name"], score * 0.5))
+            subjects.append((entry["name_cn"], score))
+            subjects.append((entry["name"], score * 0.5))
 
     subjects = list(filter(lambda x: len(x[0]) > 0, subjects))
     subjects.sort(key=lambda x: x[1], reverse=True)
     subjects = unique(subjects)
-    bgm_subjects2[entry["id"]] = subjects
+    bgm_subjects2[id] = subjects
 
 
 for k, v in char2subject.items():
     tmp = []
-    for i in v[1:]:
-        if i.endswith('的页面'):
+    for entry in v[1:]:
+        if entry.endswith('的页面'):
             continue
-        if i.endswith('系列角色'):
-            tmp.append(i[:-4])
-        elif i.endswith('系列'):
-            tmp.append(i[:-2])
-        if i not in tmp:
-            tmp.append(i)
+        if entry.endswith('系列角色'):
+            tmp.append(entry[:-4])
+        elif entry.endswith('系列'):
+            tmp.append(entry[:-2])
+        if entry not in tmp:
+            tmp.append(entry)
     char2subject[k] = tmp
 
 
 moe_lookup = {}
 moe_subjects = {}
-for i in moegirl_chars:
-    name, pre, post = moegirl_split(i)
+for entry in moegirl_chars:
+    name, pre, post = moegirl_split(entry)
 
     subjects = []
     if pre != "":
         subjects.append(pre)
-    if i in char2subject:
-        subjects.extend(char2subject[i])
+    if entry in char2subject:
+        subjects.extend(char2subject[entry])
     if post != "":
         subjects.append(post)
     subjects = unique(subjects)
-    moe_subjects[i] = subjects
+    moe_subjects[entry] = subjects
 
     if name not in moe_lookup:
         moe_lookup[name] = []
-    moe_lookup[name].append((i, 1))
-    if i in moegirl_extra:
-        char = moegirl_extra[i]
+    moe_lookup[name].append((entry, 1))
+    if entry in moegirl_extra:
+        char = moegirl_extra[entry]
         if "本名" in char:
             for idx, j in enumerate(char["本名"]):
                 j = j.replace(" ", "").lower().strip('"\'')
@@ -549,7 +534,7 @@ for i in moegirl_chars:
                     continue
                 if j not in moe_lookup:
                     moe_lookup[j] = []
-                moe_lookup[j].append((i, 1 / (idx + 2)))
+                moe_lookup[j].append((entry, 1 / (idx + 2)))
 
 if __name__ == "__main__":
     bgm2moegirl = {}
@@ -562,9 +547,9 @@ if __name__ == "__main__":
     print(f"subject map len={len(bgm_subjects)}")
     print(f"char map len={len(bgm_chars)}")
 
-    for cnt, i in enumerate(tqdm(bgm_index)):
-        moegirl_ids = map_bgm(i, verbose=False)
-        bgm_id = i["id"]
+    for cnt, entry in enumerate(tqdm(bgm_index)):
+        moegirl_ids = map_bgm(entry, verbose=False)
+        bgm_id = str(entry["id"])
         if bgm_id not in special_map:
             if len(moegirl_ids) == 0:
                 nonecount += 1
@@ -594,15 +579,15 @@ if __name__ == "__main__":
             # print(bgmsub)
             # print(k, list(map(lambda x: [bgm_chars[x[0]]["name"]] + list(x), v)))
             v2 = []
-            for i in v:
+            for entry in v:
                 # print(v, bgm_subjects2[i[0]])
                 flag = False
-                for j, w in bgm_subjects2[i[0]]:
+                for j, w in bgm_subjects2[entry[0]]:
                     if j in bgmsub:
                         flag = True
                         break
                 if flag:
-                    v2.append(i)
+                    v2.append(entry)
             moegirl2bgm[k] = v2
             # print(list(map(lambda x: [bgm_chars[x[0]]["name"]] + list(x), v2)))
             # print()
@@ -642,4 +627,4 @@ if __name__ == "__main__":
     save_json(bgm2moegirl, "bgm2moegirl.json")
     save_json(moegirl2bgm2, "moegirl2bgm.json")
 
-    os.system('python -u img_preloader.py')
+    # os.system('python -u img_preloader.py')
