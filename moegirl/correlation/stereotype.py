@@ -1,7 +1,7 @@
 from utils.file import load_json, save_json
 import matplotlib.pyplot as plt
 
-external_attr = set(load_json('../preprocess/external_attr.json'))
+fundamental_attr = set(load_json('../preprocess/fundamental_attr.json'))
 chars = load_json('../../bangumi/subset/bgm20000_subset.json')[5000:10000]
 moegirl2bgm = load_json('../../bangumi/moegirl2bgm.json')
 char2attr = load_json('../../moegirl/preprocess/char2attr.json')
@@ -21,7 +21,7 @@ for i in chars:
     for j in attrs:
         if j in ignore_attr:
             continue
-        if j in external_attr:
+        if j in fundamental_attr:
             cnt1 += 1
         else:
             cnt2 += 1
@@ -35,4 +35,4 @@ for i in chars:
 l.sort(key=lambda x: x[1], reverse=True)
 l = list(map(lambda x: x[0], l))
 print(len(l))
-save_json(l, 'subset/stereotype_subset.json')
+save_json(l, 'stereotype_subset.json')
