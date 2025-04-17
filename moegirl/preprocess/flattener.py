@@ -78,7 +78,7 @@ def dfs(data: dict, ret: dict, stk: list, no_further: bool = False):
             # char_index[char_name] = i
         if char_name not in ret:
             ret[char_name] = []
-        ret[char_name].extend(stk)
+        ret[char_name].append(stk[-1])
     for i in data["subcategories"]:
         dfs(i, ret, stk.copy(), no_further)
 
