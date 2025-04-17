@@ -137,9 +137,6 @@ for rank, i in enumerate(index):
 print(index[0])
 print(index[-1])
 print('chars:', len(chars))
-save_json(index, '../bgm_index_full.json')
-save_json(chars, "../bgm_chars_full.json")
-
 
 subjects = {}
 char2subjects = {}
@@ -183,4 +180,7 @@ for v in char2subjects.values():
     v.sort(key=lambda x: x['order'])
     for i in v:
         del i['order']
+
+save_json(index, '../bgm_index_full.json')
+save_json(chars, "../bgm_chars_full.json")
 save_json(char2subjects, "../bgm_subjects_full.json")

@@ -324,24 +324,24 @@ def map_bgm(entry, verbose=False):
 
     canon_name = []
     names = []
-    if id in bgm_chars:
-        char = bgm_chars[id]
-        names.extend(multisplit(char["name"]))
-        for i in char["infobox"]:
-            if i["key"] == "简体中文名":
-                if type(i["value"]) == str:
-                    names.extend(multisplit(i["value"]))
-                else:
-                    for split in i["value"]:
-                        split = multisplit(split["v"])
-                        names.extend(split)
-            elif i["key"] == "别名":
-                if type(i["value"]) == str:
-                    names.extend(multisplit(i["value"]))
-                else:
-                    for split in i["value"]:
-                        split = multisplit(split["v"])
-                        names.extend(split)
+    char = bgm_chars[id]
+    
+    names.extend(multisplit(char["name"]))
+    for i in char["infobox"]:
+        if i["key"] == "简体中文名":
+            if type(i["value"]) == str:
+                names.extend(multisplit(i["value"]))
+            else:
+                for split in i["value"]:
+                    split = multisplit(split["v"])
+                    names.extend(split)
+        elif i["key"] == "别名":
+            if type(i["value"]) == str:
+                names.extend(multisplit(i["value"]))
+            else:
+                for split in i["value"]:
+                    split = multisplit(split["v"])
+                    names.extend(split)
     if "name" in entry:
         canon_name.extend(multisplit(entry["name"]))
 
