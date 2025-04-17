@@ -104,5 +104,8 @@ for entry in bgm_index:
 # test_moe('椿(废墟图书馆)')
 # test_moe('猎鹰(漫威)')
 
-print(map_bgm(bgm_entry['87974'], verbose=True))
-test_moe('山田凉')
+# print(map_bgm(bgm_entry['87974'], verbose=True))
+# test_moe('山田凉')
+
+test_moe('阿洛娜')
+print(map_bgm(bgm_entry['104651'], verbose=True))

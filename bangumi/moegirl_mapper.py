@@ -150,7 +150,7 @@ subject_map = [
     (['战舰少女R'], ['战舰少女']),
     (['明日方舟'], ['明日方舟角色']),
     (['碧蓝航线'], ['碧蓝航线']),
-    (['Blue Archive'], ['蔚蓝档案']),
+    (['蔚蓝档案'], ['蔚蓝档案']),
     (['ONE PIECE'], ['海贼王']),
     (
         [
@@ -325,7 +325,7 @@ def map_bgm(entry, verbose=False):
     canon_name = []
     names = []
     char = bgm_chars[id]
-    
+
     names.extend(multisplit(char["name"]))
     for i in char["infobox"]:
         if i["key"] == "简体中文名":
