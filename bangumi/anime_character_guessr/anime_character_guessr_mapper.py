@@ -31,4 +31,12 @@ for k, v in bgm2moegirl.items():
 bgm2attr.sort(key=lambda x: bgm_entry[x[0]]['rank'])
 bgm2attr = dict(bgm2attr)
 print('mapped:', len(bgm2attr))
-save_json(bgm2attr, 'filtered_id_tags_mapping.json')
+# save_json(bgm2attr, 'filtered_id_tags_mapping.json')
+
+with open("id_tags.js", "w", encoding='utf-8') as f:
+    f.write('export const idToTags = {')
+    tmp = []
+    for k, v in bgm2attr.items():
+        tmp.append(str(k) + ':[' + ','.join(map(lambda x: f'"{x}"', v)) + ']')
+    f.write(','.join(tmp))
+    f.write('};')
