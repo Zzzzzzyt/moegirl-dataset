@@ -18,9 +18,10 @@ def topk(k):
     trueCnt = 0
     for i in bgm_index:
         trueCnt += 1
-        if i['id'] not in bgm2moegirl:
+        id = str(i['id'])
+        if id not in bgm2moegirl:
             continue
-        moeids = bgm2moegirl[i['id']]
+        moeids = bgm2moegirl[id]
         # print(moeid)
         if len(moeids) == 0:
             continue
@@ -34,7 +35,7 @@ def topk(k):
             bids = moegirl2bgm[mid]
             if len(bids) == 0:
                 continue
-            if bids[0] != i['id']:
+            if bids[0] != id:
                 continue
             st.add(mid)
             ret.append(mid)

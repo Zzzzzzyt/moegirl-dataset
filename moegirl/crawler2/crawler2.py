@@ -43,7 +43,7 @@ cookies = os.getenv("MOEGIRL_COOKIES")
 print('cookies:', cookies)
 print()
 headers['Cookie'] = cookies
-cooldown = 5
+cooldown = 10
 
 converter = opencc.OpenCC("t2s.json")
 
@@ -281,10 +281,10 @@ def crawl(name, bar):
 
 
 char_index = json.load(open("../preprocess/char_index.json", encoding="utf-8"))
-# with tqdm(char_index) as bar:
-#     for i in bar:
-#         bar.set_description(i)
-#         crawl(i, bar)
+with tqdm(char_index) as bar:
+    for i in bar:
+        bar.set_description(i)
+        crawl(i, bar)
 
 extra_info = {}
 bar = tqdm(char_index)

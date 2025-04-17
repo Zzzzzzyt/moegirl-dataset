@@ -1,7 +1,6 @@
 import json
 from re import L
 import numpy as np
-import scipy.stats
 from tqdm import tqdm
 
 attr2char = json.load(open('../preprocess/attr2char.json', encoding='utf-8'))

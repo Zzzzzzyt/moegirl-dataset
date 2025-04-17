@@ -52,7 +52,7 @@ special_map = {
     "223": "露易丝(零之使魔)",  # ルイズ・フランソワーズ・ル・ブラン・ド・ラ・ヴァリエール
     "855": "爱尔奎特·布伦史塔德",  # アルクェイド・ブリュンスタッド
     "12423": None,  # 杨威利ヤン・ウェンリー
-    '87184': 'トワ',
+    '87184': '托娃(Evenicle)',
     '35614': '拉姆(Re:从零开始的异世界生活)',
     '15420': None,
     '108666': '胡桃(莉可丽丝)',
@@ -117,7 +117,7 @@ reverse_special = {
     '贝塔(摩尔庄园)': None,
     '皮诺(Fate)': None,
     '托尔(魔法禁书目录)': None,
-    '主人公(火焰之纹章_风花雪月)': '69218',
+    '主人公(火焰之纹章 风花雪月)': '69218',
     '莲华(美少女万华镜)': '16164',
     '莲华(歌姬)': None,
     '猫猫(七色战记)': None,
@@ -203,17 +203,6 @@ subject_special = {}
 
 subject_reverse_special = {}
 
-for k, v in subject_map:
-    for entry in k:
-        subject_special[entry] = set(v)
-    for entry in v:
-        subject_reverse_special[entry] = set(k)
-
-for k, v in special_map.items():
-    if v is not None and v not in reverse_special:
-        reverse_special[v] = k
-
-
 bgm_index = load_json("bgm_index_full.json")
 bgm_chars = load_json("bgm_chars_full.json")
 bgm_subjects = load_json("bgm_subjects_full.json")
@@ -228,6 +217,21 @@ moegirl_extra = load_json("../moegirl/crawler2/extra_processed.json")
 print("loaded: moegirl_extra:", len(moegirl_extra))
 char2subject = load_json("../moegirl/preprocess/char2subject.json")
 print("loaded: char2subject:", len(char2subject))
+
+
+for k, v in subject_map:
+    for entry in k:
+        subject_special[entry] = set(v)
+    for entry in v:
+        subject_reverse_special[entry] = set(k)
+
+for k, v in special_map.items():
+    if v is not None and v not in reverse_special:
+        reverse_special[v] = k
+
+for k, v in reverse_special.items():
+    if v is not None and v not in special_map:
+        special_map[v] = k
 
 
 def is_postfix(a, b):
@@ -301,7 +305,7 @@ def smatch(moename, subjects):
 
 
 def map_bgm(entry, verbose=False):
-    id = str(entry["id"])
+    id = entry["id"]
     if id in special_map:
         special = special_map[id]
         if special is None:
@@ -347,6 +351,9 @@ def map_bgm(entry, verbose=False):
     names.sort(key=lambda x: len(x) - x.isascii() * 10, reverse=True)
     names = canon_name + names
     names = unique(names)
+
+    if verbose:
+        print("names:", names)
 
     match = []
     for i in names:
@@ -476,7 +483,7 @@ def map_bgm(entry, verbose=False):
 bgm_subjects2 = {}
 
 for entry in bgm_index:
-    id = str(entry["id"])
+    id = entry["id"]
     subjects = []
     if id in bgm_subjects:
         for entry in bgm_subjects[id]:
@@ -508,24 +515,24 @@ for k, v in char2subject.items():
 
 moe_lookup = {}
 moe_subjects = {}
-for entry in moegirl_chars:
-    name, pre, post = moegirl_split(entry)
+for moeid in moegirl_chars:
+    name, pre, post = moegirl_split(moeid)
 
     subjects = []
     if pre != "":
         subjects.append(pre)
-    if entry in char2subject:
-        subjects.extend(char2subject[entry])
+    if moeid in char2subject:
+        subjects.extend(char2subject[moeid])
     if post != "":
         subjects.append(post)
     subjects = unique(subjects)
-    moe_subjects[entry] = subjects
+    moe_subjects[moeid] = subjects
 
     if name not in moe_lookup:
         moe_lookup[name] = []
-    moe_lookup[name].append((entry, 1))
-    if entry in moegirl_extra:
-        char = moegirl_extra[entry]
+    moe_lookup[name].append((moeid, 1))
+    if moeid in moegirl_extra:
+        char = moegirl_extra[moeid]
         if "本名" in char:
             for idx, j in enumerate(char["本名"]):
                 j = j.replace(" ", "").lower().strip('"\'')
@@ -534,7 +541,7 @@ for entry in moegirl_chars:
                     continue
                 if j not in moe_lookup:
                     moe_lookup[j] = []
-                moe_lookup[j].append((entry, 1 / (idx + 2)))
+                moe_lookup[j].append((moeid, 1 / (idx + 2)))
 
 if __name__ == "__main__":
     bgm2moegirl = {}
@@ -549,17 +556,24 @@ if __name__ == "__main__":
 
     for cnt, entry in enumerate(tqdm(bgm_index)):
         moegirl_ids = map_bgm(entry, verbose=False)
-        bgm_id = str(entry["id"])
+        if len(moegirl_ids) > 0 and moegirl_ids[0][1] >= 2:
+            score_limit = moegirl_ids[0][1] * 0.5
+            moegirl_ids = list(filter(lambda x: x[1] >= score_limit, moegirl_ids))
+
+        bgm_id = entry["id"]
         if bgm_id not in special_map:
             if len(moegirl_ids) == 0:
                 nonecount += 1
             elif len(moegirl_ids) > 1:
                 multicount += 1
-        # print(cnt, bgm_id, i['name'], moegirl_ids)
-        # print('\'{}\':'.format(bgm_id), moegirl_ids, '#', i['name'])
+                # print(cnt, bgm_id, entry['name'], moegirl_ids)
+
         tmp = []
         for res in moegirl_ids:
             moegirl_id, score = res[0], res[1]
+            if moegirl_id not in moegirl_chars:
+                print("not in moegirl_chars:", moegirl_id)
+                continue
             tmp.append(moegirl_id)
             if moegirl_id not in moegirl2bgm:
                 moegirl2bgm[moegirl_id] = []

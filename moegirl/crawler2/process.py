@@ -186,6 +186,10 @@ def extract_text(
                 or name == 'eye_color'
                 or name == 'hair_color'
                 or name == 'rainbow text'
+                or name == 'background color'
+                or name == 'ac'
+                or name == '模糊文字'
+                or name == '舰c'
             ):
                 if len(code.params) >= 1:
                     ret.extend(extract_text(code.get(1).value))
@@ -204,6 +208,7 @@ def extract_text(
                 or name == "lang"
                 or name == "gradient_text"
                 or name == "cj"
+                or name == '#invoke:战舰少女'
             ):
                 ret.extend(extract_text(code.get(2).value))
             elif name == "ruby" or name == "rubyh":

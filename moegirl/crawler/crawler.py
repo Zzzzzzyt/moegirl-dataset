@@ -26,7 +26,7 @@ headers = {
     'sec-ch-ua-mobile': '?0',
     'sec-ch-ua-platform': '"Windows"',
 }
-cooldown = 4
+cooldown = 10
 
 # requests.adapters.DEFAULT_RETRIES = 3
 
@@ -295,6 +295,7 @@ def filter_func(stk):
             return False
     return True
 
+
 def filter_func2(stk):
     if len(stk) == 0:
         return True
@@ -303,7 +304,8 @@ def filter_func2(stk):
         return False
     return True
 
-# ret = load_json('subjects2.json')
+
+# ret = load_json('subjects.json')
 # # ret = {}
 # try:
 #     parse_index(
@@ -312,17 +314,10 @@ def filter_func2(stk):
 #         filter_function=filter_func,
 #     )
 # except BaseException as e:
-#     pass
-# save_json(ret, 'subjects2.json')
+#     print(f"An error occurred: {e}")
+# save_json(ret, 'subjects.json')
 
-# save_json(parse_index('https://zh.moegirl.org.cn/Category:按角色特征分类', dedupe=filterset)[0], 'by_attr.json')
-# parse_index('https://zh.moegirl.org.cn/Category:按着装特征分类', dedupe=filterset)
-# save_json(
-#     parse_index('https://zh.moegirl.org.cn/Category:虚拟人物', dedupe=filterset)[0],
-#     'temp/full.json',
-# )
-
-# ret = load_json('attrs2.json')
+# ret = load_json('attrs.json')
 # # ret = {}
 # try:
 #     parse_index(
@@ -331,10 +326,10 @@ def filter_func2(stk):
 #         filter_function=filter_func2,
 #     )
 # except BaseException as e:
-#     pass
-# save_json(ret, 'attrs2.json')
+#     print(f"An error occurred: {e}")
+# save_json(ret, 'attrs.json')
 
-# save_json(
-#     parse_index2('https://zh.moegirl.org.cn/Category:按歌声合成软件分类'),
-#     'subset/vocaloid.json',
-# )
+save_json(
+    parse_index2('https://zh.moegirl.org.cn/Category:按歌声合成软件分类'),
+    'subset/vocaloid.json',
+)
