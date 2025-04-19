@@ -317,19 +317,19 @@ def filter_func2(stk):
 #     print(f"An error occurred: {e}")
 # save_json(ret, 'subjects.json')
 
-# ret = load_json('attrs.json')
-# # ret = {}
-# try:
-#     parse_index(
-#         'https://zh.moegirl.org.cn/Category:虚拟人物',
-#         ret,
-#         filter_function=filter_func2,
-#     )
-# except BaseException as e:
-#     print(f"An error occurred: {e}")
-# save_json(ret, 'attrs.json')
+ret = load_json('attrs.json')
+# ret = {}
+try:
+    parse_index(
+        'https://zh.moegirl.org.cn/Category:虚拟人物',
+        ret,
+        filter_function=filter_func2,
+    )
+except BaseException as e:
+    print(f"An error occurred: {e}")
+save_json(ret, 'attrs.json')
 
-save_json(
-    parse_index2('https://zh.moegirl.org.cn/Category:按歌声合成软件分类'),
-    'subset/vocaloid.json',
-)
+# save_json(
+#     parse_index2('https://zh.moegirl.org.cn/Category:按歌声合成软件分类'),
+#     'subset/vocaloid.json',
+# )

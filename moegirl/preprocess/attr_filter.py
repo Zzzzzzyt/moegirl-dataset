@@ -24,6 +24,7 @@ for i in data['subcategories']:
 
 ret = set()
 for i in data['subcategories']:
+    tmp = set()
     if i['name'] in [
         '按外貌特征分类',
         '按体型特征分类',
@@ -37,7 +38,11 @@ for i in data['subcategories']:
         '按非职业身份分类',
         '按性格心理分类',
     ]:
-        dfs(i, ret)
+        dfs(i, tmp)
+        tmp2 = list(filter(lambda x: len(attr2char[x]) >= 100, tmp))
+        tmp2.sort(key=lambda x: len(attr2char[x]), reverse=True)
+        print(i['name'], tmp2)
+        ret |= tmp
 
 ret = list(ret)
 ret = list(filter(lambda x: len(attr2char[x]) >= 100, ret))
@@ -48,6 +53,7 @@ for i in eye_color_attr:
     if i not in ret:
         ret.append(i)
 ret.sort(key=lambda x: len(attr2char[x]), reverse=True)
+print()
 print(ret)
 
 save_json(ret, 'fundamental_attr.json')
