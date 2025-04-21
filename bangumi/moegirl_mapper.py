@@ -59,6 +59,23 @@ special_map = {
     '70504': '鹭宫诗织',
     '91297': '雨(主播女孩重度依赖)',
     '22783': None,  # 春日步(阿滋漫画大王)
+    '104095': '艾丽西亚·伊德露西亚',
+    '266': '金色暗影',
+    '1227': '吉尔伽美什(Fate)',
+    '63762': '忍野忍',
+    '35608': '爱蜜莉雅',
+    '108660': '木更',
+    '10446': '丘比',
+    '23425': '白(游戏人生)',
+    '86247': '菲伦',
+    '156': '银古',
+    '11909': '博士(日常)',
+    '29362': '艾拉(可塑性记忆)',
+    '39362': '丛雨',
+    '116359': '丽贝卡',
+    '292': '黑(DARKER THAN BLACK)',
+    '37455': '无名(甲铁城的卡巴内瑞)',
+    '13245': '卡斯瓦尔·雷姆·戴肯',
 }
 # special_map = {}
 
@@ -154,38 +171,38 @@ subject_map = [
     (['ONE PIECE'], ['海贼王']),
     (
         [
-            "东方灵异传 ～ Highly Responsive to Prayers.",
-            "东方封魔录 ～ the Story of Eastern Wonderland.",
-            "东方梦时空 ～ Phantasmagoria of Dim. Dream.",
-            "东方幻想乡 ～ Lotus Land Story.",
-            "东方怪绮谈 ～ Mystic Square.",
-            "东方红魔乡 ～ the Embodiment of Scarlet Devil.",
-            "东方妖妖梦 ～ Perfect Cherry Blossom.",
-            "东方永夜抄 ～ Imperishable Night.",
-            "东方花映塚 ～ Phantasmagoria of Flower View.",
-            "东方文花帖 ～ Shoot the Bullet.",
-            "东方风神录 ～ Mountain of Faith.",
-            "东方地灵殿 ～ Subterranean Animism.",
-            "东方星莲船 ～ Undefined Fantastic Object.",
-            "Double Spoiler ～ 东方文花帖",
+            "东方灵异传 ~ Highly Responsive to Prayers.",
+            "东方封魔录 ~ the Story of Eastern Wonderland.",
+            "东方梦时空 ~ Phantasmagoria of Dim. Dream.",
+            "东方幻想乡 ~ Lotus Land Story.",
+            "东方怪绮谈 ~ Mystic Square.",
+            "东方红魔乡 ~ the Embodiment of Scarlet Devil.",
+            "东方妖妖梦 ~ Perfect Cherry Blossom.",
+            "东方永夜抄 ~ Imperishable Night.",
+            "东方花映塚 ~ Phantasmagoria of Flower View.",
+            "东方文花帖 ~ Shoot the Bullet.",
+            "东方风神录 ~ Mountain of Faith.",
+            "东方地灵殿 ~ Subterranean Animism.",
+            "东方星莲船 ~ Undefined Fantastic Object.",
+            "Double Spoiler ~ 东方文花帖",
             "妖精大战争 ~ 东方三月精",
-            "东方神灵庙 ～ Ten Desires.",
-            "东方辉针城 ～ Double Dealing Character.",
-            "东方绀珠传 ～ Legacy of Lunatic Kingdom.",
-            "东方天空璋 ～ Hidden Star in Four Seasons.",
-            "东方鬼形兽 ～ Wily Beast and Weakest Creature.",
-            "东方虹龙洞 ～ Unconnected Marketeers.",
-            "弹幕狂们的黑市 ～ 100th Black Market.",
-            "东方兽王园 ～ Unfinished Dream of All Living Ghost.",
-            "东方凭依华 ～ Antinomy of Common Flowers.",
-            "东方萃梦想 ～ Immaterial and Missing Power.",
-            "东方绯想天 ～ Scarlet Weather Rhapsody.",
-            "东方非想天则 ～ 追寻特大型人偶之谜",
-            "东方深秘录 ～ Urban Legend in Limbo.",
-            "弹幕天邪鬼 ～ Impossible Spell Card.",
-            "东方心绮楼 ～ Hopeless Masquerade.",
-            "秘封噩梦日记 ～ Violet Detector.",
-            "东方刚欲异闻 ～ 被水淹没的沉愁地狱",
+            "东方神灵庙 ~ Ten Desires.",
+            "东方辉针城 ~ Double Dealing Character.",
+            "东方绀珠传 ~ Legacy of Lunatic Kingdom.",
+            "东方天空璋 ~ Hidden Star in Four Seasons.",
+            "东方鬼形兽 ~ Wily Beast and Weakest Creature.",
+            "东方虹龙洞 ~ Unconnected Marketeers.",
+            "弹幕狂们的黑市 ~ 100th Black Market.",
+            "东方兽王园 ~ Unfinished Dream of All Living Ghost.",
+            "东方凭依华 ~ Antinomy of Common Flowers.",
+            "东方萃梦想 ~ Immaterial and Missing Power.",
+            "东方绯想天 ~ Scarlet Weather Rhapsody.",
+            "东方非想天则 ~ 追寻特大型人偶之谜",
+            "东方深秘录 ~ Urban Legend in Limbo.",
+            "弹幕天邪鬼 ~ Impossible Spell Card.",
+            "东方心绮楼 ~ Hopeless Masquerade.",
+            "秘封噩梦日记 ~ Violet Detector.",
+            "东方刚欲异闻 ~ 被水淹没的沉愁地狱",
         ],
         ['东方Project'],
     ),
@@ -260,6 +277,37 @@ def unique(l):
         if i not in ret:
             ret.append(i)
     return ret
+
+
+def conv_subject(t):
+    replacements = {
+        '：': ':',
+        '，': ',',
+        '；': ';',
+        '！': '!',
+        '？': '?',
+        '。': '.',
+        '“': '"',
+        '”': '"',
+        '‘': "'",
+        '’': "'",
+        '、': ',',
+        '～': '~',
+        '〜': '~',
+        '（': '(',
+        '）': ')',
+        '⌈': '(',
+        '⌋': ')',
+        '⌊': '(',
+        '⌉': ')',
+        '「': '(',
+        '」': ')',
+        '《': '(',
+        '》': ')',
+    }
+    for old, new in replacements.items():
+        t = t.replace(old, new)
+    return t
 
 
 def multisplit(str, sp=",，/／"):
@@ -340,6 +388,8 @@ def map_bgm(entry, verbose=False):
                 names.extend(multisplit(i["value"]))
             else:
                 for split in i["value"]:
+                    if split["k"] == "罗马字":
+                        continue
                     split = multisplit(split["v"])
                     names.extend(split)
     if "name" in entry:
@@ -353,6 +403,7 @@ def map_bgm(entry, verbose=False):
     names = unique(names)
 
     if verbose:
+        print('subjects:', subjects)
         print("names:", names)
 
     match = []
@@ -371,7 +422,7 @@ def map_bgm(entry, verbose=False):
                         subscore += smatch(k, subjects)
                     # if subscore == 0:
                     #     continue
-                    score += subscore * 2
+                    score += subscore * 5
                 match.append((moeid, score, moesub))
 
                 if len(moe_subjects_special) > 0:
@@ -382,6 +433,9 @@ def map_bgm(entry, verbose=False):
                     if flag:
                         match.append((moeid, score + 1000, moesub))
     match.sort(reverse=True, key=lambda x: x[1])
+
+    if verbose:
+        print('zeroth stage:', match)
 
     dedupe = {}
     match2 = []
@@ -408,30 +462,43 @@ def map_bgm(entry, verbose=False):
         match i["key"]:
             case "生日":
                 if birthday is None:
-                    birthday = [None, None, None]
+                    tmp = [None, None, None]
                     if type(i["value"]) != str:
                         continue
                     m = re.search(r"((\d*)年)?((\d*)月)?((\d*)日)?", i["value"])
                     if m:
                         g = m.groups()
                         if g[1]:
-                            birthday[0] = int(g[1])
+                            tmp[0] = int(g[1])
                         if g[3]:
-                            birthday[1] = int(g[3])
+                            tmp[1] = int(g[3])
                         if g[5]:
-                            birthday[2] = int(g[5])
+                            tmp[2] = int(g[5])
+                    if tmp[0] is None and tmp[1] is None and tmp[2] is None:
+                        continue
+                    birthday = tmp
             case "血型":
                 if bloodtype is None:
-                    bloodtype = i["value"].replace("型", "")
+                    tmp = i["value"].replace("型", "")
+                    if tmp in ["A", "B", "AB", "O"]:
+                        bloodtype = tmp
             case "身高":
                 if height is None:
                     try:
-                        height = int(i["value"].replace("cm", ""))
+                        tmp = int(i["value"].replace("cm", ""))
+                        if 100 <= tmp <= 200:
+                            height = tmp
                     except Exception as e:
                         pass
-    for idx, i in enumerate(match2):
-        mid = i[0]
-        score = i[1]
+
+    if verbose:
+        print('birthday:', birthday)
+        print('bloodtype:', bloodtype)
+        print('height:', height)
+
+    for idx in range(len(match2)):
+        mid = match2[idx][0]
+        score = match2[idx][1]
         if mid not in moegirl_extra:
             continue
         char2 = moegirl_extra[mid]
@@ -449,7 +516,7 @@ def map_bgm(entry, verbose=False):
         if "血型" in char2 and bloodtype:
             if char2["血型"] == bloodtype:
                 score += 1
-        match2[idx] = (mid, score, i[2])
+        match2[idx] = (mid, score, match2[idx][2])
     match2.sort(reverse=True, key=lambda x: x[1])
 
     if verbose:
@@ -490,8 +557,8 @@ for entry in bgm_index:
             score = 1
             if entry["staff"] == "客串":
                 score = 0.3
-            subjects.append((entry["name_cn"], score))
-            subjects.append((entry["name"], score * 0.5))
+            subjects.append((conv_subject(entry["name_cn"]), score))
+            subjects.append((conv_subject(entry["name"]), score * 0.5))
 
     subjects = list(filter(lambda x: len(x[0]) > 0, subjects))
     subjects.sort(key=lambda x: x[1], reverse=True)
@@ -526,6 +593,7 @@ for moeid in moegirl_chars:
     if post != "":
         subjects.append(post)
     subjects = unique(subjects)
+    subjects = list(map(conv_subject, subjects))
     moe_subjects[moeid] = subjects
 
     if name not in moe_lookup:
@@ -626,6 +694,9 @@ if __name__ == "__main__":
         v = v.copy()
         v.sort(key=lambda x: x[2])
         v.sort(reverse=True, key=lambda x: x[1])
+        if len(v) > 0 and v[0][1] >= 2:
+            score_limit = v[0][1] * 0.5
+            v = list(filter(lambda x: x[1] >= score_limit, v))
         # if len(v) > 1:
         #     v = list(filter(lambda x: x[1] > 1, v))
         if len(v) == 0:

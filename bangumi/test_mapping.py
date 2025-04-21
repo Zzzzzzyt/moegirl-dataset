@@ -107,5 +107,10 @@ for entry in bgm_index:
 # print(map_bgm(bgm_entry['87974'], verbose=True))
 # test_moe('山田凉')
 
-test_moe('阿洛娜')
-print(map_bgm(bgm_entry['104651'], verbose=True))
+# test_moe('阿洛娜')
+# print(map_bgm(bgm_entry['104651'], verbose=True))
+
+# print(map_bgm(bgm_entry['104093'], verbose=True))
+# test_moe('翠(异世界舅舅)')
+
+# print(map_bgm(bgm_entry['8937'], verbose=True))
