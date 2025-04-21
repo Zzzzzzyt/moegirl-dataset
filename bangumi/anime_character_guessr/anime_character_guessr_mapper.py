@@ -7,6 +7,79 @@ attr2char = load_json('../../moegirl/preprocess/attr2char.json')
 fundamental_attr = set(load_json('../../moegirl/preprocess/fundamental_attr.json'))
 bgm_entry = {entry['id']: entry for entry in bgm_index}
 
+hair_attrs = [
+    '黑发',
+    '银发',
+    '金发',
+    '棕发',
+    '蓝发',
+    '长直',
+    '短发',
+    '呆毛',
+    '紫发',
+    '粉发',
+    '红发',
+    '双马尾',
+    '长发',
+    '绿发',
+    '卷发',
+    '黑长直',
+    '橙发',
+    '高马尾',
+    '挑染',
+    '马尾',
+    '麻花辫',
+    '长鬓角',
+    '齐刘海',
+    '遮单眼发',
+    'M形刘海',
+    '下双马尾',
+    '中长发',
+    '妹妹头',
+    '渐变色发',
+    '进气口发型',
+    '侧单马尾',
+    '披肩双马尾',
+    '中分',
+    '姬发式',
+    '斜刘海',
+    '束鬓',
+    '半马尾',
+    '偏分',
+    '双麻花辫',
+    '低马尾',
+    '不对称鬓发',
+    '长卷发',
+    '丸子头',
+    '乱发',
+    '内层挑染',
+    '环形辫',
+    '双丸子头',
+    '长刘海',
+    '双色发',
+    '遮耳发',
+    '盘发',
+    '人字刘海',
+    '尾扎长发',
+    '单麻花辫',
+    '另类发型',
+    '大背头',
+    '刺猬头',
+    '双螺旋',
+    '鬓角麻花辫',
+    '龙须刘海',
+    '精灵耳发型',
+    '短刘海',
+    '死亡发型',
+    '翻翘',
+    '公主辫',
+    '两根呆毛',
+    '变发色',
+    '交叉刘海',
+    '刘海尾',
+    '辫子',
+]
+
 bgm2attr = []
 for k, v in bgm2moegirl.items():
     if len(v) == 0:
@@ -26,6 +99,10 @@ for k, v in bgm2moegirl.items():
     # print(moeid, tmp)
     if len(tmp) == 0:
         continue
+    if '光头' in tmp:
+        for i in hair_attrs:
+            if i in tmp:
+                tmp.remove(i)
     bgm2attr.append((k, tmp))
 
 bgm2attr.sort(key=lambda x: bgm_entry[x[0]]['rank'])
