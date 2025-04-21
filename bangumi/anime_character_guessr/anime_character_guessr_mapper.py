@@ -97,12 +97,12 @@ for k, v in bgm2moegirl.items():
     for i in range(len(tmp)):
         tmp[i] = tmp[i].replace('(萌属性)', '')
     # print(moeid, tmp)
-    if len(tmp) == 0:
-        continue
     if '光头' in tmp:
         for i in hair_attrs:
             if i in tmp:
                 tmp.remove(i)
+    if len(tmp) == 0:
+        continue
     bgm2attr.append((k, tmp))
 
 bgm2attr.sort(key=lambda x: bgm_entry[x[0]]['rank'])
