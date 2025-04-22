@@ -76,6 +76,7 @@ special_map = {
     '292': '黑(DARKER THAN BLACK)',
     '37455': '无名(甲铁城的卡巴内瑞)',
     '13245': '卡斯瓦尔·雷姆·戴肯',
+    '61546': None,
 }
 # special_map = {}
 

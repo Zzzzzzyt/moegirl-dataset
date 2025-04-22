@@ -114,3 +114,5 @@ for entry in bgm_index:
 # test_moe('翠(异世界舅舅)')
 
 # print(map_bgm(bgm_entry['8937'], verbose=True))
+
+print(map_bgm(bgm_entry['35609'], verbose=True))

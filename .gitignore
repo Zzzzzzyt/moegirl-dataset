@@ -165,3 +165,4 @@ bangumi/dump_converter/*.zip
 bangumi/dump_converter/*.jsonlines
 bangumi/anime_character_guessr/tags.character_tags.json
 bangumi/anime_character_guessr/tags.new_tags.json
+bangumi/anime_character_guessr/id_tags.json

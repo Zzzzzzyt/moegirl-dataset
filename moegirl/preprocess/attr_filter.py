@@ -44,6 +44,15 @@ for i in data['subcategories']:
         print(i['name'], tmp2)
         ret |= tmp
 
+ret |= set(
+    [
+        '面具',
+        '眼罩',
+        '眼镜',
+        '耳环',
+        '耳钉',
+    ]
+)
 ret = list(ret)
 ret = list(filter(lambda x: len(attr2char[x]) >= 100, ret))
 for i in hair_color_attr:
