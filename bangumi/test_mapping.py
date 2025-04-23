@@ -115,4 +115,5 @@ for entry in bgm_index:
 
 # print(map_bgm(bgm_entry['8937'], verbose=True))
 
-print(map_bgm(bgm_entry['35609'], verbose=True))
+# print(map_bgm(bgm_entry['35609'], verbose=True))
+# print(test_moe('帕克(Re:从零开始的异世界生活)'))

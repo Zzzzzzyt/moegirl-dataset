@@ -29,13 +29,13 @@ sus = []
 
 for k, v in subjects.items():
     if len(v) == 0:
-        if int(k) > 170000 and k not in redirects:
+        if int(k) > 174000 and k not in redirects:
             sus.append(k)
 
 try:
     bar = tqdm(sus)
     for k in bar:
-        bar.set_description(f'k {chars[k]["name"]}')
+        bar.set_description(f'{k} {chars[k]["name"]}')
         realid = str(get_id(k, bar))
         if realid != k:
             redirects[k] = realid

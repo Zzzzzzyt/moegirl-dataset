@@ -330,16 +330,18 @@ def multisplit(str, sp=",，/／"):
 
 def moegirl_split(name):
     cur = name
-    pre = ""
-    prepos = cur.find(":")
-    if prepos != -1:
-        pre = cur[:prepos]
-        cur = cur[prepos + 1 :]
     post = ""
     postpos = cur.find("(")
     if postpos != -1 and cur[-1] == ")":
         post = cur[postpos + 1 : -1]
         cur = cur[:postpos]
+
+    pre = ""
+    prepos = cur.find(":")
+    if prepos != -1:
+        pre = cur[:prepos]
+        cur = cur[prepos + 1 :]
+    
     return cur, pre, post
 
 
@@ -585,7 +587,6 @@ moe_lookup = {}
 moe_subjects = {}
 for moeid in moegirl_chars:
     name, pre, post = moegirl_split(moeid)
-
     subjects = []
     if pre != "":
         subjects.append(pre)

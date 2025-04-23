@@ -26,7 +26,7 @@ headers = {
     'sec-ch-ua-mobile': '?0',
     'sec-ch-ua-platform': '"Windows"',
 }
-cooldown = 10
+cooldown = 12
 
 # requests.adapters.DEFAULT_RETRIES = 3
 

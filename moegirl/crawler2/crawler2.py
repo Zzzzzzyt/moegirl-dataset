@@ -43,7 +43,7 @@ cookies = os.getenv("MOEGIRL_COOKIES")
 print('cookies:', cookies)
 print()
 headers['Cookie'] = cookies
-cooldown = 10
+cooldown = 12
 
 converter = opencc.OpenCC("t2s.json")
 
