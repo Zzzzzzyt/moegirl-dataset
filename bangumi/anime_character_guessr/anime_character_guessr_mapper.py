@@ -142,12 +142,6 @@ priority_attrs = {}
 for idx, i in enumerate(priority_attrs_raw):
     priority_attrs[i] = (len(priority_attrs_raw) - idx) * 1000000
 
-for idx, i in enumerate(fundamental_attr):
-    if i in priority_attrs:
-        continue
-    priority_attrs[i] = (len(fundamental_attr) - idx) * 10000
-
-
 hair_color_attr = [
     "黑发",
     "金发",
@@ -212,11 +206,11 @@ def merge_user(bgmid, tags, user_tags):
     d_eye = {}
     for tag in tags:
         if tag in hair_color_attr:
-            d_hair[tag] = 5
+            d_hair[tag] = 4
         elif tag in eye_color_attr:
-            d_eye[tag] = 5
+            d_eye[tag] = 4
         else:
-            d[tag] = 5
+            d[tag] = 4
 
     original_hair = list(d_hair.keys())
     original_eye = list(d_eye.keys())
@@ -239,7 +233,7 @@ def merge_user(bgmid, tags, user_tags):
 
     ret = []
     for tag, count in d.items():
-        if count > 2:
+        if count >= 2:
             ret.append(tag)
 
     d_hair = sorted(
@@ -260,7 +254,7 @@ def merge_user(bgmid, tags, user_tags):
         elif len(d_hair) == 2:
             ret_hair = [d_hair[0][0], d_hair[1][0]]
         else:
-            if d_hair[1][1] > d_hair[2][1] * 2 and d_hair[0][1] <= d_hair[1][1] * 2:
+            if d_hair[1][1] >= d_hair[2][1] * 2:
                 ret_hair = [d_hair[0][0], d_hair[1][0]]
     else:
         if len(d_hair) < 1:
@@ -268,7 +262,7 @@ def merge_user(bgmid, tags, user_tags):
         elif len(d_hair) == 1:
             ret_hair = [d_hair[0][0]]
         else:
-            if d_hair[0][1] > d_hair[1][1] * 2:
+            if d_hair[0][1] >= d_hair[1][1] * 2:
                 ret_hair = [d_hair[0][0]]
 
     ret_eye = original_eye.copy()
@@ -278,7 +272,7 @@ def merge_user(bgmid, tags, user_tags):
         elif len(d_eye) == 2:
             ret_eye = [d_eye[0][0], d_eye[1][0]]
         else:
-            if d_eye[1][1] > d_eye[2][1] * 2 and d_eye[0][1] <= d_eye[1][1] * 2:
+            if d_eye[1][1] >= d_eye[2][1] * 2:
                 ret_eye = [d_eye[0][0], d_eye[1][0]]
     else:
         if len(d_eye) < 1:
@@ -286,32 +280,32 @@ def merge_user(bgmid, tags, user_tags):
         elif len(d_eye) == 1:
             ret_eye = [d_eye[0][0]]
         else:
-            if d_eye[0][1] > d_eye[1][1] * 2:
+            if d_eye[0][1] >= d_eye[1][1] * 2:
                 ret_eye = [d_eye[0][0]]
 
     ret = ret_hair + ret_eye + ret
     # ret.sort(key=value_func, reverse=True)
 
-    # if set(ret_eye) != set(original_eye) or set(ret_hair) != set(original_hair):
-    #     print(bgmid, bgm_entry[bgmid]['name'])
-    #     print(bgm2moegirl[bgmid])
-    #     print(tags)
-    #     print(user_tags)
-    #     print(d)
-    #     print(d_hair)
-    #     print(d_eye)
-    #     print(ret)
-    #     print(original_hair, ret_hair)
-    #     print(original_eye, ret_eye)
-    #     print()
-
-    if set(ret) != set(tags):
+    if set(ret_eye) != set(original_eye) or set(ret_hair) != set(original_hair):
         print(bgmid, bgm_entry[bgmid]['name'])
         print(bgm2moegirl[bgmid])
         print(tags)
         print(user_tags)
+        print(d)
+        print(d_hair)
+        print(d_eye)
         print(ret)
+        print(original_hair, ret_hair)
+        print(original_eye, ret_eye)
         print()
+
+    # if set(ret) != set(tags):
+    #     print(bgmid, bgm_entry[bgmid]['name'])
+    #     print(bgm2moegirl[bgmid])
+    #     print(tags)
+    #     print(user_tags)
+    #     print(ret)
+    #     print()
 
     return ret
 
