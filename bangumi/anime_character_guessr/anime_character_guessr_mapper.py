@@ -231,11 +231,20 @@ def merge_user(bgmid, tags, user_tags):
         else:
             d[tag] = d.get(tag, 0) + count
 
-    if '长发' in d and '短发' in d:
-        if d['长发'] > d['短发']:
+    if ('长发' in d or '长直' in d or '黑长直' in d) and '短发' in d:
+        lmax = max(d.get('长发', 0), d.get('长直', 0), d.get('黑长直', 0))
+        smax = d.get('短发', 0)
+        if lmax == smax:
+            pass
+        elif lmax > smax:
             del d['短发']
         else:
-            del d['长发']
+            if '长发' in d:
+                del d['长发']
+            if '长直' in d:
+                del d['长直']
+            if '黑长直' in d:
+                del d['黑长直']
 
     ret = []
     for tag, count in d.items():
