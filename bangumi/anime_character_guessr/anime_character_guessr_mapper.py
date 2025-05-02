@@ -231,6 +231,12 @@ def merge_user(bgmid, tags, user_tags):
         else:
             d[tag] = d.get(tag, 0) + count
 
+    if '长发' in d and '短发' in d:
+        if d['长发'] > d['短发']:
+            del d['短发']
+        else:
+            del d['长发']
+
     ret = []
     for tag, count in d.items():
         if count >= 2:
