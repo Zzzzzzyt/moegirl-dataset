@@ -116,4 +116,18 @@ for entry in bgm_index:
 # print(map_bgm(bgm_entry['8937'], verbose=True))
 
 # print(map_bgm(bgm_entry['35609'], verbose=True))
-# print(test_moe('帕克(Re:从零开始的异世界生活)'))
+# test_moe('帕克(Re:从零开始的异世界生活)')
+
+test_moe('谛听(星穹铁道)')
+test_moe('庞培')
+test_moe('佩佩')
+test_moe('萨姆')
+
+test_moe('消灭都市:夏树')
+
+test_moe('慢羊羊')
+print(map_bgm(bgm_entry['68639'], verbose=True))
+
+test_moe('灰烬战线:百夫长')
+test_moe('格雷伊')
+print(map_bgm(bgm_entry['70840'], verbose=True))

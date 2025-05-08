@@ -77,6 +77,7 @@ special_map = {
     '37455': '无名(甲铁城的卡巴内瑞)',
     '13245': '卡斯瓦尔·雷姆·戴肯',
     '61546': None,
+    '15139': None,
 }
 # special_map = {}
 
@@ -156,13 +157,18 @@ reverse_special = {
     '鲨鱼(虚拟UP主)': None,
     '椿(废墟图书馆)': None,
     '猎鹰(漫威)': None,
+    '消灭都市:夏树': None,
+    '米内特': None,
+    '灰烬战线:百夫长': '132339',
+    '百闻牌:樱花妖': None,
 }
 
 # bgm <-> moegirl
 subject_map = [
     (['原神'], ['原神']),
     (['崩坏3'], ['崩坏3']),
-    (['崩坏：星穹铁道'], ['崩坏：星穹铁道']),
+    (['崩坏:星穹铁道'], ['崩坏:星穹铁道']),
+    (['绝区零'], ['绝区零']),
     (['阴阳师'], ['阴阳师(手游)']),
     (['舰队Collection'], ['舰队Collection舰娘']),
     (['战舰少女R'], ['战舰少女']),
@@ -215,6 +221,7 @@ subject_map = [
         ['坎特伯雷公主与骑士唤醒冠军之剑的奇幻冒险'],
     ),
     (['公主连结 Re:Dive'], ['公主连结Re:Dive']),
+    (['灰烬战线'], ['灰烬战线']),
 ]
 
 subject_special = {}
@@ -341,7 +348,7 @@ def moegirl_split(name):
     if prepos != -1:
         pre = cur[:prepos]
         cur = cur[prepos + 1 :]
-    
+
     return cur, pre, post
 
 
@@ -650,7 +657,7 @@ if __name__ == "__main__":
             moegirl2bgm[moegirl_id].append((bgm_id, score, cnt))
         bgm2moegirl[bgm_id] = tmp
 
-    for k, v in moegirl2bgm.items():
+    for k, v in list(moegirl2bgm.items()):
         if k not in moe_subjects:
             continue
         moesub = moe_subjects[k]
