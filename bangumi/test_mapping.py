@@ -133,3 +133,18 @@ test_moe('格雷伊')
 print(map_bgm(bgm_entry['70840'], verbose=True))
 
 test_moe('雪莉(荒野乱斗)')
+
+test_moe('幽灵(全金属狂潮)')
+
+# st = set()
+# for i in bgm_subjects2.values():
+#     for j in i:
+#         if '假面骑士' in j[0]:
+#             print(j)
+#             st.add(j[0])
+# print(list(st))
+
+test_moe('月读(假面骑士Zi-O)')
+test_moe('空(假面骑士电王)')
+test_moe('赤羽(假面骑士Build)')
+test_moe('Vice(假面骑士Revice)')
