@@ -131,3 +131,5 @@ print(map_bgm(bgm_entry['68639'], verbose=True))
 test_moe('灰烬战线:百夫长')
 test_moe('格雷伊')
 print(map_bgm(bgm_entry['70840'], verbose=True))
+
+test_moe('雪莉(荒野乱斗)')
