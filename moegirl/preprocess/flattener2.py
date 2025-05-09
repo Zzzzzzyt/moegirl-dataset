@@ -4,6 +4,7 @@ from utils.network import title_to_url
 
 chars = set(load_json('char_index.json'))
 subjects = load_json('../crawler/subjects.json')
+attr_index = set(load_json('attr_index.json'))
 
 
 def dfs(data, ret, stk: list = []):
@@ -13,6 +14,8 @@ def dfs(data, ret, stk: list = []):
         if '/Category:' + rname.replace(' ', '_') != rurl:
             print(data)
         assert '/Category:' + rname.replace(' ', '_') == rurl
+        if rname in ['白眼', '轮回眼', '写轮眼', 'MS少女']:
+            return
         stk.append(rname)
     if 'pages' in data:
         for i in data['pages']:

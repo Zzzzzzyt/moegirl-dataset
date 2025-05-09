@@ -142,7 +142,8 @@ test_moe('幽灵(全金属狂潮)')
 #         if '假面骑士' in j[0]:
 #             print(j)
 #             st.add(j[0])
-# print(list(st))
+# for i in st:
+#     print(repr(i) + ',')
 
 test_moe('月读(假面骑士Zi-O)')
 test_moe('空(假面骑士电王)')
