@@ -22,9 +22,9 @@ attrmap = {}
 for i in range(len(attrs)):
     attrmap[attrs[i]] = i
 
-hair_color_attr = load_json('../crawler/hair_color_attr.json')
+hair_color_attr = load_json('../preprocess/hair_color_attr.json')
 # hair_color_attr.sort(key=lambda x: P[attrmap[x]][attrmap[x]], reverse=True)
-eye_color_attr = load_json('../crawler/eye_color_attr.json')
+eye_color_attr = load_json('../preprocess/eye_color_attr.json')
 # eye_color_attr.sort(key=lambda x: P[attrmap[x]][attrmap[x]], reverse=True)
 
 bgm2moegirl = load_json('../../bangumi/bgm2moegirl.json')

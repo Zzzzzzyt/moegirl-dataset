@@ -4,8 +4,8 @@ attr_index = load_json('attr_index.json')
 attr_index = set(attr_index)
 data = load_json('../crawler/attrs.json')
 attr2char = load_json('attr2char.json')
-hair_color_attr = load_json('../crawler/hair_color_attr.json')
-eye_color_attr = load_json('../crawler/eye_color_attr.json')
+hair_color_attr = load_json('../preprocess/hair_color_attr.json')
+eye_color_attr = load_json('../preprocess/eye_color_attr.json')
 
 
 def dfs(data, ret):

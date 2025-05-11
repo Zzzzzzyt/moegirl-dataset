@@ -7,8 +7,8 @@ bgm_index = load_json('../../bangumi/bgm_index_full.json')
 new_tags = load_json('tags.new_tags.json')
 char_tags = load_json('tags.character_tags.json')
 char2attr = load_json('../../moegirl/preprocess/char2attr.json')
-hair_color_attr = load_json('../../moegirl/crawler/hair_color_attr.json')
-eye_color_attr = load_json('../../moegirl/crawler/eye_color_attr.json')
+hair_color_attr = load_json('../../moegirl/preprocess/hair_color_attr.json')
+eye_color_attr = load_json('../../moegirl/preprocess/eye_color_attr.json')
 
 bgm_entry = {i['id']: i for i in bgm_index}
 

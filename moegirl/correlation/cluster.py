@@ -12,8 +12,8 @@ chars = load_json('../../bangumi/subset/bgm20000_subset.json')[:3000]
 charmap = dict(map(lambda x: (x[1], x[0]), enumerate(chars)))
 
 
-hair_color_attr = load_json('../crawler/hair_color_attr.json')
-eye_color_attr = load_json('../crawler/eye_color_attr.json')
+hair_color_attr = load_json('../preprocess/hair_color_attr.json')
+eye_color_attr = load_json('../preprocess/eye_color_attr.json')
 
 attrs = load_json('../../moegirl/preprocess/attr_index.json')
 for i in hair_color_attr:

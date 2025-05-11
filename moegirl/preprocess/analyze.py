@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 
 from mplfonts import use_font
 
+from utils.file import save_json
+
 use_font('Noto Sans CJK SC')
 
 char_index: list = json.load(open('char_index.json', encoding='utf-8'))
@@ -25,7 +27,9 @@ l.sort(reverse=True)
 for idx, i in enumerate(l[:50]):
     # print(i)
     # print(char2attr[i[1]])
-    print('#{} {} {}人'.format(idx+1, i[1], i[0]))
+    print('#{} {} {}人'.format(idx + 1, i[1], i[0]))
+
+# save_json(list(map(lambda x: x[1], l[:1000])), 'male_attrs.json')
 
 # cnt1 = 0
 # l1 = []

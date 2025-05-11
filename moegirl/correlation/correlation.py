@@ -57,7 +57,7 @@ def calc_name(x, y):
     return tuple(list(res) + [xx, yy])
 
 
-# hair_color_attr = json.load(open('../crawler/hair_color_attr.json', encoding='utf-8'))
+# hair_color_attr = json.load(open('../preprocess/hair_color_attr.json', encoding='utf-8'))
 
 # tmp = query_attr("辫子")
 # for i in tmp:

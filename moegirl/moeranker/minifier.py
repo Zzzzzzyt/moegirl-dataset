@@ -2,11 +2,12 @@ import json
 import time
 from utils.file import load_json, save_json
 
-char_index = load_json('char_index.json')
-attr_index = load_json('attr_index.json')
-attr2char = load_json('attr2char.json')
-char2attr = load_json('char2attr.json')
-attr2article = load_json('attr2article.json')
+char_index = load_json('../preprocess/char_index.json')
+attr_index = load_json('../preprocess/attr_index.json')
+attr2char = load_json('../preprocess/attr2char.json')
+char2attr = load_json('../preprocess/char2attr.json')
+attr2article = load_json('../preprocess/attr2article.json')
+gender = load_json('../analyze/gender.json')
 
 
 def subset(fp, topk=len(attr_index)):
@@ -14,6 +15,8 @@ def subset(fp, topk=len(attr_index)):
     ret_attr_index = []
     ret_char2attr = []
     ret_attr2article = []
+    ret_male = []
+    ret_female = []
 
     # subattr = list(attr_index.keys())
     subattr = attr_index.copy()
@@ -47,6 +50,13 @@ def subset(fp, topk=len(attr_index)):
                 tmp.append(subattr_map[j])
         ret_char2attr.append(tmp)
 
+    for idx, i in enumerate(ret_char_index):
+        if i in gender:
+            if gender[i] == 'male':
+                ret_male.append(idx)
+            elif gender[i] == 'female':
+                ret_female.append(idx)
+
     # print(subattr)
     # print(subchar)
     print('char_index: {}'.format(len(ret_char_index)))
@@ -68,6 +78,14 @@ def subset(fp, topk=len(attr_index)):
         'attr2article encoded:',
         len(json.dumps(ret_attr2article, ensure_ascii=False, separators=(',', ':'))),
     )
+    print(
+        'male encoded:',
+        len(json.dumps(ret_male, ensure_ascii=False, separators=(',', ':'))),
+    )
+    print(
+        'female encoded:',
+        len(json.dumps(ret_female, ensure_ascii=False, separators=(',', ':'))),
+    )
     date = time.asctime()
     ret = {
         'pack_date': date,
@@ -76,6 +94,8 @@ def subset(fp, topk=len(attr_index)):
         'attr_index': ret_attr_index,
         'attr2article': ret_attr2article,
         'char2attr': ret_char2attr,
+        'male': ret_male,
+        'female': ret_female,
     }
     s = json.dumps(ret, ensure_ascii=False, separators=(',', ':'))
     s = s.encode('utf8')

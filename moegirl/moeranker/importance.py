@@ -6,11 +6,11 @@ from utils.file import save_json
 
 attrs = json.load(open("../preprocess/attr_index.json", encoding="utf-8"))
 chars = json.load(open("../preprocess/char_index.json", encoding="utf-8"))
-gain = np.load(open("gain.npy", "rb"))
-count = np.load(open("count.npy", "rb"))
-contain = np.load(open("contain.npy", "rb"))
+gain = np.load(open("../correlation/gain.npy", "rb"))
+count = np.load(open("../correlation/count.npy", "rb"))
+contain = np.load(open("../correlation/contain.npy", "rb"))
 contain = 1 - contain
-intersection = np.load(open("intersection.npy", "rb"))
+intersection = np.load(open("../correlation/intersection.npy", "rb"))
 attr_count = len(attrs)
 char_count = len(chars)
 attrmap = {}
@@ -30,8 +30,8 @@ for i in range(attr_count):
 
 importance /= importance[attrmap["黑发"]]
 
-hair_color_attr = json.load(open("../crawler/hair_color_attr.json", encoding="utf-8"))
-eye_color_attr = json.load(open("../crawler/eye_color_attr.json", encoding="utf-8"))
+hair_color_attr = json.load(open("../preprocess/hair_color_attr.json", encoding="utf-8"))
+eye_color_attr = json.load(open("../preprocess/eye_color_attr.json", encoding="utf-8"))
 
 res = []
 for i in range(attr_count):
@@ -45,4 +45,4 @@ for i in res:
     out[i[2]] = round(importance[i[1]], 5)
 print(out["蝴蝶结"], count[attrmap["蝴蝶结"]])
 save_json(out, 'importance.json')
-np.save(open("importance.npy", "wb"), importance, allow_pickle=False)
+# np.save(open("importance.npy", "wb"), importance, allow_pickle=False)
