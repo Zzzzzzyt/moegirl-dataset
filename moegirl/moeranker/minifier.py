@@ -15,8 +15,7 @@ def subset(fp, topk=len(attr_index)):
     ret_attr_index = []
     ret_char2attr = []
     ret_attr2article = []
-    ret_male = []
-    ret_female = []
+    gender_info = []
 
     # subattr = list(attr_index.keys())
     subattr = attr_index.copy()
@@ -50,12 +49,16 @@ def subset(fp, topk=len(attr_index)):
                 tmp.append(subattr_map[j])
         ret_char2attr.append(tmp)
 
-    for idx, i in enumerate(ret_char_index):
+    for i in ret_char_index:
         if i in gender:
             if gender[i] == 'male':
-                ret_male.append(idx)
+                gender_info.append(0)
             elif gender[i] == 'female':
-                ret_female.append(idx)
+                gender_info.append(1)
+            else:
+                gender_info.append(2)
+        else:
+            gender_info.append(2)
 
     # print(subattr)
     # print(subchar)
@@ -79,12 +82,8 @@ def subset(fp, topk=len(attr_index)):
         len(json.dumps(ret_attr2article, ensure_ascii=False, separators=(',', ':'))),
     )
     print(
-        'male encoded:',
-        len(json.dumps(ret_male, ensure_ascii=False, separators=(',', ':'))),
-    )
-    print(
-        'female encoded:',
-        len(json.dumps(ret_female, ensure_ascii=False, separators=(',', ':'))),
+        'gender_info encoded:',
+        len(json.dumps(gender_info, ensure_ascii=False, separators=(',', ':'))),
     )
     date = time.asctime()
     ret = {
@@ -94,8 +93,7 @@ def subset(fp, topk=len(attr_index)):
         'attr_index': ret_attr_index,
         'attr2article': ret_attr2article,
         'char2attr': ret_char2attr,
-        'male': ret_male,
-        'female': ret_female,
+        'gender_info': gender_info,
     }
     s = json.dumps(ret, ensure_ascii=False, separators=(',', ':'))
     s = s.encode('utf8')
