@@ -40,21 +40,16 @@ for k, v in char2attr.items():
                 bgm_female_cnt += 1
 
     if bgm_male_cnt > bgm_female_cnt:
-        male_cnt += 1
+        male_cnt += 2
     elif bgm_female_cnt > bgm_male_cnt:
-        female_cnt += 1
+        female_cnt += 2
 
-    if male_cnt > 0:
-        if female_cnt > 0:
-            pass
-        else:
-            gender[k] = 'male'
-            mcnt += 1
-    elif female_cnt > 0:
+    if male_cnt > female_cnt:
+        gender[k] = 'male'
+        mcnt+=1
+    elif female_cnt > male_cnt:
         gender[k] = 'female'
-        fcnt += 1
-    else:
-        pass
+        fcnt+=1
 
 print('male:', mcnt)
 print('female:', fcnt)
