@@ -118,23 +118,23 @@ for entry in bgm_index:
 # print(map_bgm(bgm_entry['35609'], verbose=True))
 # test_moe('帕克(Re:从零开始的异世界生活)')
 
-test_moe('谛听(星穹铁道)')
-test_moe('庞培')
-test_moe('佩佩')
-test_moe('萨姆')
+# test_moe('谛听(星穹铁道)')
+# test_moe('庞培')
+# test_moe('佩佩')
+# test_moe('萨姆')
 
-test_moe('消灭都市:夏树')
+# test_moe('消灭都市:夏树')
 
-test_moe('慢羊羊')
-print(map_bgm(bgm_entry['68639'], verbose=True))
+# test_moe('慢羊羊')
+# print(map_bgm(bgm_entry['68639'], verbose=True))
 
-test_moe('灰烬战线:百夫长')
-test_moe('格雷伊')
-print(map_bgm(bgm_entry['70840'], verbose=True))
+# test_moe('灰烬战线:百夫长')
+# test_moe('格雷伊')
+# print(map_bgm(bgm_entry['70840'], verbose=True))
 
-test_moe('雪莉(荒野乱斗)')
+# test_moe('雪莉(荒野乱斗)')
 
-test_moe('幽灵(全金属狂潮)')
+# test_moe('幽灵(全金属狂潮)')
 
 # st = set()
 # for i in bgm_subjects2.values():
@@ -145,7 +145,16 @@ test_moe('幽灵(全金属狂潮)')
 # for i in st:
 #     print(repr(i) + ',')
 
-test_moe('月读(假面骑士Zi-O)')
-test_moe('空(假面骑士电王)')
-test_moe('赤羽(假面骑士Build)')
-test_moe('Vice(假面骑士Revice)')
+# test_moe('月读(假面骑士Zi-O)')
+# test_moe('空(假面骑士电王)')
+# test_moe('赤羽(假面骑士Build)')
+# test_moe('Vice(假面骑士Revice)')
+
+test_moe('金色暗影darkness')
+test_moe('雫(妃十三学园)')
+test_moe('妖怪屋:薰')
+test_moe('苍蓝钢铁的琶音:吸血鬼')
+test_moe('莉莉安(虚拟UP主)')
+test_moe('Queen(TYPE-0)')
+test_moe('小萤(守护甜心)')
+test_moe('拉娜(我的世界)')

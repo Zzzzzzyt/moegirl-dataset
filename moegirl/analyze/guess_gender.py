@@ -46,10 +46,10 @@ for k, v in char2attr.items():
 
     if male_cnt > female_cnt:
         gender[k] = 'male'
-        mcnt+=1
+        mcnt += 1
     elif female_cnt > male_cnt:
         gender[k] = 'female'
-        fcnt+=1
+        fcnt += 1
 
 print('male:', mcnt)
 print('female:', fcnt)

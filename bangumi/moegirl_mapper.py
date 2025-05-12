@@ -166,6 +166,13 @@ reverse_special = {
     '灰烬战线:百夫长': '132339',
     '百闻牌:樱花妖': None,
     '幽灵(全金属狂潮)': None,
+    '金色暗影darkness': None,
+    '雫(妃十三学园)': None,
+    '妖怪屋:薰': None,
+    '苍蓝钢铁的琶音:吸血鬼': None,
+    '莉莉安(虚拟UP主)': None,
+    '小萤(守护甜心)': None,
+    '拉娜(我的世界)': None,
 }
 
 # bgm <-> moegirl
@@ -471,6 +478,7 @@ subject_map = [
         ],
         ['假面骑士'],
     ),
+    (['最终幻想 零式'], ['TYPE-0']),
 ]
 
 subject_special = {}
