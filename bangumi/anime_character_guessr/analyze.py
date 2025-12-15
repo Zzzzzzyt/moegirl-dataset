@@ -1,14 +1,16 @@
-from utils.file import load_json
+from utils.file import load_json, chdir_project_root
 
-id_tags = load_json('id_tags.json')
-attr_index = load_json('../../moegirl/preprocess/attr_index.json')
-bgm2moegirl = load_json('../../bangumi/bgm2moegirl.json')
-bgm_index = load_json('../../bangumi/bgm_index_full.json')
-new_tags = load_json('tags.new_tags.json')
-char_tags = load_json('tags.character_tags.json')
-char2attr = load_json('../../moegirl/preprocess/char2attr.json')
-hair_color_attr = load_json('../../moegirl/preprocess/hair_color_attr.json')
-eye_color_attr = load_json('../../moegirl/preprocess/eye_color_attr.json')
+chdir_project_root()
+
+id_tags = load_json('bangumi/anime_character_guessr/id_tags.json')
+attr_index = load_json('moegirl/preprocess/attr_index.json')
+bgm2moegirl = load_json('bangumi/bgm2moegirl.json')
+bgm_index = load_json('bangumi/bgm_index_full.json')
+new_tags = load_json('bangumi/anime_character_guessr/tags.new_tags.json')
+char_tags = load_json('bangumi/anime_character_guessr/tags.character_tags.json')
+char2attr = load_json('moegirl/preprocess/char2attr.json')
+hair_color_attr = load_json('moegirl/preprocess/hair_color_attr.json')
+eye_color_attr = load_json('moegirl/preprocess/eye_color_attr.json')
 
 bgm_entry = {i['id']: i for i in bgm_index}
 

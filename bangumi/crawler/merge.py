@@ -1,14 +1,16 @@
 import json
 import os
 from functools import cmp_to_key
-from utils.file import save_json
+from utils.file import save_json, chdir_project_root
+
+chdir_project_root()
 
 bgm_chars = {}
 bgm_subjects = {}
 redirects = {}
 
 for i in range(1, 200):
-    f = f'160k_chars/bgm_chars_160k_{i}.json'
+    f = f'bangumi/160k_chars/bgm_chars_160k_{i}.json'
     if not os.path.exists(f):
         continue
     cur = open(f, encoding='utf-8').read()
@@ -24,7 +26,7 @@ for i in range(1, 200):
     print(i, len(data))
 
 for i in range(1, 200):
-    f = f'160k_subjects/bgm_subjects_160k_{i}.json'
+    f = f'bangumi/160k_subjects/bgm_subjects_160k_{i}.json'
     if not os.path.exists(f):
         continue
     cur = open(f, encoding='utf-8').read()
@@ -72,7 +74,7 @@ print('bgm_chars:', len(bgm_chars))
 print('bgm_subjects:', len(bgm_subjects))
 print('bgm_redirects:', len(redirects))
 
-save_json(bgm_index, 'bgm_index_full.json')
-save_json(bgm_chars, 'bgm_chars_full.json')
-save_json(bgm_subjects, 'bgm_subjects_full.json')
-save_json(redirects, 'bgm_redirects_full.json')
+save_json(bgm_index, 'bangumi/bgm_index_full.json')
+save_json(bgm_chars, 'bangumi/bgm_chars_full.json')
+save_json(bgm_subjects, 'bangumi/bgm_subjects_full.json')
+save_json(redirects, 'bangumi/bgm_redirects_full.json')

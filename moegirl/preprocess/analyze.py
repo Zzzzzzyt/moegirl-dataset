@@ -3,14 +3,16 @@ import matplotlib.pyplot as plt
 
 from mplfonts import use_font
 
-from utils.file import save_json
+from utils.file import save_json, chdir_project_root
+
+chdir_project_root()
 
 use_font('Noto Sans CJK SC')
 
-char_index: list = json.load(open('char_index.json', encoding='utf-8'))
-attr_index: list = json.load(open('attr_index.json', encoding='utf-8'))
-attr2char: dict = json.load(open('attr2char.json', encoding='utf-8'))
-char2attr: dict = json.load(open('char2attr.json', encoding='utf-8'))
+char_index: list[str] = json.load(open('moegirl/preprocess/char_index.json', encoding='utf-8'))
+attr_index: list[str] = json.load(open('moegirl/preprocess/attr_index.json', encoding='utf-8'))
+attr2char: dict[str, list[str]] = json.load(open('moegirl/preprocess/attr2char.json', encoding='utf-8'))
+char2attr: dict[str, list[str]] = json.load(open('moegirl/preprocess/char2attr.json', encoding='utf-8'))
 
 # l = list(map(lambda vk: (len(vk[1]), vk[0]), char2attr.items()))
 # l.sort(reverse=True)

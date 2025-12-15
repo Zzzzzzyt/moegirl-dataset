@@ -1,11 +1,15 @@
-from utils.file import load_json, save_json
+from utils.file import load_json, save_json, chdir_project_root
 
-bgm2moegirl = load_json('../bgm2moegirl.json')
-bgm_index = load_json('../bgm_index_full.json')
-char2attr = load_json('../../moegirl/preprocess/char2attr.json')
-attr2char = load_json('../../moegirl/preprocess/attr2char.json')
-fundamental_attr = set(load_json('../../moegirl/preprocess/fundamental_attr.json'))
-user_char_tags_raw = load_json('tags.character_tags.json')
+chdir_project_root()
+
+bgm2moegirl = load_json('bangumi/bgm2moegirl.json')
+bgm_index = load_json('bangumi/bgm_index_full.json')
+char2attr = load_json('moegirl/preprocess/char2attr.json')
+attr2char = load_json('moegirl/preprocess/attr2char.json')
+fundamental_attr = set(load_json('moegirl/preprocess/fundamental_attr.json'))
+user_char_tags_raw = load_json(
+    'bangumi/anime_character_guessr/tags.character_tags.json'
+)
 
 conv = {
     '茶色瞳': '棕瞳',
@@ -365,9 +369,9 @@ for k, v in bgm2moegirl.items():
 bgm2attr.sort(key=lambda x: bgm_entry[x[0]]['rank'])
 bgm2attr = dict(bgm2attr)
 print('mapped:', len(bgm2attr))
-save_json(bgm2attr, 'id_tags.json')
+save_json(bgm2attr, 'bangumi/anime_character_guessr/id_tags.json')
 
-with open("id_tags.js", "w", encoding='utf-8') as f:
+with open("bangumi/anime_character_guessr/id_tags.js", "w", encoding='utf-8') as f:
     f.write('export const idToTags = {\n')
     tags = []
     for k, v in bgm2attr.items():

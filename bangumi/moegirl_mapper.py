@@ -1,10 +1,12 @@
-import json
 import re
+from typing import Any
 import opencc
 import os
 from tqdm import tqdm
 
-from utils.file import load_json, save_json
+from utils.file import load_json, save_json, chdir_project_root
+
+chdir_project_root()
 
 
 special_map = {
@@ -490,19 +492,19 @@ subject_special = {}
 
 subject_reverse_special = {}
 
-bgm_index = load_json("bgm_index_full.json")
-bgm_chars = load_json("bgm_chars_full.json")
-bgm_subjects = load_json("bgm_subjects_full.json")
+bgm_index = load_json("bangumi/bgm_index_full.json")
+bgm_chars = load_json("bangumi/bgm_chars_full.json")
+bgm_subjects = load_json("bangumi/bgm_subjects_full.json")
 
 print("loaded: bgm_index:", len(bgm_index))
 print("loaded: bgm_chars:", len(bgm_chars))
 print("loaded: bgm_subjects:", len(bgm_subjects))
 
-moegirl_chars = load_json("../moegirl/preprocess/char_index.json")
+moegirl_chars = load_json("moegirl/preprocess/char_index.json")
 print("loaded: moegirl_chars:", len(moegirl_chars))
-moegirl_extra = load_json("../moegirl/crawler2/extra_processed.json")
+moegirl_extra = load_json("moegirl/crawler_extra/extra_processed.json")
 print("loaded: moegirl_extra:", len(moegirl_extra))
-char2subject = load_json("../moegirl/preprocess/char2subject.json")
+char2subject = load_json("moegirl/preprocess/char2subject.json")
 print("loaded: char2subject:", len(char2subject))
 
 
@@ -739,7 +741,7 @@ def map_bgm(entry, verbose=False):
         match i["key"]:
             case "生日":
                 if birthday is None:
-                    tmp = [None, None, None]
+                    tmp: Any = [None, None, None]
                     if type(i["value"]) != str:
                         continue
                     m = re.search(r"((\d*)年)?((\d*)月)?((\d*)日)?", i["value"])
@@ -991,8 +993,8 @@ if __name__ == "__main__":
     print("successful moegirl2bgm: {}/{}".format(len(moegirl2bgm2), len(moegirl_chars)))
     print(f"multi={multicount2} none={len(moegirl_chars)-len(moegirl2bgm2)}")
 
-    save_json(bgm2moegirl, "bgm2moegirl.json")
-    save_json(moegirl2bgm2, "moegirl2bgm.json")
+    save_json(bgm2moegirl, "bangumi/bgm2moegirl.json")
+    save_json(moegirl2bgm2, "bangumi/moegirl2bgm.json")
 
     bgm_info = {}
     for k, v in moegirl2bgm2.items():
@@ -1002,6 +1004,4 @@ if __name__ == "__main__":
         collects = bgm_chars[bgmid]['stat']['collects']
         if collects >= 1:
             bgm_info[bgmid] = collects
-    save_json(bgm_info, "bgm_info.json")
-
-    # os.system('python -u img_preloader.py')
+    save_json(bgm_info, "bangumi/bgm_info.json")

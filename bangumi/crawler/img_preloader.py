@@ -4,7 +4,9 @@ import requests
 import urllib.parse
 import time
 
-from utils.file import save_json
+from utils.file import save_json, chdir_project_root
+
+chdir_project_root()
 
 headers = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
@@ -14,8 +16,6 @@ headers = {
     "User-Agent": "Zzzyt/MoeRanker (https://github.com/Zzzzzzyt/MoeRanker)",
 }
 cooldown = 2
-
-requests.adapters.DEFAULT_RETRIES = 10
 
 
 def safe_get302(url, bar=None, verbose=True):
@@ -42,17 +42,17 @@ def safe_get302(url, bar=None, verbose=True):
 
 
 subset = []
-for i in os.listdir("../../moegirl/subset/subset/"):
-    subset += json.load(open("../../moegirl/subset/subset/" + i, encoding="utf-8"))
-subset += json.load(open("../subset/bgm200_subset.json", encoding="utf-8"))
-subset += json.load(open("../subset/bgm2000_subset.json", encoding="utf-8"))
+for i in os.listdir("moegirl/subset/subset/"):
+    subset += json.load(open("moegirl/subset/subset/" + i, encoding="utf-8"))
+subset += json.load(open("bangumi/subset/bgm200_subset.json", encoding="utf-8"))
+subset += json.load(open("bangumi/subset/bgm2000_subset.json", encoding="utf-8"))
 subset = set(subset)
 print("subset len={}".format(len(subset)))
 
-mapping = json.load(open("../moegirl2bgm.json", encoding="utf-8"))
+mapping = json.load(open("bangumi/moegirl2bgm.json", encoding="utf-8"))
 print("mapping len={}".format(len(mapping)))
 
-chars = json.load(open("../bgm_chars_full.json", encoding="utf-8"))
+chars = json.load(open("bangumi/bgm_chars_full.json", encoding="utf-8"))
 res = {}
 for i in subset:
     if i in mapping:
@@ -75,4 +75,4 @@ for i in subset:
             res[j] = medium
 
 print("res len={}".format(len(res)))
-save_json(res, "../bgm_images_medium_mapped.json")
+save_json(res, "bangumi/bgm_images_medium_mapped.json")

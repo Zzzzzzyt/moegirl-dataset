@@ -1,12 +1,14 @@
-from utils.file import load_json, save_json
+from utils.file import load_json, save_json, chdir_project_root
+
+chdir_project_root()
 
 
-male_attr = set(load_json('../preprocess/male_attr.json'))
-female_attr = set(load_json('../preprocess/female_attr.json'))
-nogender_attr = set(load_json('../preprocess/nogender_attr.json'))
-char2attr = load_json('../preprocess/char2attr.json')
-moegirl2bgm = load_json('../../bangumi/moegirl2bgm.json')
-bgm_chars = load_json('../../bangumi/bgm_chars_full.json')
+male_attr = set(load_json('moegirl/preprocess/male_attr.json'))
+female_attr = set(load_json('moegirl/preprocess/female_attr.json'))
+nogender_attr = set(load_json('moegirl/preprocess/nogender_attr.json'))
+char2attr = load_json('moegirl/preprocess/char2attr.json')
+moegirl2bgm = load_json('bangumi/moegirl2bgm.json')
+bgm_chars = load_json('bangumi/bgm_chars_full.json')
 
 gender = {}
 fcnt = 0
@@ -55,4 +57,4 @@ print('male:', mcnt)
 print('female:', fcnt)
 print('total:', len(gender))
 print('all:', len(char2attr))
-save_json(gender, 'gender.json')
+save_json(gender, 'moegirl/analyze/gender.json')

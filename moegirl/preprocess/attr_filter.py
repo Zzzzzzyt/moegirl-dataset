@@ -1,14 +1,15 @@
-from utils.file import load_json, save_json
+from utils.file import load_json, save_json, chdir_project_root
 
-attr_index = load_json('attr_index.json')
-attr_index = set(attr_index)
-data = load_json('../crawler/attrs.json')
-attr2char = load_json('attr2char.json')
-hair_color_attr = load_json('../preprocess/hair_color_attr.json')
-eye_color_attr = load_json('../preprocess/eye_color_attr.json')
+chdir_project_root()
+
+attr_index: set[str] = set(load_json('moegirl/preprocess/attr_index.json'))
+data: dict = load_json('moegirl/crawler/attrs.json')
+attr2char: dict[str, list[str]] = load_json('moegirl/preprocess/attr2char.json')
+hair_color_attr: list[str] = load_json('moegirl/preprocess/hair_color_attr.json')
+eye_color_attr: list[str] = load_json('moegirl/preprocess/eye_color_attr.json')
 
 
-def dfs(data, ret):
+def dfs(data: dict, ret: set[str]):
     if 'name' in data:
         name = data['name']
         if name in attr_index:
@@ -24,7 +25,7 @@ for i in data['subcategories']:
 
 ret = set()
 for i in data['subcategories']:
-    tmp = set()
+    tmp: set[str] = set()
     if i['name'] in [
         '按外貌特征分类',
         '按体型特征分类',
@@ -53,6 +54,7 @@ ret |= set(
         '耳钉',
     ]
 )
+
 ret = list(ret)
 ret = list(filter(lambda x: len(attr2char[x]) >= 100, ret))
 for i in hair_color_attr:
@@ -65,4 +67,4 @@ ret.sort(key=lambda x: len(attr2char[x]), reverse=True)
 print()
 print(ret)
 
-save_json(ret, 'fundamental_attr.json')
+save_json(ret, 'moegirl/preprocess/fundamental_attr.json')

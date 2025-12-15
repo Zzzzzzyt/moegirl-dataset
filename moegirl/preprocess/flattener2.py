@@ -1,13 +1,14 @@
-from utils.file import load_json, save_json
+from utils.file import load_json, save_json,chdir_project_root
 from utils.network import title_to_url
 
+chdir_project_root()
 
-chars = set(load_json('char_index.json'))
-subjects = load_json('../crawler/subjects.json')
-attr_index = set(load_json('attr_index.json'))
+chars: set[str] = set(load_json('moegirl/preprocess/char_index.json'))
+subjects: dict = load_json('moegirl/crawler/subjects.json')
+attr_index: set[str] = set(load_json('moegirl/preprocess/attr_index.json'))
 
 
-def dfs(data, ret, stk: list = []):
+def dfs(data: dict, ret: dict, stk: list = []):
     if 'name' in data:
         rname = data['name']
         rurl = data['url']
@@ -40,19 +41,19 @@ def dfs(data, ret, stk: list = []):
         stk.pop()
 
 
-char2subject = {}
+char2subject: dict[str, list[str]] = {}
 dfs(subjects, char2subject, [])
 # for k, v in ret.items():
 # print(k, v)
 print('all:', len(chars))
 print('found:', len(char2subject))
-save_json(char2subject, 'char2subject.json')
+save_json(char2subject, 'moegirl/preprocess/char2subject.json')
 
-subject_index = []
+subject_index: list[str] = []
 for i in subjects['subcategories'][3:]:
     for j in i['subcategories']:
         name, url = j['name'], j['url']
         assert '/Category:' + name.replace(' ', '_') == url
         subject_index.append(name)
 
-save_json(subject_index, 'subject_index.json')
+save_json(subject_index, 'moegirl/preprocess/subject_index.json')

@@ -2,25 +2,31 @@ import json
 import numpy as np
 from tqdm import tqdm
 
-from utils.file import save_json
+from utils.file import save_json, chdir_project_root
 
-attrs = json.load(open("../preprocess/attr_index.json", encoding="utf-8"))
-chars = json.load(open("../preprocess/char_index.json", encoding="utf-8"))
-gain = np.load(open("../correlation/gain.npy", "rb"))
-count = np.load(open("../correlation/count.npy", "rb"))
-contain = np.load(open("../correlation/contain.npy", "rb"))
+chdir_project_root()
+
+attrs: list[str] = json.load(
+    open("moegirl/preprocess/attr_index.json", encoding="utf-8")
+)
+chars: list[str] = json.load(
+    open("moegirl/preprocess/char_index.json", encoding="utf-8")
+)
+gain = np.load(open("moegirl/analyze/gain.npy", "rb"))
+count = np.load(open("moegirl/analyze/count.npy", "rb"))
+contain = np.load(open("moegirl/analyze/contain.npy", "rb"))
 contain = 1 - contain
-intersection = np.load(open("../correlation/intersection.npy", "rb"))
+intersection = np.load(open("moegirl/analyze/intersection.npy", "rb"))
 attr_count = len(attrs)
 char_count = len(chars)
-attrmap = {}
+attrmap: dict[str, int] = {}
 for i in range(len(attrs)):
     attrmap[attrs[i]] = i
 
 weight = np.minimum(count, 500)
 weight = np.power(weight, 0.3)
 
-importance = np.zeros((attr_count))
+importance = np.zeros((attr_count), dtype=np.float64)
 for i in range(attr_count):
     # a goddess gave me this formula
     s = (np.maximum(np.log2(gain[i]), 0) * weight * contain[i]).sum()
@@ -30,8 +36,12 @@ for i in range(attr_count):
 
 importance /= importance[attrmap["黑发"]]
 
-hair_color_attr = json.load(open("../preprocess/hair_color_attr.json", encoding="utf-8"))
-eye_color_attr = json.load(open("../preprocess/eye_color_attr.json", encoding="utf-8"))
+hair_color_attr: list[str] = json.load(
+    open("moegirl/preprocess/hair_color_attr.json", encoding="utf-8")
+)
+eye_color_attr: list[str] = json.load(
+    open("moegirl/preprocess/eye_color_attr.json", encoding="utf-8")
+)
 
 res = []
 for i in range(attr_count):
@@ -42,7 +52,7 @@ out = {}
 for i in res:
     if i[2] in hair_color_attr:
         print(i[0], i[2], count[i[1]])
-    out[i[2]] = round(importance[i[1]], 5)
+    out[i[2]] = round(float(importance[i[1]]), 5)
 print(out["蝴蝶结"], count[attrmap["蝴蝶结"]])
-save_json(out, 'importance.json')
-# np.save(open("importance.npy", "wb"), importance, allow_pickle=False)
+save_json(out, 'moegirl/moeranker/importance.json')
+# np.save(open("moegirl/moeranker/importance.npy", "wb"), importance, allow_pickle=False)

@@ -1,10 +1,11 @@
 import os
-from utils.file import load_json
+from utils.file import load_json,chdir_project_root
 from moegirl_mapper import *
 
-bgm2moegirl = load_json('bgm2moegirl.json')
-moegirl2bgm = load_json('moegirl2bgm.json')
+chdir_project_root()
 
+bgm2moegirl = load_json('bangumi/bgm2moegirl.json')
+moegirl2bgm = load_json('bangumi/moegirl2bgm.json')
 
 def test_moe(k):
     if k in moegirl2bgm:

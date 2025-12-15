@@ -2,21 +2,24 @@ import json
 import random
 import urllib.parse
 
-from utils.file import save_json
+from utils.file import save_json, chdir_project_root
+
+chdir_project_root()
 
 
-def char_filter(char_name):
+def char_filter(char_name: str) -> bool:
     # if random.random() > 0.01:
     #     return True
     return char_name.startswith("Template:") or char_name.startswith("User:")
 
 
-def attr_filter(attr_name):
+def attr_filter(attr_name: str) -> bool:
     if attr_name.startswith("按") and attr_name.endswith("分类"):
         return True
+    return False
 
 
-dededupe = {}
+dededupe: dict[str, dict] = {}
 
 
 def dfs(data: dict, ret: dict, stk: list, no_further: bool = False):
@@ -83,17 +86,17 @@ def dfs(data: dict, ret: dict, stk: list, no_further: bool = False):
         dfs(i, ret, stk.copy(), no_further)
 
 
-attr2article = {}
-attr_index = []
-attr_index_set = set()
-char_index = []
-char_index_set = set()
-cv_index = []
-cv_index_set = set()
+attr2article: dict[str, str] = {}
+attr_index: list[str] = []
+attr_index_set: set[str] = set()
+char_index: list[str] = []
+char_index_set: set[str] = set()
+cv_index: list[str] = []
+cv_index_set: set[str] = set()
 
-data = json.load(open("../crawler/attrs.json", encoding="utf-8"))
-char2attr = {}
-char2cv = {}
+data: dict = json.load(open("moegirl/crawler/attrs.json", encoding="utf-8"))
+char2attr: dict[str, list[str]] = {}
+char2cv: dict[str, list[str]] = {}
 dfs(data, char2attr, [])
 attr_index.sort()
 char_index.sort()
@@ -115,12 +118,12 @@ for k, v in char2attr.items():
 
 # char_index.sort()
 # print("raw character count:", len(raw_chars))
-# save_json(raw_chars, "../crawler2/raw_chars.json")
+# save_json(raw_chars, "moegirl/crawler_extra/raw_chars.json")
 
 char2attr = dict(filter(lambda x: len(x[1]) > 0, char2attr.items()))
 char2cv = dict(filter(lambda x: len(x[1]) > 0 and x[0] in char2attr, char2cv.items()))
 
-attr2char = {}
+attr2char: dict[str, list[str]] = {}
 for k, v in char2attr.items():
     for i in v:
         if i not in attr2char:
@@ -131,7 +134,7 @@ for k, v in attr2char.items():
     if len(v) == 0:
         print("wtf???", k)
 
-cv2char = {}
+cv2char: dict[str, list[str]] = {}
 for k, v in char2cv.items():
     for i in v:
         if i not in cv2char:
@@ -142,8 +145,8 @@ for k, v in cv2char.items():
     if len(v) == 0:
         print("wtf???", k)
 
-attr_index2 = []
-attr2article2 = {}
+attr_index2: list[str] = []
+attr2article2: dict[str, str] = {}
 for name in attr_index:
     if name not in attr2char:
         continue
@@ -166,7 +169,7 @@ for name in attr_index:
 # attr_index2.sort()
 # attr_index2 = dict(sorted(attr_index2, key=lambda x: len(attr2char[x])))
 
-char_index2 = []
+char_index2: list[str] = []
 for name in char_index:
     if name not in char2attr:
         continue
@@ -176,7 +179,7 @@ for name in char_index:
 # char_index2.sort()
 # char_index2 = dict(sorted(char_index2, key=lambda x: len(char2attr[x])))
 
-cv_index2 = []
+cv_index2: list[str] = []
 for name in cv_index:
     if name not in cv2char:
         continue
@@ -189,17 +192,17 @@ for name in cv_index:
 
 attr2char = dict(sorted(attr2char.items(), key=lambda x: len(x[1])))
 char2attr = dict(sorted(char2attr.items(), key=lambda x: len(x[1])))
-save_json(attr2char, "attr2char.json")
-save_json(char2attr, "char2attr.json")
-save_json(char2cv, "char2cv.json")
-save_json(cv2char, "cv2char.json")
+save_json(attr2char, "moegirl/preprocess/attr2char.json")
+save_json(char2attr, "moegirl/preprocess/char2attr.json")
+save_json(char2cv, "moegirl/preprocess/char2cv.json")
+save_json(cv2char, "moegirl/preprocess/cv2char.json")
 
 print("attribute count: {}".format(len(attr_index2)))
 print("article count: {}".format(len(attr2article2)))
 print("cv count: {}".format(len(cv_index2)))
 print("character count: {}".format(len(char_index2)))
 
-save_json(char_index2, "char_index.json")
-save_json(attr_index2, "attr_index.json")
-save_json(cv_index2, "cv_index.json")
-save_json(attr2article2, "attr2article.json")
+save_json(char_index2, "moegirl/preprocess/char_index.json")
+save_json(attr_index2, "moegirl/preprocess/attr_index.json")
+save_json(cv_index2, "moegirl/preprocess/cv_index.json")
+save_json(attr2article2, "moegirl/preprocess/attr2article.json")

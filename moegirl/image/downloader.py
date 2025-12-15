@@ -9,17 +9,22 @@ from bs4 import BeautifulSoup, MarkupResemblesLocatorWarning
 from tqdm import tqdm
 import PIL.Image as Image
 
+from utils.file import chdir_project_root
 from utils.network import safe_download, safe_get, title_to_url
+
+chdir_project_root()
 
 warnings.filterwarnings("ignore", category=MarkupResemblesLocatorWarning, module="bs4")
 warnings.simplefilter("always", UserWarning)
+
+base_url = "https://zh.moegirl.org.cn"
 
 headers = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
     "Accept-Encoding": "gzip, deflate, br",
     "Accept-Language": "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7",
     "Connection": "keep-alive",
-    "Host": "zh.moegirl.org.cn",
+    "Host": base_url.replace("https://", "").replace("http://", ""),
     "Sec-Fetch-Dest": "document",
     "Sec-Fetch-Mode": "navigate",
     "Sec-Fetch-Site": "none",
@@ -31,14 +36,16 @@ headers = {
     "sec-ch-ua-platform": '"Windows"',
 }
 
+cooldown = 5
+
 from dotenv import load_dotenv, find_dotenv
 
 load_dotenv(find_dotenv(raise_error_if_not_found=True), verbose=True)
 cookies = os.getenv("MOEGIRL_COOKIES")
-print('cookies:', cookies)
-print()
-headers['Cookie'] = cookies
-cooldown = 5
+if cookies:
+    print('cookies:', cookies)
+    print()
+    headers['Cookie'] = cookies
 
 
 def validate_image(fname, bar):
@@ -66,7 +73,7 @@ def gen_cache_name(name):
     # return 'raw/{}.json'.format(name)
 
 
-extras = json.load(open("../crawler2/extra_info.json", encoding="utf-8"))
+extras = json.load(open("moegirl/crawler_extra/extra_info.json", encoding="utf-8"))
 
 l = []
 for k, v in extras.items():
@@ -81,7 +88,7 @@ for idx, i in enumerate(bar):
     url = i[0]
     name = i[1]
     fname = gen_cache_name(url)
-    fname2 = "images/{}".format(fname)
+    fname2 = "moegirl/image/images/{}".format(fname)
     if os.path.exists(fname2):
         if not validate_image(fname2, bar):
             bar.write("invalid " + fname)
@@ -100,7 +107,8 @@ for idx, i in enumerate(bar):
             )
         else:
             res = safe_get(
-                "https://zh.moegirl.org.cn/api.php?action=parse&text={}&contentmodel=wikitext&format=json".format(
+                base_url
+                + "/api.php?action=parse&text={}&contentmodel=wikitext&format=json".format(
                     title_to_url("[[{}]]".format(url))
                 ),
                 bar=bar,
@@ -109,7 +117,9 @@ for idx, i in enumerate(bar):
             )
             res = res.json()
             soup = BeautifulSoup(res["parse"]["text"]["*"], features="html.parser")
-            url2 = soup.find("img").attrs["src"]
+            url2 = soup.find("img")
+            assert url2 is not None
+            url2 = url2.attrs["src"]
             safe_download(
                 url2,
                 fname2,

@@ -1,4 +1,5 @@
 import json
+import traceback
 import requests
 import urllib.parse
 import time
@@ -6,29 +7,31 @@ from bs4 import BeautifulSoup
 from urllib3 import Retry
 from requests.adapters import HTTPAdapter
 
-from utils.file import load_json, save_json, save_json_pretty
+from utils.file import *
 from utils.network import safe_soup
 
+chdir_project_root()
 
+base_url = 'https://zh.moegirl.org.cn'
+# base_url = 'https://moegirl.uk'
+# base_url = 'https://moegirl.icu'
 headers = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
     'Accept-Encoding': 'gzip, deflate, br',
     'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7',
     'Connection': 'keep-alive',
-    'Host': 'zh.moegirl.org.cn',
+    'Host': base_url.replace("https://", "").replace("http://", ""),
     'Sec-Fetch-Dest': 'document',
     'Sec-Fetch-Mode': 'navigate',
     'Sec-Fetch-Site': 'none',
     'Sec-Fetch-User': '?1',
     'Upgrade-Insecure-Requests': '1',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36',
-    'sec-ch-ua': '"Google Chrome";v="105", "Not)A;Brand";v="8", "Chromium";v="105"',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36',
+    'sec-ch-ua': '"Google Chrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"',
     'sec-ch-ua-mobile': '?0',
     'sec-ch-ua-platform': '"Windows"',
 }
-cooldown = 12
-
-# requests.adapters.DEFAULT_RETRIES = 3
+cooldown = 3.5
 
 page_count = 0
 characters = {}
@@ -36,7 +39,7 @@ characters = {}
 
 def add_prefix(url):
     if url.startswith('/'):
-        url = 'https://zh.moegirl.org.cn' + url
+        url = base_url + url
     return url
 
 
@@ -54,6 +57,7 @@ YELLOW = '\033[93m'
 GREEN = '\033[32m'
 ERROR = '\033[31m'
 CYAN = '\033[36m'
+PURPLE = '\033[95m'
 FAIL = '\033[91m'
 RESET = '\033[0m'
 GREY = '\033[2m'
@@ -64,12 +68,12 @@ def uncensor(name, url):
     if url.startswith('/Category:'):
         if '/Category:' + url2 != url:
             ret = url[10:].replace('_', ' ')
-            print(url, url2, ret)
+            print(PURPLE + "uncensored:", url, url2, ret, RESET)
             return ret, url
     else:
         if '/' + url2 != url:
             ret = url[1:].replace('_', ' ')
-            print(url, url2, ret)
+            print(PURPLE + "uncensored:", url, url2, ret, RESET)
             return ret, url
     return name, url
 
@@ -83,7 +87,7 @@ def parse_index(url, ret, stk=[], filter_function=None):
     if 'subcategories' not in ret:
         ret['subcategories'] = []
     url_now = url
-    url_short = url.split(':')[-1]
+    url_short = urllib.parse.unquote(url).split(':')[-1]
     depth = len(stk)
 
     stk2 = stk.copy()
@@ -127,10 +131,16 @@ def parse_index(url, ret, stk=[], filter_function=None):
                         'div', class_='mw-content-ltr'
                     ).find_all('a'):
                         url2 = a['href']
-                        url2 = urllib.parse.unquote(url2)
+                        if "action=edit" in url2:
+                            continue
+                        url_unquote = urllib.parse.unquote(url2)
+                        if 'data-ct-title' in a.attrs:
+                            name = a['data-ct-title']
+                        else:
+                            name = a.string
                         tmp = {
-                            'name': a.string,
-                            'url': url2,
+                            'name': name,
+                            'url': url_unquote,
                             'pages': [],
                             'subcategories': [],
                         }
@@ -143,8 +153,14 @@ def parse_index(url, ret, stk=[], filter_function=None):
                         'a'
                     ):
                         url2 = a['href']
-                        url2 = urllib.parse.unquote(url2)
-                        tmp = {'name': a.string, 'url': url2}
+                        if "action=edit" in url2:
+                            continue
+                        if 'data-ct-title' in a.attrs:
+                            name = a['data-ct-title']
+                        else:
+                            name = a.string
+                        url_unquote = urllib.parse.unquote(url2)
+                        tmp = {'name': name, 'url': url_unquote}
                         tmp['name'], tmp['url'] = uncensor(tmp['name'], tmp['url'])
                         ret['pages'].append(tmp)
                         page_count += 1
@@ -157,7 +173,7 @@ def parse_index(url, ret, stk=[], filter_function=None):
                     url_now = add_prefix(next[0]['href'])
                 else:
                     ret['finish1'] = True
-                    print_debug('finish1')
+                    print_debug('finish1', color=GREY)
                     break
 
         # assert 'finish1' in ret
@@ -171,9 +187,9 @@ def parse_index(url, ret, stk=[], filter_function=None):
             ret['subcategories'] = unique(ret['subcategories'])
             for i in ret['subcategories']:
                 name = i['name']
-                url2 = i['url']
+                url_quote = urllib.parse.quote(i['url'])
                 parse_index(
-                    add_prefix(url2),
+                    add_prefix(url_quote),
                     i,
                     stk2,
                     filter_function=filter_function,
@@ -185,9 +201,7 @@ def parse_index(url, ret, stk=[], filter_function=None):
                     flag = False
             if flag:
                 ret['finish2'] = True
-                print_debug(
-                    'finish2',
-                )
+                print_debug('finish2', color=GREY)
             else:
                 print_debug('what happened? why not finish2? anyway', color=ERROR)
 
@@ -199,14 +213,15 @@ def parse_index(url, ret, stk=[], filter_function=None):
             )
     except requests.HTTPError as e:
         if e.response.status_code == 404:
-            print_debug('fine. 404 then. mark as finished', color=ERROR)
-            ret['finish1'] = True
-            ret['finish2'] = True
-    except Exception as e:
-        if depth == 0:
-            print(e)
-        # return ret, e, dedupe
-    # return ret, None, dedupe
+            print_debug('fine. 404 then.', color=ERROR)
+            # ret['finish1'] = True
+            # ret['finish2'] = True
+        else:
+            print_debug(RESET)
+            print_debug(traceback.format_exc(), color=ERROR)
+    # except requests.ConnectionError as e:
+    #     print_debug(RESET)
+    #     print_debug(traceback.format_exc(), color=ERROR)
 
 
 def merge(s, t, depth=0):
@@ -305,31 +320,24 @@ def filter_func2(stk):
     return True
 
 
-# ret = load_json('subjects.json')
-# # ret = {}
-# try:
-#     parse_index(
-#         'https://zh.moegirl.org.cn/Category:各地区作品',
-#         ret,
-#         filter_function=filter_func,
-#     )
-# except BaseException as e:
-#     print(f"An error occurred: {e}")
-# save_json(ret, 'subjects.json')
-
-ret = load_json('attrs.json')
-# ret = {}
+ret = load_json_or_none('moegirl/crawler/subjects.json') or {}
 try:
     parse_index(
-        'https://zh.moegirl.org.cn/Category:虚拟人物',
+        base_url + '/Category:各地区作品',
+        ret,
+        filter_function=filter_func,
+    )
+except KeyboardInterrupt as e:
+    pass
+save_json(ret, 'moegirl/crawler/subjects.json')
+
+ret = load_json_or_none('moegirl/crawler/attrs.json') or {}
+try:
+    parse_index(
+        base_url + '/Category:虚拟人物',
         ret,
         filter_function=filter_func2,
     )
-except BaseException as e:
-    print(f"An error occurred: {e}")
-save_json(ret, 'attrs.json')
-
-# save_json(
-#     parse_index2('https://zh.moegirl.org.cn/Category:按歌声合成软件分类'),
-#     'subset/vocaloid.json',
-# )
+except KeyboardInterrupt as e:
+    pass
+save_json(ret, 'moegirl/crawler/attrs.json')

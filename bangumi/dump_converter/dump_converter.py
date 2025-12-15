@@ -1,20 +1,24 @@
 from functools import cmp_to_key
 import json
 import re
+import traceback
+from typing import Any, Optional
 
-from utils.file import save_json
+from utils.file import save_json, chdir_project_root
+
+chdir_project_root()
 
 
-chars = {}
-with open("character.jsonlines", "r", encoding="utf-8") as f:
+chars: dict = {}
+with open("bangumi/dump_converter/character.jsonlines", "r", encoding="utf-8") as f:
     for line in f:
+        char_raw: dict = json.loads(line)
         try:
-            char_raw = json.loads(line)
-            infobox_raw = char_raw["infobox"].replace('\r\n', '\n')[2:-2]
-            infobox = []
-            birthday = [None, None, None]
-            blood_type = None
-            gender = None
+            infobox_raw: str = char_raw["infobox"].replace('\r\n', '\n')[2:-2]
+            infobox: list = []
+            birthday: list[Optional[int]] = [None, None, None]
+            blood_type: Optional[int] = None
+            gender: Optional[str] = None
             for match in re.finditer(
                 r"\|(?P<key>.*?)=(?P<value>{.*?}|.*?)\n", infobox_raw, re.DOTALL
             ):
@@ -102,10 +106,11 @@ with open("character.jsonlines", "r", encoding="utf-8") as f:
             }
             # print(char_raw)
             # print(char)
+            chars[char['id']] = char
         except Exception as e:
-            print(f"Error processing line: {e}")
+            print(f"Error processing line: ")
+            traceback.print_exc()
             print(char_raw)
-        chars[char['id']] = char
         # break
 
 index = []
@@ -140,7 +145,7 @@ print('chars:', len(chars))
 
 subjects = {}
 char2subjects = {}
-with open("subject.jsonlines", "r", encoding='utf8') as f:
+with open("bangumi/dump_converter/subject.jsonlines", "r", encoding='utf8') as f:
     for line in f:
         subject = json.loads(line.strip())
         subjects[subject['id']] = {
@@ -150,7 +155,7 @@ with open("subject.jsonlines", "r", encoding='utf8') as f:
 for charid in chars.keys():
     char2subjects[charid] = []
 
-with open("subject-characters.jsonlines", "r", encoding='utf8') as f:
+with open("bangumi/dump_converter/subject-characters.jsonlines", "r", encoding='utf8') as f:
     for line in f:
         relation = json.loads(line.strip())
         subject_id = relation['subject_id']
@@ -181,6 +186,6 @@ for v in char2subjects.values():
     for i in v:
         del i['order']
 
-save_json(index, '../bgm_index_full.json')
-save_json(chars, "../bgm_chars_full.json")
-save_json(char2subjects, "../bgm_subjects_full.json")
+save_json(index, 'bangumi/bgm_index_full.json')
+save_json(chars, "bangumi/bgm_chars_full.json")
+save_json(char2subjects, "bangumi/bgm_subjects_full.json")

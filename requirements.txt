@@ -1,0 +1,9 @@
+requests
+numpy
+tqdm
+scikit-learn
+matplotlib
+mwparserfromhell
+mplfonts
+pypinyin
+opencc

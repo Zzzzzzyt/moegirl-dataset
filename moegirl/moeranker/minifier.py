@@ -1,13 +1,15 @@
 import json
 import time
-from utils.file import load_json, save_json
+from utils.file import load_json, save_json,chdir_project_root
 
-char_index = load_json('../preprocess/char_index.json')
-attr_index = load_json('../preprocess/attr_index.json')
-attr2char = load_json('../preprocess/attr2char.json')
-char2attr = load_json('../preprocess/char2attr.json')
-attr2article = load_json('../preprocess/attr2article.json')
-gender = load_json('../analyze/gender.json')
+chdir_project_root()
+
+char_index = load_json('moegirl/preprocess/char_index.json')
+attr_index = load_json('moegirl/preprocess/attr_index.json')
+attr2char = load_json('moegirl/preprocess/attr2char.json')
+char2attr = load_json('moegirl/preprocess/char2attr.json')
+attr2article = load_json('moegirl/preprocess/attr2article.json')
+gender = load_json('moegirl/analyze/gender.json')
 
 
 def subset(fp, topk=len(attr_index)):
@@ -102,6 +104,6 @@ def subset(fp, topk=len(attr_index)):
         f.write(s)
 
 
-# subset(open('subset_100.json', 'w', encoding='utf-8'), 100)
-# subset(open('subset_500.json', 'w', encoding='utf-8'), 500)
-subset('data_min.json')
+# subset(open('moegirl/moeranker/subset_100.json', 'w', encoding='utf-8'), 100)
+# subset(open('moegirl/moeranker/subset_500.json', 'w', encoding='utf-8'), 500)
+subset('moegirl/moeranker/data_min.json')

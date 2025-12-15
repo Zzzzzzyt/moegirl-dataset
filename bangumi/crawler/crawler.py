@@ -10,7 +10,9 @@ from urllib3 import Retry
 from requests.adapters import HTTPAdapter
 
 from utils.network import safe_get, safe_soup, safe_download
-from utils.file import save_json
+from utils.file import save_json, chdir_project_root
+
+chdir_project_root()
 
 headers = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
@@ -21,8 +23,6 @@ headers = {
 }
 cooldown = 2
 TIMEOUT = 10
-
-# requests.adapters.DEFAULT_RETRIES = 10
 
 ses = requests.Session()
 retry = Retry(total=10, backoff_factor=cooldown, backoff_max=10)
@@ -40,7 +40,7 @@ def crawl_index(count):
                 cooldown=cooldown,
                 headers=headers,
             )
-            chars = soup.find(id='columnCrtBrowserB').find_all('div')[1]
+            chars = soup.find(id='columnCrtBrowserB').find_all('div')[1]  # type: ignore
             for char in chars.children:
                 id = int(char.find('a')['href'].replace('/character/', ''))
                 avatar = 'https:' + char.find('img')['src']
@@ -55,7 +55,7 @@ def crawl_index(count):
                     }
                 )
     except Exception as e:
-        print(e)
+        bar.write(str(e))
     return ret
 
 
@@ -76,7 +76,7 @@ def crawl_characters(index):
             )
             ret[id] = data
     except BaseException as e:
-        print(e)
+        bar.write(str(e))
         return ret, e
     return ret, None
 
@@ -118,8 +118,8 @@ def download_thumnail(index, chars):
         if idx >= len(chars):
             return
         id = i['id']
-        if os.path.exists('images/{}-avatar.jpg'.format(id)) and os.path.exists(
-            'images/{}-large.jpg'.format(id)
+        if os.path.exists('bangumi/images/{}-avatar.jpg'.format(id)) and os.path.exists(
+            'bangumi/images/{}-large.jpg'.format(id)
         ):
             bar.write('skip: ' + i['name'])
             continue
@@ -132,28 +132,30 @@ def download_thumnail(index, chars):
             avatar = images['large'].replace(
                 'https://lain.bgm.tv/pic/crt/l/', 'https://lain.bgm.tv/pic/crt/g/'
             )
-            safe_download(avatar, 'images/{}-avatar.jpg'.format(id), bar)
+            safe_download(avatar, 'bangumi/images/{}-avatar.jpg'.format(id), bar)
             # safe_download(images['small'], 'images/{}-small.jpg'.format(id),bar)
             # safe_download(images['grid'], 'images/{}-grid.jpg'.format(id),bar)
             # safe_download(images['medium'], 'images/{}-medium.jpg'.format(id),bar)
-            safe_download(images['large'], 'images/{}-large.jpg'.format(id), bar)
+            safe_download(
+                images['large'], 'bangumi/images/{}-large.jpg'.format(id), bar
+            )
         except Exception as e:
-            print(e)
+            bar.write(str(e))
 
 
 # index = crawl_index(9999)
-# save_json(index, 'bgm_index_20k.json')
-# index = json.load(open("bgm_index_20k.json", encoding='utf-8'))
+# save_json(index, 'bangumi/bgm_index_20k.json')
+# index = json.load(open("bangumi/bgm_index_20k.json", encoding='utf-8'))
 # # print(index)
 # chars, e = crawl_characters(index)
 # # print(chars, e)
-# save_json(chars, 'bgm_chars_20k.json')
+# save_json(chars, 'bangumi/bgm_chars_20k.json')
 
 # subjects, e = crawl_subjects(index)
 # print(subjects, e)
-# save_json(subjects, 'bgm_subjects.json')
+# save_json(subjects, 'bangumi/bgm_subjects.json')
 
-# chars = json.load(open('bgm_chars_160k.json', encoding='utf-8'))
+# chars = json.load(open('bangumi/bgm_chars_160k.json', encoding='utf-8'))
 # download_thumnail(index[:10000], chars)
 
 # set20k = set()
@@ -163,7 +165,7 @@ def download_thumnail(index, chars):
 
 for i in list(range(1, 175)):
     print(f'crawl: {(i-1)*1000+1} - {i*1000}')
-    fname = f'160k_chars/bgm_chars_160k_{i}.json'
+    fname = f'bangumi/160k_chars/bgm_chars_160k_{i}.json'
     if os.path.exists(fname):
         crawled = json.load(open(fname, encoding='utf-8'))
     else:
@@ -178,7 +180,7 @@ for i in list(range(1, 175)):
         break
 
 # for i in range(1,169):
-#     fname = f'160k_subjects/bgm_subjects_160k_{i}.json'
+#     fname = f'bangumi/160k_subjects/bgm_subjects_160k_{i}.json'
 #     if os.path.exists(fname):
 #         crawled = json.load(open(fname, encoding='utf-8'))
 #         for id in set20k:
@@ -189,7 +191,7 @@ for i in list(range(1, 175)):
 
 for i in list(range(1, 175)):
     print(f'crawl: {(i-1)*1000+1} - {i*1000}')
-    fname = f'160k_subjects/bgm_subjects_160k_{i}.json'
+    fname = f'bangumi/160k_subjects/bgm_subjects_160k_{i}.json'
     if os.path.exists(fname):
         crawled = json.load(open(fname, encoding='utf-8'))
     else:

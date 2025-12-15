@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from urllib3 import Retry
 from requests.adapters import HTTPAdapter
 
-requests.adapters.DEFAULT_RETRIES = 3
+requests.adapters.DEFAULT_RETRIES = 3  # type: ignore
 
 global_session = requests.Session()
 retry = Retry(total=10, backoff_factor=3, backoff_max=10)
@@ -17,13 +17,13 @@ global_session.mount('http', HTTPAdapter(max_retries=retry))
 
 def safe_get(
     url: str,
-    bar: tqdm = None,
+    bar: tqdm | None = None,
     headers={},
     cookies={},
     timeout: float = 10,
     cooldown: float = 3,
     verbose: bool = True,
-    session: requests.Session = None,
+    session: requests.Session | None = None,
 ) -> requests.Response:
     if not session:
         global global_session
@@ -55,13 +55,13 @@ def safe_get(
 def safe_download(
     url: str,
     path: str,
-    bar: tqdm = None,
+    bar: tqdm | None = None,
     headers={},
     cookies={},
     timeout: float = 10,
     cooldown: float = 3,
     verbose: bool = True,
-    session: requests.Session = None,
+    session: requests.Session | None = None,
 ):
     if not session:
         global global_session
@@ -96,13 +96,13 @@ def safe_download(
 
 def safe_soup(
     url: str,
-    bar: tqdm = None,
+    bar: tqdm | None = None,
     headers={},
     cookies={},
     timeout: float = 10,
     cooldown: float = 3,
     verbose: bool = True,
-    session: requests.Session = None,
+    session: requests.Session | None = None,
 ) -> BeautifulSoup:
     return BeautifulSoup(
         safe_get(
