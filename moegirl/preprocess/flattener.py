@@ -10,7 +10,12 @@ chdir_project_root()
 def char_filter(char_name: str) -> bool:
     # if random.random() > 0.01:
     #     return True
-    return char_name.startswith("Template:") or char_name.startswith("User:")
+    return (
+        char_name.startswith("Template:")
+        or char_name.startswith("User:")
+        or char_name.startswith("Help:")
+        or char_name.startswith("Talk:")
+    )
 
 
 def attr_filter(attr_name: str) -> bool:
@@ -58,9 +63,10 @@ def dfs(data: dict, ret: dict, stk: list, no_further: bool = False):
                 attr_index.append(attr_name)
                 if 'article' in data:
                     url = data['article']['url']
-                    if 'redlink' not in url:
-                        attr2article[attr_name] = url
-                    # print(data['article'])
+                    assert 'redlink' not in url
+                    attr2article[attr_name] = url
+                    # if "/" + data['article']['name'].replace(" ", "_") != url:
+                    #     print(data['article'], attr_name)
                 else:
                     for i in range(len(stk) - 1, -1, -1):
                         if stk[i] in attr2article:

@@ -17,11 +17,11 @@ def get_id(id, bar):
     return data['id']
 
 
-index = load_json('../bgm_index_full.json')
-chars = load_json('../bgm_chars_full.json')
-subjects = load_json('../bgm_subjects_full.json')
+index = load_json('bangumi/bgm_index_full.json')
+chars = load_json('bangumi/bgm_chars_full.json')
+subjects = load_json('bangumi/bgm_subjects_full.json')
 
-redirects = load_json('../bgm_redirects_full.json')
+redirects = load_json('bangumi/bgm_redirects_full.json')
 # for k in redirects.keys():
 #     redirects[k] = str(redirects[k])
 
@@ -43,7 +43,7 @@ try:
 except KeyboardInterrupt:
     pass
 
-save_json(redirects, '../bgm_redirects_full.json')
+save_json(redirects, 'bangumi/bgm_redirects_full.json')
 
 for k in redirects.keys():
     if k in chars:
@@ -57,6 +57,6 @@ for i in index:
         i['rank'] = len(index2) + 1
         index2.append(i)
 
-save_json(index2, '../bgm_index_full.json')
-save_json(chars, '../bgm_chars_full.json')
-save_json(subjects, '../bgm_subjects_full.json')
+save_json(index2, 'bangumi/bgm_index_full.json')
+save_json(chars, 'bangumi/bgm_chars_full.json')
+save_json(subjects, 'bangumi/bgm_subjects_full.json')

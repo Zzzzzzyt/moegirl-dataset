@@ -1,5 +1,6 @@
 import shutil
 import time
+import random
 from tqdm import tqdm
 import requests
 import urllib.parse
@@ -22,9 +23,13 @@ def safe_get(
     cookies={},
     timeout: float = 10,
     cooldown: float = 3,
+    jitter: float = 0.5,
     verbose: bool = True,
     session: requests.Session | None = None,
 ) -> requests.Response:
+    if jitter > 0:
+        cooldown *= random.uniform(1 - jitter, 1 + jitter)
+
     if not session:
         global global_session
         session = global_session
@@ -45,8 +50,7 @@ def safe_get(
     if r.status_code != 200:
         if elapsed < cooldown:
             time.sleep(cooldown - elapsed)
-            raise requests.HTTPError(request=r.request, response=r)
-        raise RuntimeError(r)
+        raise requests.HTTPError(request=r.request, response=r)
     if elapsed < cooldown:
         time.sleep(cooldown - elapsed)
     return r
@@ -60,9 +64,13 @@ def safe_download(
     cookies={},
     timeout: float = 10,
     cooldown: float = 3,
+    jitter: float = 0.5,
     verbose: bool = True,
     session: requests.Session | None = None,
 ):
+    if jitter > 0:
+        cooldown *= random.uniform(1 - jitter, 1 + jitter)
+
     if not session:
         global global_session
         session = global_session
@@ -119,5 +127,9 @@ def safe_soup(
     )
 
 
+def quote_all(url):
+    return urllib.parse.quote(url.lstrip('/'), safe="")
+
+
 def title_to_url(title):
-    return urllib.parse.quote(title.replace(' ', '_'))
+    return quote_all(title.replace(' ', '_'))

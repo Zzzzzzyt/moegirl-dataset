@@ -41,8 +41,8 @@ for i in bgm_index:
 char2attr = load_json('moegirl/preprocess/char2attr.json')
 subset = list(char2attr.keys())
 # subset = load_json('moegirl/subset/subset/blue_archive_subset.json')
-# subset = json.load(open('../subset/subset/jojo_subset.json', encoding='utf-8'))
-# touhou_set += json.load(open('../subset/subset/touhou_old_subset.json', encoding='utf-8'))
+# subset = json.load(open('moegir/subset/subset/jojo_subset.json', encoding='utf-8'))
+# touhou_set += json.load(open('moegir/subset/subset/touhou_old_subset.json', encoding='utf-8'))
 
 # attrid = attrmap['傲娇']
 # res = []
