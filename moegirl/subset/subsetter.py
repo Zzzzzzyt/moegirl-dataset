@@ -60,7 +60,7 @@ for i in attrs['subcategories']:
 assert vocaloid_root is not None
 
 save_json(
-    list(dfs(vocaloid_root)),
+    sort_chn(list(dfs(vocaloid_root))),
     'moegirl/subset/subset/vocaloid_subset.json',
 )
 
