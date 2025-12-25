@@ -375,6 +375,7 @@ with open("bangumi/anime_character_guessr/id_tags.js", "w", encoding='utf-8') as
     f.write('export const idToTags = {\n')
     tags = []
     for k, v in bgm2attr.items():
-        tags.append(str(k) + ':[' + ','.join(map(lambda x: f'"{x}"', v)) + ']')
-    f.write(',\n'.join(tags))
+        tags.append((k, ':[' + ','.join(map(lambda x: f'"{x}"', v)) + ']'))
+    tags.sort(key=lambda x: int(x[0]))
+    f.write(',\n'.join(map(lambda x: str(x[0]) + x[1], tags)))
     f.write('\n};')
