@@ -1,6 +1,8 @@
 from tqdm import tqdm
-from utils.file import load_json, save_json
+from utils.file import load_json, save_json, chdir_project_root
 from utils.network import safe_get, safe_soup, safe_download
+
+chdir_project_root()
 
 headers = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',

@@ -1,11 +1,12 @@
 import os
-from utils.file import load_json,chdir_project_root
+from utils.file import load_json, chdir_project_root
 from moegirl_mapper import *
 
 chdir_project_root()
 
 bgm2moegirl = load_json('bangumi/bgm2moegirl.json')
 moegirl2bgm = load_json('bangumi/moegirl2bgm.json')
+
 
 def test_moe(k):
     if k in moegirl2bgm:
@@ -162,3 +163,11 @@ for entry in bgm_index:
 
 test_moe('芙蕾雅(圣斗士星矢)')
 test_moe('世界(飙马野郎)')
+
+while True:
+    id = input("id:")
+    if id.isdigit():
+        name = bgm_entry[id]['name']
+        print(name)
+    else:
+        test_moe(id)

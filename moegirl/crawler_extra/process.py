@@ -56,6 +56,8 @@ def parse_tab_image(val, prefix=""):
                 t = str(vals).strip()
                 if t == '':
                     continue
+                if t == '（待补充）':
+                    continue
                 warnings.warn("malformed image url: " + t)
                 if t.startswith("http"):
                     tmp["url"] = t
@@ -565,25 +567,30 @@ def parse_hair_color(result, pname, pvalue):
 
 
 def parse_blood(result, pname, pvalue):
-    val = remove_html(str(pvalue))
-    val = val.split("\n")[0]
-    val = conv(val).strip()
-    val = val.upper()
+    val = conv(remove_html(str(pvalue)))
     if "稀有" in val:
         result["血型"] = "稀有"
         return
-    if len(val) <= 4:
-        val = val.rstrip("血").rstrip("型")
-    if (
-        val == "未知"
-        or val == "?"
-        or val == "？"
-        or val == "秘密"
-        or val == "不明"
-        or val == ""
-    ):
-        return
-    result["血型"] = val
+    val = extract_text(mwp.parse(val))
+    ret = []
+    for t in val:
+        if len(t) <= 10:
+            t = t.strip().rstrip("血").rstrip("型")
+            if (
+                t == "未知"
+                or "?" in t
+                or "？" in t
+                or t == "秘密"
+                or t == "不明"
+                or t == ""
+                or t == '不详'
+                or '分类' in t
+            ):
+                return
+            ret.append(t.upper())
+    if len(ret) > 0:
+        ret.sort(key=lambda x: len(x))
+        result["血型"] = ret[0]
 
 
 birthday_re = re.compile(r'((\d+)年)?((\d+)月)?((\d+)[日号])?')
@@ -775,9 +782,9 @@ extra = json.load(open("moegirl/crawler_extra/extra_info.json", encoding="utf-8"
 out = {}
 
 idx = 0
-for k, v in extra.items():
-    idx += 1
-    # print(f"{idx}/{len(extra)} {k}")
+bar = tqdm(extra.items())
+for k, v in bar:
+    bar.set_description(k)
     assert len(v) > 0
     # if len(v) > 1:
     #     print('Multiple infoboxes for', k)
