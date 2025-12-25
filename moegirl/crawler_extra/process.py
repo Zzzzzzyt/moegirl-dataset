@@ -2,363 +2,129 @@ import json
 import traceback
 from typing import Optional
 import warnings
-from bs4 import BeautifulSoup
 import mwparserfromhell as mwp
-import opencc
 from tqdm import tqdm
 from bs4 import MarkupResemblesLocatorWarning
 import re
 
 from utils.file import save_json, save_json_pretty, chdir_project_root
+from moegirl.crawler_extra.mwutils import *
 
 chdir_project_root()
 
 warnings.filterwarnings("ignore", category=MarkupResemblesLocatorWarning, module="bs4")
-warnings.simplefilter("always", UserWarning)
-
-converter = opencc.OpenCC("t2s.json")
+# warnings.simplefilter("always", UserWarning)
 
 
-def conv(t):
-    return converter.convert(t)
-
-
-def unique(l):
+def parse_tab_image(val, prefix=""):
     ret = []
-    for i in l:
-        if i not in ret:
-            ret.append(i)
-    return ret
-
-
-def multisplit(str, sp=",，、\n "):
-    ret = []
-    cur = ""
-    for i in str:
-        if i in sp:
-            ret.append(cur.strip())
-            cur = ""
+    bt = "bt"
+    tab = "tab"
+    if str(val.name).lower() == "tabs/core":
+        bt = "label"
+        tab = "text"
+    for i in range(1, 100):
+        tmp = {}
+        if val.has(bt + str(i)):
+            alt = ''.join(extract_text(val.get(bt + str(i))))
+            tmp["alt"] = prefix + alt
+            if not val.has(tab + str(i)):
+                warnings.warn("missing tab for image alt: " + alt)
+                continue
+            vals = val.get(tab + str(i)).value
+            terminate = False
+            for j in vals.filter_templates(recursive=False):
+                tname = j.name.strip().lower()
+                if tname == "到pixiv" or tname == "lj":
+                    continue
+                # assert j.name == "图片外链"
+                if tname == 'tabs':
+                    ret.extend(parse_tab_image(j, prefix=prefix + alt + "/"))
+                    terminate = True
+                    break
+                elif tname == "图片外链" or tname == '阴影' or tname == 'pichover':
+                    tmp["url"] = j.params[0].value.strip()
+                elif tname == 'image-clip':
+                    tmp["url"] = j.get('img').value.strip()
+                elif tname == 'image':
+                    tmp["url"] = j.get('图片').value.strip()
+            if terminate:
+                continue
+            for j in vals.filter_wikilinks(recursive=True):
+                tmp["url"] = j.title.strip()
+            if "url" not in tmp:
+                t = str(vals).strip()
+                if t == '':
+                    continue
+                warnings.warn("malformed image url: " + t)
+                if t.startswith("http"):
+                    tmp["url"] = t
         else:
-            cur += i
-    ret.append(cur.strip())
+            break
+        if "url" in tmp:
+            ret.append(tmp)
     return ret
 
 
-def remove_style(src, strip_wikilink=False):
-    ret = ""
-    for i in src.nodes:
-        if isinstance(i, mwp.nodes.text.Text):
-            ret += str(i.value)
-        elif isinstance(i, mwp.nodes.template.Template):
-            if len(i.params) > 0:
-                ret += remove_style(i.params[0].value, strip_wikilink)
-        elif isinstance(i, mwp.nodes.wikilink.Wikilink):
-            if strip_wikilink:
-                ret += remove_style(i.title, strip_wikilink)
-            else:
-                ret += str(i)
-        else:
-            ret += str(i)
-    return ret
+def parse_image(result, pname, pvalue):
+    val = mwp.parse(remove_html(str(pvalue)))
 
-
-def remove_html(str, remove_ref=True):
-    soup = BeautifulSoup(str, features="html.parser")
-    for br in soup.find_all("br"):
-        br.replace_with("\n")
-    if remove_ref:
-        for s in soup.select("ref"):
-            s.extract()
-    return soup.get_text()
-
-
-def calc_zodiac(month, day):
-    # who tf made this template?????
-    match (month):
-        case 1:
-            if day > 19:
-                return "水瓶座"
-            else:
-                return "摩羯座"
-        case 2:
-            if day > 18:
-                return "双鱼座"
-            else:
-                return "水瓶座"
-        case 3:
-            if day > 20:
-                return "白羊座"
-            else:
-                return "双鱼座"
-        case 4:
-            if day > 19:
-                return "金牛座"
-            else:
-                return "白羊座"
-        case 5:
-            if day > 20:
-                return "双子座"
-            else:
-                return "金牛座"
-        case 6:
-            if day > 21:
-                return "巨蟹座"
-            else:
-                return "双子座"
-        case 7:
-            if day > 22:
-                return "狮子座"
-            else:
-                return "巨蟹座"
-        case 8:
-            if day > 22:
-                return "处女座"
-            else:
-                return "狮子座"
-        case 9:
-            if day > 22:
-                return "天秤座"
-            else:
-                return "处女座"
-        case 10:
-            if day > 23:
-                return "天蝎座"
-            else:
-                return "天秤座"
-        case 11:
-            if day > 20:
-                return "射手座"
-            else:
-                return "天蝎座"
-        case 12:
-            if day > 21:
-                return "摩羯座"
-            else:
-                return "射手座"
-
-
-# pyright: reportAttributeAccessIssue=none
-def extract_text(
-    code, strict_root=False, agressive=False, wikilink=False, multiline_mode=False
-):
-    ret = []
-    try:
-        if isinstance(code, mwp.nodes.template.Template):
-            name = code.name.lower().strip()
-            if name == "萌点":
-                for i in code.params:
-                    ret.append(multisplit(i.value)[0])
-            elif (
-                name == "cate"
-                or name == "黑幕"
-                or name == "heimu"
-                or name == "假黑幕"
-                or name == "jk"
-                or name == "胡话"
-                or name == "注解"
-                or name == "lj"
-                or name == "彩幕"
-                or name == "彩色幕"
-                or name == "模糊"
-                or name == "文字模糊"
-                or name == "dead"
-                or name == "small"
-                or name == "citation needed"
-                or name == "示亡"
-                or name.startswith("lang-")
-                or name == "font"
-                or name == "注"
-                or name == "ref"
-                or name == "ljr"
-                or name == ""
-                or name == "黑雾"
-                or name == "block"
-                or name == "texthover"
-                or name == ""
-                or name.startswith("photrans")
-                or name == "魔女文字"
-                or name.startswith("文字描边")
-                or name == "writing-mode"
-                or name == "文字模糊"
-                or name == "填空幕"
-                or name == "toggle 内联按钮"
-                or name == "文字外发光"
-                or name == "tja"
-                or name == '瞳色'
-                or name == '发色'
-                or name == 'eye color'
-                or name == 'hair color'
-                or name == 'eye_color'
-                or name == 'hair_color'
-                or name == 'rainbow text'
-                or name == 'background color'
-                or name == 'ac'
-                or name == '模糊文字'
-                or name == '舰c'
-            ):
-                if len(code.params) >= 1:
-                    ret.extend(extract_text(code.get(1).value))
-                else:
-                    warnings.warn(
-                        "template "
-                        + name
-                        + " has fewer params than expected:\n"
-                        + str(code)
-                    )
-            elif (
-                name == "切换显示"
-                or name == "color"
-                or name == "coloredlink"
-                or name == "colorlink"
-                or name == "lang"
-                or name == "gradient_text"
-                or name == "cj"
-                or name == '#invoke:战舰少女'
-            ):
-                ret.extend(extract_text(code.get(2).value))
-            elif name == "ruby" or name == "rubyh":
-                ret.extend(extract_text(code.get(1).value))
-                if agressive:
-                    ret.extend(extract_text(code.get(2).value))
-            elif name == "username" or name == "0" or name == "fact":
-                if code.has(1):
-                    ret.extend(extract_text(code.get(1).value))
-            elif name == "rubya":
-                for i in code.params:
-                    if i.name == "lang":
-                        continue
-                    ret.append(multisplit(str(i.value))[0])
-            elif name == "hide":
-                if code.has(1) and code.get(1) == "show":
-                    if code.has(2):
-                        ret.extend(extract_text(code.get(2).value))
-                    else:
-                        ret.extend(extract_text(code.get("内容").value))
-                else:
-                    if code.has(1):
-                        ret.extend(extract_text(code.get(1).value))
-                    else:
-                        ret.extend(extract_text(code.get("内容").value))
-            elif name == "日本人名" or name == "jpn":
-                tmp = ""
-                if code.has(1):
-                    tmp += "".join(extract_text(code.get(1).value))
-                if code.has(3):
-                    tmp += "".join(extract_text(code.get(3).value))
-                ret.append(tmp)
-            elif name == "gup" or name == "少战":
-                if code.has(2):
-                    ret.extend(extract_text(code.get(2).value))
-                else:
-                    ret.extend(extract_text(code.get(1).value))
-            elif name == "link":
-                for i in code.params:
-                    if i.name == "char":
-                        continue
-                    ret.extend(extract_text(i.value))
-            elif name == "toggle" or name == "toggle2":
-                ret.extend(extract_text(code.get("content").value))
-            elif name == "hideinline":
-                if code.has_param("内容"):
-                    ret.extend(extract_text(code.get("内容").value))
-                else:
-                    if code.get(1).value == "show":
-                        ret.extend(extract_text(code.get(3).value))
-                    else:
-                        ret.extend(extract_text(code.get(2).value))
-            elif name == "astrology":
-                ret.append(
-                    calc_zodiac(
-                        int(str(code.get(1).value)), int(str(code.get(2).value))
-                    )
-                )
-            elif (
-                '注释' in name
-                or name == "refn"
-                or name == "#invoke:housamo"
-                or name == "ps"
-                or name == "note"
-                or name == "来源请求"
-                or name == "w"
-                or name == "·"
-                or name == "bilibililink"
-                or name == "pg"
-                or name == "zh-hant"
-                or name == "regionicon"
-                or name == "图片外链"
-                or name == "color_block/wl"
-                or name == "space"
-                or name == "nbsp"
-            ):
-                pass
-            elif len(code.params) == 0:
-                pass
-            else:
-                warnings.warn("Unkown template name: " + name + "\n" + str(code))
-        elif isinstance(code, mwp.nodes.wikilink.Wikilink):
-            if wikilink or code.text is None:
-                ret.append(str(code.title).strip())
-            else:
-                ret.append(str(code.text).strip())
-        elif isinstance(code, mwp.wikicode.Wikicode):
-            for idx, i in enumerate(code.nodes):
-                if isinstance(i, mwp.nodes.text.Text):
-                    l = multisplit(i.value, ",，、\n")
-                    if strict_root:
-                        if idx != 0:
-                            if len(l) > 1:
-                                l = l[1:]
-                            else:
-                                continue
-                        if idx != len(code.nodes) - 1:
-                            if len(l) > 1:
-                                l = l[:-1]
-                            else:
-                                continue
-                    for j in l:
-                        ret.append(j.strip())
-                elif isinstance(i, mwp.nodes.tag.Tag):
-                    if i.tag != "ref" and i.tag != "br":
-                        ret.extend(extract_text(i.contents))
-                    if i.tag == "br" and multiline_mode:
-                        ret.append("\n")
-                else:
-                    ret.extend(extract_text(i))
-        elif isinstance(code, mwp.nodes.text.Text):
-            l = multisplit(code.value, ",，、\n")
-            for i in l:
-                ret.append(i.strip())
-        elif isinstance(code, mwp.nodes.tag.Tag):
-            if code.tag != "ref" and code.tag != "br":
-                ret.extend(extract_text(code.contents))
-            if code.tag == "br" and multiline_mode:
-                ret.append("\n")
-    except Exception as e:
-        traceback.print_exc()
-        raise e
-    ret = list(filter(lambda x: len(x) > 0, ret))
-    return ret
-
-
-strip_parenthesis_re = re.compile(r"[\(（][^()（）]*?[\)）]")
-
-
-def strip_parenthesis(s: str):
-    nb_rep = 1
-    while nb_rep:
-        s, nb_rep = strip_parenthesis_re.subn("", s)
-    return s
-
-
-def lstrip_cat(str):
-    return re.sub("^(Category:|分类:)", "", str, flags=re.IGNORECASE)
-
-
-def parse_moe(val, raw):
-    global attrs
-    val = conv(remove_html(val))
     # print(val)
-    res = extract_text(mwp.parse(val), strict_root=True, agressive=True, wikilink=True)
+    if isinstance(val, mwp.nodes.wikilink.Wikilink) or pname.lower() == 'image':
+        if not isinstance(val, mwp.nodes.wikilink.Wikilink):
+            url = str(val).strip()
+            if url == '':
+                return
+        else:
+            url = val.title.strip()
+        if 'image' not in result:
+            result['image'] = [{"alt": "", "url": None}]
+        else:
+            assert isinstance(result['image'], list)
+            if len(result['image']) > 1 or (
+                len(result['image']) == 1 and result['image'][0]["url"] is not None
+            ):
+                warnings.warn('warning: single image while tabs present')
+                return
+            if len(result['image']) == 0:
+                result['image'].append({"alt": "", "url": None})
+
+        if not url.startswith('File:'):
+            url = 'File:' + url
+        result['image'][0]["url"] = url
+        return
+
+    ret = []
+    val = val.filter_templates()
+    if len(val) == 0:
+        return
+    val = val[0]
+    res = parse_tab_image(val)
+    if len(res) > 0:
+        result['image'] = res
+
+
+def parse_image_alt(result, pname, pvalue):
+    val = conv(remove_html(str(pvalue))).strip()
+    if val == '':
+        return
+    if 'image' not in result or len(result['image']) == 0:
+        # warnings.warn("warning: image not present but alt present")
+        return
+    if len(result['image']) > 1:
+        # warnings.warn("warning: multiple images but single image alt present")
+        return
+    if result['image'][0]['alt'] != "":
+        # warnings.warn("warning: image alt already present")
+        return
+    result['image'][0]['alt'] = val
+
+
+def parse_moe(result, pname, pvalue):
+    global attrs
+    val = conv(remove_html(str(pvalue)))
+    # print(val)
+    res = extract_text(mwp.parse(val), strict_root=True, aggressive=True, wikilink=True)
     ret = []
     for i in res:
         s = i.strip()
@@ -370,49 +136,51 @@ def parse_moe(val, raw):
             ret.append(s2)
         else:
             ret.append(s)
-    ret = unique(ret)
-    return ret
+    result['萌点'] = unique(result.get('萌点', []) + ret)
 
 
-def parse_name(val, raw):
-    root = mwp.parse(val)
-    ret2 = extract_text(root, multiline_mode=True)
-    ret = []
-    cur = ""
-    for i in ret2:
-        cur += i
-        if i.endswith("\n"):
-            cur = cur.rstrip()
-            ret.extend(multisplit(cur, "/\\"))
-            cur = ""
-    ret.append(cur)
+def parse_name(result, pname, pvalue):
+    root = mwp.parse(conv(remove_html(str(pvalue))))
+    ret = extract_text(root, multiline_mode=True)
+    # ret = []
+    # cur = ""
+    # for i in ret2:
+    #     cur += i
+    #     if i.endswith("\n"):
+    #         cur = cur.rstrip()
+    #         ret.extend(multisplit(cur, "/\\"))
+    #         cur = ""
+    # ret.append(cur)
     ret = map(strip_parenthesis, ret)
     ret = map(lambda x: chain_replace(x, "《》/\\-()（）【】⌈⌋⌊⌉[]{},，、"), ret)
-    ret = filter(lambda x: len(x) > 0, ret)
-    ret = list(ret)
+    ret = map(
+        lambda x: x.replace('zhhans:', '').replace('zhhk:', '').replace('zhtw:', ''),
+        ret,
+    )
+    ret = filter(
+        lambda x: len(x) > 0 and x != '未知' and x != '不明' and '本名不明' not in x,
+        ret,
+    )
+    ret = result.get("本名", []) + list(ret)
     ret = unique(ret)
-    # print(val)
-    # print(ret2)
-    # print(ret)
-    # print()
-    return ret
+    result["本名"] = ret
 
 
-def parse_alt(val, raw):
-    val = conv(remove_html(val))
-    res = extract_text(mwp.parse(val))
-    ret = []
-    for i in res:
-        s = i.strip()
-        if len(s) == 0:
-            continue
-        s = strip_parenthesis(s)
-        ret.extend(multisplit(s, "/\\"))
+def parse_alt(result, pname, pvalue):
+    root = mwp.parse(conv(remove_html(str(pvalue))))
+    ret = extract_text(root, multiline_mode=True)
+    # ret = []
+    # for i in res:
+    #     s = i.strip()
+    #     if len(s) == 0:
+    #         continue
+    #     s = strip_parenthesis(s)
+    #     ret.extend(multisplit(s, "/\\"))
     ret = map(lambda x: chain_replace(x, "《》/\\-()（）【】⌈⌋⌊⌉[]{},，、"), ret)
     ret = filter(lambda x: len(x) > 0, ret)
-    ret = list(ret)
+    ret = result.get("别名", []) + list(ret)
     ret = unique(ret)
-    return ret
+    result["别名"] = ret
 
 
 height_re1 = re.compile(r"(\d+(\.\d+){0,2})\s?(cm|厘米)", flags=re.IGNORECASE)
@@ -420,8 +188,8 @@ height_re2 = re.compile(r"(\d+(\.\d+){0,2})\s?(m|米)", flags=re.IGNORECASE)
 height_re3 = re.compile(r"(\d+(\.\d+)?)", flags=re.IGNORECASE)
 
 
-def parse_height(val, raw):
-    val = conv(val)
+def parse_height(result, pname, pvalue):
+    val = conv(str(pvalue))
     val = val.lower().strip().replace(",", "")
     try:
         s = int(val)
@@ -478,7 +246,10 @@ def parse_height(val, raw):
             if tmp < 10:
                 tmp *= 100
             ret.append(tmp)
-    return ret
+    if len(ret) > 0:
+        for i in ret:
+            if i >= 20 and i <= 300:
+                result["身高"] = i
 
 
 weight_re1 = re.compile(r"(\d+(\.\d+)?)\s?(kg|千克|公斤)", flags=re.IGNORECASE)
@@ -493,8 +264,8 @@ def safediv(a, b):
     return a / b
 
 
-def parse_weight(val, raw):
-    val = conv(val)
+def parse_weight(result, pname, pvalue):
+    val = conv(str(pvalue))
     val = val.lower().strip().replace(",", "")
     try:
         s = int(val)
@@ -532,7 +303,7 @@ def parse_weight(val, raw):
     except Exception as e:
         pass
 
-    val = remove_html(val)
+    val = remove_html(val).strip()
     ret = []
     for i in weight_re1.finditer(val):
         s = i.groups()[0]
@@ -558,22 +329,35 @@ def parse_weight(val, raw):
             tmp *= 1000
             ret.append(tmp)
     if len(ret) == 0:
-        for i in weight_re4.finditer(val):
-            s = i.groups()[0]
+        m = weight_re4.match(val)
+        if m:
+            s = m.groups()[0]
             if "." in s:
                 tmp = float(s)
             else:
                 tmp = int(s)
             ret.append(tmp)
-    return ret
+    if len(ret) > 0:
+        if ret[0] >= 20 and ret[0] <= 300:
+            result["体重"] = ret[0]
+        else:
+            mx = max(ret)
+            if mx >= 20 and mx <= 300:
+                result["体重"] = mx
+            else:
+                mi = max(ret)
+                if mi >= 20 and mi <= 300:
+                    result["体重"] = mi
+                else:
+                    result["体重"] = ret[0]
 
 
 age_re1 = re.compile(r"(\d+)岁", flags=re.IGNORECASE)
 age_re2 = re.compile(r"(\d+)", flags=re.IGNORECASE)
 
 
-def parse_age(val, raw):
-    val = conv(val)
+def parse_age(result, pvalue, raw):
+    val = conv(str(pvalue))
     val = val.lower().strip().replace(",", "")
     try:
         s = int(val)
@@ -595,7 +379,19 @@ def parse_age(val, raw):
         for i in weight_re2.finditer(val):
             s = i.groups()[0]
             ret.append(int(s))
-    return ret
+    if len(ret) > 0:
+        if ret[0] <= 100:
+            result["年龄"] = ret[0]
+        else:
+            mi = min(ret)
+            if mi <= 100:
+                result["年龄"] = mi
+            else:
+                mx = max(ret)
+                if mx <= 100:
+                    result["年龄"] = mx
+                else:
+                    result["年龄"] = ret[0]
 
 
 bwh_re1 = re.compile(r"B[:：]?(\d+).*?W[:：]?(\d+).*?H[:：]?(\d+)", flags=re.IGNORECASE)
@@ -603,18 +399,23 @@ bwh_re2 = re.compile(r"B[:：]?(\d+)", flags=re.IGNORECASE)
 bwh_re3 = re.compile(r"(\d+).*?(\d+).*?(\d+)", flags=re.IGNORECASE)
 
 
-def parse_bwh(val, raw):
+def parse_bwh(result, pname, pvalue):
+    val = conv(str(pvalue))
+
     ret: list[Optional[int]] = [None, None, None]
     for i in bwh_re1.finditer(val):
         ret[0] = int(i.groups()[0])
         ret[1] = int(i.groups()[1])
         ret[2] = int(i.groups()[2])
     if ret[0] is not None:
-        return ret
+        result["三围"] = ret
+        return
+
     for i in bwh_re2.finditer(val):
         ret[0] = int(i.groups()[0])
     if ret[0] is not None:
-        return ret
+        result["三围"] = ret
+        return
     # print(val)
     val = "".join(extract_text(mwp.parse(val)))
     # print(val)
@@ -624,7 +425,8 @@ def parse_bwh(val, raw):
         ret[2] = int(i.groups()[2])
     # print(ret)
     # print()
-    return ret
+    if ret[0] is not None:
+        result["三围"] = ret
 
 
 def chain_replace(s, pattern, sub=""):
@@ -672,21 +474,19 @@ def parse_seyuu_final(val):
     return ret
 
 
-def parse_seyuu(val, raw):
-    val = val.strip()
-    val = conv(val)
+def parse_seyuu(result, pname, pvalue):
+    val = conv(remove_html(str(pvalue))).strip()
     if "<" in val or "{" in val or "[" in val or "," in val:
         val = strip_parenthesis(val)
         val = remove_lang(val)
         ret = parse_seyuu_final(val)
-        return ret
+        result["声优"] = unique(result.get("声优", []) + ret)
     else:
-        return [strip_parenthesis(val)]
+        result["声优"] = unique(result.get("声优", []) + [strip_parenthesis(val)])
 
 
-def parse_multiple_seyuu(val, raw):
-    val = val.strip()
-    val = conv(val)
+def parse_multiple_seyuu(result, pname, pvalue):
+    val = conv(remove_html(str(pvalue))).strip()
     val = strip_parenthesis(val)
     val = remove_lang(val)
 
@@ -698,10 +498,11 @@ def parse_multiple_seyuu(val, raw):
             if i.name.lower() == "cate" or i.name == "分类":
                 for j in i.params[1:]:
                     ret.append(str(j.value))
-        return ret
+        result["声优"] = unique(result.get("声优", []) + ret)
+        return
 
     ret = parse_seyuu_final(val)
-    return ret
+    result["声优"] = unique(result.get("声优", []) + ret)
 
 
 hair_color_attr = [
@@ -738,27 +539,39 @@ eye_color_attr = [
 ]
 
 
-def parse_color(val, raw):
+def parse_color(val):
     val = conv(val)
     val = strip_parenthesis(val)
     val = "".join(extract_text(mwp.parse(val)))
     ret = multisplit(val, "/→+-~左右或,，、 ")
-    ret = map(
-        lambda x: x.rstrip("瞳").rstrip("发").rstrip("色") if len(x) <= 4 else x, ret
-    )
+    ret = map(lambda x: x.rstrip("瞳").rstrip("发") if len(x) <= 4 else x, ret)
+    ret = map(lambda x: x if '异色' in x else x.rstrip('色'), ret)
     ret = filter(lambda x: len(x) > 0, ret)
     ret = list(ret)
     ret = unique(ret)
     return ret
 
 
-def parse_blood(val, raw):
-    val = remove_html(val)
+def parse_eye_color(result, pname, pvalue):
+    colors = parse_color(conv(remove_html(str(pvalue))))
+    if len(colors) > 0:
+        result['瞳色'] = colors
+
+
+def parse_hair_color(result, pname, pvalue):
+    colors = parse_color(conv(remove_html(str(pvalue))))
+    if len(colors) > 0:
+        result['发色'] = colors
+
+
+def parse_blood(result, pname, pvalue):
+    val = remove_html(str(pvalue))
     val = val.split("\n")[0]
-    val = conv(val)
+    val = conv(val).strip()
     val = val.upper()
     if "稀有" in val:
-        return "稀有"
+        result["血型"] = "稀有"
+        return
     if len(val) <= 4:
         val = val.rstrip("血").rstrip("型")
     if (
@@ -769,18 +582,54 @@ def parse_blood(val, raw):
         or val == "不明"
         or val == ""
     ):
-        val = None
-    return val
+        return
+    result["血型"] = val
 
 
-birthday_re = re.compile(r'((\d*)年)?((\d*)月)?((\d*)日)?')
+birthday_re = re.compile(r'((\d+)年)?((\d+)月)?((\d+)[日号])?')
+birthday_re2 = re.compile(r'((\d+)[/.])?(\d+)[/.](\d+)')
 
 
-def parse_birthday(val, raw):
-    m = birthday_re.search(val)
-    ret: list[Optional[int]] = [None, None, None]
-    if m:
+def parse_birthday(result, pname, pvalue):
+    val = mwp.parse(conv(remove_html(str(pvalue))))
+
+    text = None
+    for i in val.filter_templates(recursive=True):
+        tname = i.name.strip().lower()
+        if tname == '生日' or tname == 'birthday':
+            if text is not None:
+                warnings.warn('multiple birthday template: ' + str(i))
+                break
+            tmp = []
+            for j in i.params:
+                if j.name.strip().lower() == 'ft':
+                    continue
+                tmp.append(str(j.value))
+            if len(tmp) == 1:
+                text = tmp[0]
+            elif len(tmp) == 2:
+                text = tmp[0] + '月' + tmp[1] + '日'
+            else:
+                warnings.warn('malformed birthday template: ' + str(i))
+        elif tname == 'birth date' or tname == 'birth date and age':
+            y = i.params[0].value.strip()
+            m = i.params[1].value.strip()
+            d = i.params[2].value.strip()
+            text = f"{y}年{m}月{d}日"
+        else:
+            pass
+
+    if text is None:
+        text = ''.join(extract_text(pvalue)).strip()
+
+    if '不详' in text or '未知' in text:
+        return
+
+    for m in birthday_re.finditer(text):
+        ret: list[Optional[int]] = [None, None, None]
         g = m.groups()
+        if g[1] is None and g[3] is None and g[5] is None:
+            continue
         if g[1]:
             ret[0] = int(g[1])
         if g[3]:
@@ -790,150 +639,158 @@ def parse_birthday(val, raw):
         # print(val)
         # print(ret)
         # print()
-        return ret
-    return None
+        # if ret[1] is None or ret[2] is None:
+        #     pass
+        result['生日'] = ret
+    if '生日' not in result:
+        ret: list[Optional[int]] = [None, None, None]
+        m = birthday_re2.match(text)
+        if m:
+            g = m.groups()
+            if g[1] is None and g[3] is None and g[5] is None:
+                return
+            if g[1]:
+                ret[0] = int(g[1])
+            if g[2]:
+                ret[1] = int(g[2])
+            if g[3]:
+                ret[2] = int(g[3])
+            # print(val)
+            # print(ret)
+            # print()
+            result['生日'] = ret
 
 
-d = dict()
+zodiacs = set(
+    [
+        "白羊",
+        "金牛",
+        "双子",
+        "巨蟹",
+        "狮子",
+        "处女",
+        "天秤",
+        "天蝎",
+        "射手",
+        "摩羯",
+        "水瓶",
+        "双鱼",
+    ]
+)
+
+
+def parse_zodiac(result, pname, pvalue):
+    val = extract_text(mwp.parse(conv(remove_html(str(pvalue)))))
+    ret = []
+    for i in val:
+        i = i.rstrip("座")
+        if i == '室女':
+            i = '处女'
+        if i == '人马':
+            i = '射手'
+        if i == '宝瓶':
+            i = '水瓶'
+        if i in zodiacs:
+            ret.append(i)
+    if len(ret) > 0:
+        result['星座'] = unique(result.get('星座', []) + ret)
+
+
+# info_key_stats = {}
+# info_name_stats = {}
+
+
+# pyright: reportAttributeAccessIssue=none
+def parse(infobox):
+    wikicode = mwp.parse(infobox).get(0)
+    result = {"本名": [], "别名": [], "声优": []}
+    tname = str(wikicode.name).strip()
+    # info_name_stats.setdefault(tname, 0)
+    # info_name_stats[tname] += 1
+    for param in wikicode.params:
+        pname = str(param.name).strip()
+        pvalue = param.value
+        if str(pvalue).strip() == '':
+            continue
+        try:
+            # info_key_stats.setdefault(pname, 0)
+            # info_key_stats[pname] += 1
+            if (
+                pname == '本名'
+                or pname == '译名'
+                or pname == '中文名'
+                or pname == '日文名'
+                or pname == '英文名'
+                or pname == '韩文名'
+                or pname == '罗马字'
+            ):
+                parse_name(result, pname, pvalue)
+            elif (
+                pname == '别名' or pname == '别称' or pname == '别号' or pname == '昵称'
+            ):
+                parse_alt(result, pname, pvalue)
+            elif pname == 'image' or pname == 'tabs':
+                parse_image(result, pname, pvalue)
+            elif pname == '图片说明':
+                parse_image_alt(result, pname, pvalue)
+            elif pname == '瞳色' or pname == '多种瞳色':
+                parse_eye_color(result, pname, pvalue)
+            elif pname == '发色' or pname == '多种发色':
+                parse_hair_color(result, pname, pvalue)
+            elif pname == '身高':
+                parse_height(result, pname, pvalue)
+            elif pname == '体重':
+                parse_weight(result, pname, pvalue)
+            elif pname == '三围':
+                parse_bwh(result, pname, pvalue)
+            elif pname == '血型':
+                parse_blood(result, pname, pvalue)
+            elif pname == '萌点' or pname == '属性' or pname == '萌属性':
+                parse_moe(result, pname, pvalue)
+            elif pname == '年龄':
+                parse_age(result, pvalue, pvalue)
+            elif pname == '生日':
+                parse_birthday(result, pname, pvalue)
+            elif (
+                pname == '声优'
+                or pname == '配音'
+                or pname == '日语配音'
+                or pname == '汉语配音'
+                or pname == '韩语配音'
+            ):
+                parse_seyuu(result, pname, pvalue)
+            elif pname == '多位声优':
+                parse_multiple_seyuu(result, pname, pvalue)
+            elif pname == '星座':
+                parse_zodiac(result, pname, pvalue)
+        except Exception as e:
+            print('Error parsing', pname, 'in', tname)
+            traceback.print_exc()
+    return result
+
+
 attrs = json.load(open("moegirl/preprocess/attr_index.json", encoding="utf-8"))
 attrs = set(attrs)
 extra = json.load(open("moegirl/crawler_extra/extra_info.json", encoding="utf-8"))
 out = {}
 
-cnt = 0
-cntt = 0
+idx = 0
 for k, v in extra.items():
-    # print(k)
-    tmp: dict = {"萌点": [], "声优": []}
-    for pname, pvalue in v.items():
-        match pname:
-            case "萌点":
-                res = parse_moe(pvalue, v["raw"])
-                tmp["萌点"] = res
-            case "别号":
-                res = parse_alt(pvalue, v["raw"])
-                tmp["别号"] = res
-            case "本名":
-                res = parse_name(pvalue, v["raw"])
-                tmp["本名"] = res
-            case "身高":
-                res = parse_height(pvalue, v["raw"])
-                if len(res) > 0:
-                    for i in res:
-                        if i >= 20 and i <= 300:
-                            tmp["身高"] = i
-            case "体重":
-                res = parse_weight(pvalue, v["raw"])
-                if len(res) > 0:
-                    if res[0] >= 20 and res[0] <= 300:
-                        tmp["体重"] = res[0]
-                    else:
-                        mx = max(res)
-                        if mx >= 20 and mx <= 300:
-                            tmp["体重"] = mx
-                        else:
-                            mi = max(res)
-                            if mi >= 20 and mi <= 300:
-                                tmp["体重"] = mi
-                            else:
-                                tmp["体重"] = res[0]
-            case "声优":
-                res = parse_seyuu(pvalue, v["raw"])
-                tmp["声优"].extend(res)
-            case "多位声优":
-                res = parse_multiple_seyuu(pvalue, v["raw"])
-                tmp["声优"].extend(res)
-            case "三围":
-                res = parse_bwh(pvalue, v["raw"])
-                tmp["三围"] = res
-            case "发色":
-                res = parse_color(pvalue, v["raw"])
-                if len(res) > 0:
-                    tmp["发色"] = res
-            case "瞳色":
-                res = parse_color(pvalue, v["raw"])
-                if len(res) > 0:
-                    tmp["瞳色"] = res
-            case "血型":
-                # print(pvalue)
-                res = parse_blood(pvalue, v["raw"])
-                # print(res)
-                # s.add(res)
-                tmp["血型"] = res
-            case "年龄":
-                res = parse_age(pvalue, v["raw"])
-                if len(res) > 0:
-                    if res[0] <= 100:
-                        tmp["年龄"] = res[0]
-                    else:
-                        mi = min(res)
-                        if mi <= 100:
-                            tmp["年龄"] = mi
-                        else:
-                            mx = max(res)
-                            if mx <= 100:
-                                tmp["年龄"] = mx
-                            else:
-                                tmp["年龄"] = res[0]
-            case "生日":
-                res = parse_birthday(pvalue, v["raw"])
-                if res:
-                    tmp['生日'] = res
-    tmp["声优"] = unique(tmp["声优"])
-    out[k] = tmp
-    # print('\n\n\n')
-# print(cnt, cntt)
+    idx += 1
+    # print(f"{idx}/{len(extra)} {k}")
+    assert len(v) > 0
+    # if len(v) > 1:
+    #     print('Multiple infoboxes for', k)
+    #     for i in v:
+    #         print(repr(i[:10]), end=' ')
+    #     print()
+    infobox = v[0]
+    out[k] = parse(infobox)
 
-print('Valid size:', len(out))
+# for k, v in sorted(info_key_stats.items(), key=lambda x: x[1], reverse=True)[:100]:
+#     print(k, v)
+# for k, v in sorted(info_name_stats.items(), key=lambda x: x[1], reverse=True)[:100]:
+#     print(k, v)
+
+print(f'Valid size: {len(out)} / {len(extra)}')
 save_json(out, "moegirl/crawler_extra/extra_processed.json")
-
-
-"""
-('讨厌', 371)
-('学校', 388)
-('爱好', 398)
-('能力', 419)
-('喜欢', 453)
-('服役', 456)
-('代号', 463)
-('动工', 465)
-('印象色', 489)
-('下水', 525)
-('结局', 560)
-('演员', 575)
-('初登场作品', 578)
-('译名', 579)
-('属性', 591)
-('画师', 681)
-('别名', 731)
-('粉丝勋章', 750)
-('职业', 926)
-('特殊生日', 1053)
-('性别', 1055)
-('种族', 1743)
-('tabs', 1922)
-('多种瞳色', 2010)
-('多种发色', 2250)
-('三围', 3065)
-('血型', 5046)
-('体重', 6351)
-('多位声优', 6444)
-('星座', 8647)
-('生日', 11449)
-('年龄', 11532)
-('身高', 13028)
-('个人状态', 13066)
-('声优', 14639)
-('出身地区', 15788)
-('活动范围', 16512)
-('所属团体', 19994)
-('别号', 22836)
-('发色', 25829)
-('瞳色', 26127)
-('相关人士', 28132)
-('本名', 32805)
-('title', 33969)
-('pageid', 33969)
-('image', 33969)
-('萌点', 33969)
-"""

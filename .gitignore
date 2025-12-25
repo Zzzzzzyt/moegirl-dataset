@@ -163,6 +163,7 @@ moegirl/crawler_extra/extra_info.json
 moegirl/image/images
 bangumi/dump_converter/*.zip
 bangumi/dump_converter/*.jsonlines
+bangumi/dump_converter/*.aria2
 bangumi/anime_character_guessr/*.json
 bangumi/anime_character_guessr/*.js
 moegirl/moeranker/*.json

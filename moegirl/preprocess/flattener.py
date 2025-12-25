@@ -27,8 +27,14 @@ def attr_filter(attr_name: str) -> bool:
 dededupe: dict[str, dict] = {}
 
 
-def dfs(data: dict, ret: dict, stk: list, no_further: bool = False):
+def dfs(data: dict, stk: list, no_further: bool = False):
     global dededupe
+    global attr_index, attr_index_set
+    global cv_index, cv_index_set
+    global char_index, char_index_set
+    global attr2article
+    global char2attr
+
     if (
         len(data["subcategories"]) == 0
         and len(data["pages"]) == 0
@@ -36,14 +42,11 @@ def dfs(data: dict, ret: dict, stk: list, no_further: bool = False):
     ):
         # print(stk)
         # print("dededupe:", data["url"], stk)
-        dfs(dededupe[data["url"]], ret, stk, no_further)
+        dfs(dededupe[data["url"]], stk, no_further)
     if "url" in data and data["url"] not in dededupe:
         # print("set", data["url"])
         dededupe[data["url"]] = data
-    global attr_index, attr_index_set
-    global cv_index, cv_index_set
-    global char_index, char_index_set
-    global attr2article
+
     if "name" in data and not no_further:
         attr_name = data["name"]
         if (
@@ -65,8 +68,8 @@ def dfs(data: dict, ret: dict, stk: list, no_further: bool = False):
                     url = data['article']['url']
                     assert 'redlink' not in url
                     attr2article[attr_name] = url
-                    # if "/" + data['article']['name'].replace(" ", "_") != url:
-                    #     print(data['article'], attr_name)
+                    if "/" + data['article']['name'].replace(" ", "_") != url:
+                        print(data['article'], attr_name)
                 else:
                     for i in range(len(stk) - 1, -1, -1):
                         if stk[i] in attr2article:
@@ -85,11 +88,11 @@ def dfs(data: dict, ret: dict, stk: list, no_further: bool = False):
             char_index_set.add(char_name)
             char_index.append(char_name)
             # char_index[char_name] = i
-        if char_name not in ret:
-            ret[char_name] = []
-        ret[char_name].append(stk[-1])
+        if char_name not in char2attr:
+            char2attr[char_name] = []
+        char2attr[char_name].append(stk[-1])
     for i in data["subcategories"]:
-        dfs(i, ret, stk.copy(), no_further)
+        dfs(i, stk.copy(), no_further)
 
 
 attr2article: dict[str, str] = {}
@@ -103,7 +106,7 @@ cv_index_set: set[str] = set()
 data: dict = json.load(open("moegirl/crawler/attrs.json", encoding="utf-8"))
 char2attr: dict[str, list[str]] = {}
 char2cv: dict[str, list[str]] = {}
-dfs(data, char2attr, [])
+dfs(data, [])
 attr_index.sort()
 char_index.sort()
 cv_index.sort()
@@ -126,7 +129,10 @@ for k, v in char2attr.items():
 # print("raw character count:", len(raw_chars))
 # save_json(raw_chars, "moegirl/crawler_extra/raw_chars.json")
 
-char2attr = dict(filter(lambda x: len(x[1]) > 0, char2attr.items()))
+attr_index_set = set(attr_index)
+char2attr = dict(
+    filter(lambda x: len(x[1]) > 0 and x[0] not in attr_index_set, char2attr.items())
+)
 char2cv = dict(filter(lambda x: len(x[1]) > 0 and x[0] in char2attr, char2cv.items()))
 
 attr2char: dict[str, list[str]] = {}
@@ -136,7 +142,7 @@ for k, v in char2attr.items():
             attr2char[i] = []
         attr2char[i].append(k)
 for k, v in attr2char.items():
-    v = list(set(v))
+    attr2char[k] = list(set(v))
     if len(v) == 0:
         print("wtf???", k)
 
@@ -157,6 +163,7 @@ for name in attr_index:
     if name not in attr2char:
         continue
     if len(attr2char[name]) == 0:
+        del attr2char[name]
         continue
     attr_index2.append(name)
     if name in attr2article:
@@ -181,6 +188,7 @@ for name in char_index:
         continue
     if len(char2attr[name]) == 0:
         continue
+    assert name not in attr_index2
     char_index2.append(name)
 # char_index2.sort()
 # char_index2 = dict(sorted(char_index2, key=lambda x: len(char2attr[x])))
