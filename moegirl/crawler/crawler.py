@@ -152,7 +152,7 @@ def parse_index(url, ret, stk=[], filter_function=None):
                 assert soup is not None
 
                 if 'article' not in ret:
-                    article = soup.find(text='这个分类的对应条目是')
+                    article = soup.find(string='这个分类的对应条目是')
                     if article != None:
                         a = article.parent.find('a')
                         url2 = urllib.parse.unquote(a['href'])
@@ -256,7 +256,7 @@ def parse_index(url, ret, stk=[], filter_function=None):
                             )
                             retry_cnt = None
 
-                next = soup.find_all('a', text='下一页')
+                next = soup.find_all('a', string='下一页')
                 if len(next) != 0 and retry_cnt is None:
                     if len(next) != 2:
                         print_debug('UNEXPECTED NEXT COUNT!!!', color=ERROR)
