@@ -1,5 +1,6 @@
 beautifulsoup4
 requests
+brotli
 numpy
 tqdm
 scikit-learn

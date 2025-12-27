@@ -38,7 +38,7 @@ clean:
 	rm -rf bangumi/dump_converter/*.jsonlines
 	rm -rf bangumi/bgm_chars_full.json
 	rm -rf bangumi/bgm_index_full.json
-	rm -rf bangumi/bgm_redirects_full.json
+# 	rm -rf bangumi/bgm_redirects_full.json
 	rm -rf bangumi/bgm_subjects_full.json
 	rm -rf bangumi/moegirl2bgm.json
 	rm -rf bangumi/bgm2moegirl.json
@@ -77,7 +77,7 @@ clean_generated:
 	rm -rf bangumi/dump_converter/*.jsonlines
 	rm -rf bangumi/bgm_chars_full.json
 	rm -rf bangumi/bgm_index_full.json
-	rm -rf bangumi/bgm_redirects_full.json
+# 	rm -rf bangumi/bgm_redirects_full.json
 	rm -rf bangumi/bgm_subjects_full.json
 	rm -rf bangumi/moegirl2bgm.json
 	rm -rf bangumi/bgm2moegirl.json
@@ -134,12 +134,13 @@ moegirl/moeranker/importance.json &: moegirl/preprocess/attr_index.json moegirl/
 moeranker: moegirl/moeranker/data_min.json moegirl/moeranker/importance.json bangumi/moegirl2bgm.json bangumi/bgm_info.json moegirl/subsets bangumi/subsets
 
 
-bangumi/bgm_chars_full.json bangumi/bgm_index_full.json bangumi/bgm_redirects_full.json bangumi/bgm_subjects_full.json &: 
+bangumi/bgm_chars_full.json bangumi/bgm_index_full.json bangumi/bgm_subjects_full.json &: 
 	$(PYTHON) bangumi/dump_converter/dump_downloader.py
 	$(PYTHON) bangumi/dump_converter/dump_converter.py
-	$(PYTHON) bangumi/dump_converter/redirect_checker.py
 	rm -rf bangumi/dump_converter/*.jsonlines
 
+bangumi/bgm_redirects_full.json &: bangumi/bgm_chars_full.json bangumi/bgm_index_full.json bangumi/bgm_subjects_full.json
+	$(PYTHON) bangumi/dump_converter/redirect_checker.py
 
 bangumi/moegirl2bgm.json bangumi/bgm2moegirl.json bangumi/bgm_info.json &: bangumi/bgm_index_full.json bangumi/bgm_chars_full.json bangumi/bgm_subjects_full.json moegirl/preprocess/char_index.json moegirl/crawler_extra/extra_processed.json moegirl/preprocess/char2subject.json
 	$(PYTHON) bangumi/moegirl_mapper.py

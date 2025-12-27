@@ -177,7 +177,7 @@ with tqdm(char_index) as bar:
 extra_info = {}
 bar = tqdm(char_index)
 for idx, name in enumerate(bar):
-    bar.display(name)
+    bar.set_description(name)
     try:
         cache_path = gen_cache_path(name)
         if os.path.exists(cache_path):

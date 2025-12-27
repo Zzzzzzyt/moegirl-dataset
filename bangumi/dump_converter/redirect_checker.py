@@ -1,5 +1,5 @@
 from tqdm import tqdm
-from utils.file import load_json, save_json, chdir_project_root
+from utils.file import load_json, load_json_or_none, save_json, chdir_project_root
 from utils.network import safe_get, safe_soup, safe_download
 
 chdir_project_root()
@@ -10,7 +10,7 @@ headers = {
     'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7',
     'User-Agent': 'Zzzyt/MoeRanker (https://github.com/Zzzzzzyt/MoeRanker)',
 }
-cooldown = 2
+cooldown = 1
 
 
 def get_id(id, bar):
@@ -23,7 +23,8 @@ index = load_json('bangumi/bgm_index_full.json')
 chars = load_json('bangumi/bgm_chars_full.json')
 subjects = load_json('bangumi/bgm_subjects_full.json')
 
-redirects = load_json('bangumi/bgm_redirects_full.json')
+redirects = load_json_or_none('bangumi/bgm_redirects_full.json') or {}
+# redirects = {}
 # for k in redirects.keys():
 #     redirects[k] = str(redirects[k])
 
@@ -31,7 +32,7 @@ sus = []
 
 for k, v in subjects.items():
     if len(v) == 0:
-        if int(k) > 174000 and k not in redirects:
+        if k not in redirects:
             sus.append(k)
 
 try:
@@ -45,7 +46,6 @@ try:
 except KeyboardInterrupt:
     pass
 
-save_json(redirects, 'bangumi/bgm_redirects_full.json')
 
 for k in redirects.keys():
     if k in chars:
@@ -62,3 +62,4 @@ for i in index:
 save_json(index2, 'bangumi/bgm_index_full.json')
 save_json(chars, 'bangumi/bgm_chars_full.json')
 save_json(subjects, 'bangumi/bgm_subjects_full.json')
+save_json(redirects, 'bangumi/bgm_redirects_full.json')
