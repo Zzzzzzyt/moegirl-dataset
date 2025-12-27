@@ -167,7 +167,7 @@ def crawl(name, bar):
         # print(soup)
     # print(t)
 
-
+os.makedirs("moegirl/crawler_extra/raw", exist_ok=True)
 char_index = json.load(open("moegirl/preprocess/char_index.json", encoding="utf-8"))
 with tqdm(char_index) as bar:
     for i in bar:
