@@ -1,4 +1,4 @@
-bs4
+beautifulsoup4
 requests
 numpy
 tqdm
@@ -8,3 +8,4 @@ mwparserfromhell
 mplfonts
 pypinyin
 opencc
+dotenv
