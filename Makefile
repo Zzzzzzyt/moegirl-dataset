@@ -3,16 +3,17 @@ PYTHON := $(if $(PYTHON),$(PYTHON),python3)
 PROJECT_ROOT := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 export PYTHONPATH = $(PROJECT_ROOT)
 
-.PHONY: clean_all
+.PHONY: clean
 clean:
 	@read -p "Are you sure? [y/N] " ans && ans=$${ans:-N} ; \
 	if [ $${ans} = y ] || [ $${ans} = Y ]; then \
-		printf $(_SUCCESS) "YES" ; \
+		printf $(_SUCCESS) "YES\n" ; \
 	else \
-		printf $(_DANGER) "NO" ; \
+		printf $(_DANGER) "NO\n" ; exit 1; \
 	fi
 	rm -rf moegirl/crawler/attrs.json
 	rm -rf moegirl/crawler/subjects.json
+	rm -rf moegirl/preprocess/extra_info.json
 # 	rm -rf bangumi/bgm_images_medium_mapped.json
 
 	rm -rf moegirl/preprocess/attr_index.json
@@ -46,13 +47,13 @@ clean:
 	rm -rf bangumi/anime_character_guessr/id_tags.js
 	rm -rf bangumi/anime_character_guessr/id_tags.json
 
-.PHONY: clean
+.PHONY: clean_generated
 clean_generated: 
 	@read -p "Are you sure? [y/N] " ans && ans=$${ans:-N} ; \
 	if [ $${ans} = y ] || [ $${ans} = Y ]; then \
-		printf $(_SUCCESS) "YES" ; \
+		printf $(_SUCCESS) "YES\n" ; \
 	else \
-		printf $(_DANGER) "NO" ; \
+		printf $(_DANGER) "NO\n" ; exit 1; \
 	fi
 	rm -rf moegirl/preprocess/attr_index.json
 	rm -rf moegirl/preprocess/attr2char.json
