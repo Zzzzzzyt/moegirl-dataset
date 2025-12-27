@@ -154,17 +154,14 @@ def crawl(name, bar):
         # bar.write(name + ' exists.')
         return
     url = base_url + "/index.php?title={}&action=edit".format(title_to_url(name))
-    try:
-        res = safe_get(url, bar, headers=headers, cooldown=cooldown).text
-        # print(res)
-        soup = BeautifulSoup(res, features="html.parser")
-        # print(soup)
-        t = soup.find('textarea').contents[0]  # type: ignore
+    res = safe_get(url, bar, headers=headers, cooldown=cooldown).text
+    # print(res)
+    soup = BeautifulSoup(res, features="html.parser")
+    # print(soup)
+    t = soup.find('textarea').contents[0]  # type: ignore
 
-        open(cache_path, 'w', encoding='utf8').write(t)
-    except Exception as e:
-        traceback.print_exc()
-        # print(soup)
+    open(cache_path, 'w', encoding='utf8').write(t)
+    # print(soup)
     # print(t)
 
 os.makedirs("moegirl/crawler_extra/raw", exist_ok=True)

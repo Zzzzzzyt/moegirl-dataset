@@ -534,7 +534,8 @@ def crawl(root: str, path: str, filter_function=None):
             print('skip and save partial result')
         else:
             raise e
-    save_json(ret, path)
+    finally:
+        save_json(ret, path)
 
 
 def filter_func_subjects(stk):
