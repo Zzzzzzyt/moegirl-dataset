@@ -1,4 +1,5 @@
 import json
+import os
 import numpy as np
 from tqdm import tqdm
 
@@ -6,12 +7,8 @@ from utils.file import save_json, chdir_project_root
 
 chdir_project_root()
 
-attrs: list[str] = json.load(
-    open("moegirl/attr_index.json", encoding="utf-8")
-)
-chars: list[str] = json.load(
-    open("moegirl/char_index.json", encoding="utf-8")
-)
+attrs: list[str] = json.load(open("moegirl/attr_index.json", encoding="utf-8"))
+chars: list[str] = json.load(open("moegirl/char_index.json", encoding="utf-8"))
 gain = np.load(open("moegirl/analysis/gain.npy", "rb"))
 count = np.load(open("moegirl/analysis/count.npy", "rb"))
 contain = np.load(open("moegirl/analysis/contain.npy", "rb"))
@@ -54,5 +51,7 @@ for i in res:
         print(i[0], i[2], count[i[1]])
     out[i[2]] = round(float(importance[i[1]]), 5)
 print(out["蝴蝶结"], count[attrmap["蝴蝶结"]])
+
+os.makedirs("moeranker", exist_ok=True)
 save_json(out, 'moeranker/importance.json')
 # np.save(open("moeranker/importance.npy", "wb"), importance, allow_pickle=False)

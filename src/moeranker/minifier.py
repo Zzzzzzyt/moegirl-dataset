@@ -1,4 +1,5 @@
 import json
+import os
 import time
 from utils.file import load_json, save_json,chdir_project_root
 
@@ -104,6 +105,7 @@ def subset(fp, topk=len(attr_index)):
         f.write(s)
 
 
+os.makedirs("moeranker", exist_ok=True)
 # subset(open('moeranker/subset_100.json', 'w', encoding='utf-8'), 100)
 # subset(open('moeranker/subset_500.json', 'w', encoding='utf-8'), 500)
 subset('moeranker/data_min.json')
