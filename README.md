@@ -242,32 +242,6 @@ wikitext爬虫处理后的数据。
 
 </details>
 
-### moegirl/eye_color_attr.json
-
-所有瞳色属性名称。
-
-<details>
-<summary>样例</summary>
-
-```json
-["黑瞳", "金瞳", "蓝瞳", "棕瞳", "灰瞳", "红瞳", "紫瞳", "橙瞳", "绿瞳", "粉瞳", "白瞳", "异色瞳", "渐变瞳", "彩虹瞳"]
-```
-
-</details>
-
-### moegirl/hair_color_attr.json
-
-所有发色属性名称。
-
-<details>
-<summary>样例</summary>
-
-```json
-["黑发", "金发", "蓝发", "棕发", "银发", "红发", "紫发", "橙发", "绿发", "粉发", "双色发", "彩虹发", "多色发", "阴阳发"]
-```
-
-</details>
-
 ### moegirl/char2subject.json
 
 人物到作品/作品分类的映射。
@@ -321,6 +295,58 @@ wikitext爬虫处理后的数据。
 
 </details>
 
+### moegirl/char2gender.json
+
+可能的角色性别，为`male`,`female`,`other`之一。
+
+<details>
+<summary>样例</summary>
+
+```json
+{
+  "绪山真寻": "female",
+  "飞段": "male",
+  "钉崎野蔷薇": "female",
+  "米塔": "female",
+  "樱川尊": "female",
+  "弍静仪": "female",
+  "艾蒂露": "female",
+  "Dorothy(Pepoyo)": "female",
+  "濑良垣多惠": "female",
+  "明星日鞠": "female",
+  "浅仓透": "female",
+  "日日树涉": "male",
+  "沙加": "male",
+  "神代芙拉": "female",
+  "久岐忍": "female",
+  "维斯·寒冬牢狱": "female",
+  "花园羽羽里": "female",
+  "草鹿八千流": "female",
+  "柴咲真瑠奈": "female",
+  "命运(宿命回响 命运节拍)": "female",
+  "姊母娞摩": "female",
+  "金离瞳": "male",
+  "凯撒·金": "female",
+  "濑谷壹": "male",
+  "林克": "male",
+  "阿古屋真珠": "female",
+  "阿良河基维": "female",
+  "棱镜樱桃": "female",
+  "渡边曜": "female",
+  "高海千歌": "female",
+  "岚千砂都": "female",
+  "清水洁子": "female",
+  "伊地知虹夏": "female",
+  "桐生可可": "female",
+  "边里唯世": "male",
+  "雾岛露明": "female",
+  "渡会雏见": "female",
+  "Kris": "other",
+}
+```
+
+</details>
+
 ### moegirl/fundamental_attr.json
 
 “基本”的属性列表。
@@ -370,6 +396,32 @@ wikitext爬虫处理后的数据。
 
 ```json
 ["猫箱性别", "无性别", "扶她", "跨性别者", "体魂异性"]
+```
+
+</details>
+
+### moegirl/eye_color_attr.json
+
+所有瞳色属性名称。
+
+<details>
+<summary>样例</summary>
+
+```json
+["黑瞳", "金瞳", "蓝瞳", "棕瞳", "灰瞳", "红瞳", "紫瞳", "橙瞳", "绿瞳", "粉瞳", "白瞳", "异色瞳", "渐变瞳", "彩虹瞳"]
+```
+
+</details>
+
+### moegirl/hair_color_attr.json
+
+所有发色属性名称。
+
+<details>
+<summary>样例</summary>
+
+```json
+["黑发", "金发", "蓝发", "棕发", "银发", "红发", "紫发", "橙发", "绿发", "粉发", "双色发", "彩虹发", "多色发", "阴阳发"]
 ```
 
 </details>
