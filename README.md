@@ -23,7 +23,7 @@ MOEGIRL_COOKIES="moegirlSSOUserName=****; moegirlSSOUserID=****; moegirlSSOToken
 然后
 
 ```bash
-make clean
+make clean_all
 make all
 ```
 

@@ -72,7 +72,7 @@ clean:
 	rm -rf moegirl/char2subject.json
 	rm -rf moegirl/subject_index.json
 	rm -rf moegirl/fundamental_attr.json
-	rm -rf moegirl/extra_processed.json
+# 	rm -rf moegirl/extra_processed.json
 	rm -rf moegirl/char2gender.json
 	rm -rf moegirl/subset/*
 	rm -rf moegirl/analysis/*.npy
