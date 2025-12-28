@@ -148,7 +148,7 @@ bangumi/bgm_chars_full.json bangumi/bgm_index_full.json bangumi/bgm_subjects_ful
 bangumi/bgm_redirects_full.json &: src/bangumi/dump/redirect_checker.py bangumi/bgm_chars_full.json bangumi/bgm_index_full.json bangumi/bgm_subjects_full.json
 	$(PYTHON) src/bangumi/dump/redirect_checker.py
 
-bangumi/moegirl2bgm.json bangumi/bgm2moegirl.json bangumi/bgm_info.json &: src/bangumi/moegirl_mapper.py bangumi/bgm_index_full.json bangumi/bgm_chars_full.json bangumi/bgm_subjects_full.json moegirl/char_index.json moegirl/extra_processed.json moegirl/char2subject.json
+bangumi/moegirl2bgm.json bangumi/bgm2moegirl.json bangumi/bgm_info.json &: src/bangumi/moegirl_mapper.py bangumi/bgm_index_full.json bangumi/bgm_chars_full.json bangumi/bgm_subjects_full.json bangumi/bgm_redirects_full.json moegirl/char_index.json moegirl/extra_processed.json moegirl/char2subject.json
 	$(PYTHON) src/bangumi/moegirl_mapper.py
 
 bangumi/bgm_images_medium_mapped.json &: src/bangumi/crawler/img_preloader.py bangumi/subsets moegirl/subsets bangumi/moegirl2bgm.json bangumi/bgm_chars_full.json
