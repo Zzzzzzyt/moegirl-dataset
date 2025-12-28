@@ -15,6 +15,7 @@ def chdir_project_root():
 def save_json(data: object, path: str, verbose: bool = True):
     if verbose:
         print(f'saving to {path}')
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     json.dump(
         data,
         open(path, 'w', encoding='utf-8'),
@@ -26,6 +27,7 @@ def save_json(data: object, path: str, verbose: bool = True):
 def save_json_pretty(data: object, path: str, verbose: bool = True):
     if verbose:
         print(f'saving to {path}')
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     json.dump(
         data,
         open(path, 'w', encoding='utf-8'),

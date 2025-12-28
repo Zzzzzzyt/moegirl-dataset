@@ -1,0 +1,222 @@
+import json
+import random
+import urllib.parse
+
+from utils.file import save_json, chdir_project_root
+
+chdir_project_root()
+
+
+def char_filter(char_name: str) -> bool:
+    # if random.random() > 0.01:
+    #     return True
+    return (
+        char_name.startswith("Template:")
+        or char_name.startswith("User:")
+        or char_name.startswith("Help:")
+        or char_name.startswith("Talk:")
+    )
+
+
+def attr_filter(attr_name: str) -> bool:
+    if attr_name.startswith("按") and attr_name.endswith("分类"):
+        return True
+    return False
+
+
+dededupe: dict[str, dict] = {}
+
+
+def dfs(data: dict, stk: list, no_further: bool = False):
+    global dededupe
+    global attr_index, attr_index_set
+    global cv_index, cv_index_set
+    global char_index, char_index_set
+    global attr2article
+    global char2attr
+
+    if (
+        len(data["subcategories"]) == 0
+        and len(data["pages"]) == 0
+        and data["url"] in dededupe
+    ):
+        # print(stk)
+        # print("dededupe:", data["url"], stk)
+        dfs(dededupe[data["url"]], stk, no_further)
+    if "url" in data and data["url"] not in dededupe:
+        # print("set", data["url"])
+        dededupe[data["url"]] = data
+
+    if "name" in data and not no_further:
+        attr_name = data["name"]
+        if (
+            len(stk) == 0
+            and attr_name != "按角色特征分类"
+            and attr_name != '按声优分类'
+        ):
+            no_further = True
+        if attr_name not in attr_index_set and attr_name not in cv_index:
+            # attr_index[attr_name] = {"name": attr_name, "url": data["url"]}
+            assert '/Category:' + attr_name.replace(" ", "_") == data['url']
+            if attr_name.endswith('配音角色'):
+                cv_index_set.add(attr_name[:-4])
+                cv_index.append(attr_name[:-4])
+            else:
+                attr_index_set.add(attr_name)
+                attr_index.append(attr_name)
+                if 'article' in data:
+                    url = data['article']['url']
+                    assert 'redlink' not in url
+                    attr2article[attr_name] = url
+                    if "/" + data['article']['name'].replace(" ", "_") != url:
+                        print(data['article'], attr_name)
+                else:
+                    for i in range(len(stk) - 1, -1, -1):
+                        if stk[i] in attr2article:
+                            attr2article[attr_name] = attr2article[stk[i]]
+                            break
+            stk.append(attr_name)
+        # if attr_name not in ['按角色特征分类', '按声优分类']:
+    # print(stk)
+    for i in data["pages"]:
+        char_name = i["name"]
+        if char_filter(char_name):
+            continue
+        char_url = i['url']
+        assert '/' + char_name.replace(" ", "_") == char_url
+        if char_name not in char_index_set:
+            char_index_set.add(char_name)
+            char_index.append(char_name)
+            # char_index[char_name] = i
+        if char_name not in char2attr:
+            char2attr[char_name] = []
+        char2attr[char_name].append(stk[-1])
+    for i in data["subcategories"]:
+        dfs(i, stk.copy(), no_further)
+
+
+attr2article: dict[str, str] = {}
+attr_index: list[str] = []
+attr_index_set: set[str] = set()
+char_index: list[str] = []
+char_index_set: set[str] = set()
+cv_index: list[str] = []
+cv_index_set: set[str] = set()
+
+data: dict = json.load(open("moegirl/attrs.json", encoding="utf-8"))
+char2attr: dict[str, list[str]] = {}
+char2cv: dict[str, list[str]] = {}
+dfs(data, [])
+attr_index.sort()
+char_index.sort()
+cv_index.sort()
+
+for k, v in char2attr.items():
+    tmp = []
+    tmp2 = []
+    for i in v:
+        if attr_filter(i):
+            continue
+        if i.endswith('配音角色'):
+            tmp2.append(i[:-4])
+            continue
+        if i not in tmp:
+            tmp.append(i)
+    char2attr[k] = tmp
+    char2cv[k] = tmp2
+
+# char_index.sort()
+# print("raw character count:", len(raw_chars))
+# save_json(raw_chars, "moegirl/raw_chars.json")
+
+attr_index_set = set(attr_index)
+char2attr = dict(
+    filter(lambda x: len(x[1]) > 0 and x[0] not in attr_index_set, char2attr.items())
+)
+char2cv = dict(filter(lambda x: len(x[1]) > 0 and x[0] in char2attr, char2cv.items()))
+
+attr2char: dict[str, list[str]] = {}
+for k, v in char2attr.items():
+    for i in v:
+        if i not in attr2char:
+            attr2char[i] = []
+        attr2char[i].append(k)
+for k, v in attr2char.items():
+    attr2char[k] = list(set(v))
+    if len(v) == 0:
+        print("wtf???", k)
+
+cv2char: dict[str, list[str]] = {}
+for k, v in char2cv.items():
+    for i in v:
+        if i not in cv2char:
+            cv2char[i] = []
+        cv2char[i].append(k)
+for k, v in cv2char.items():
+    v = list(set(v))
+    if len(v) == 0:
+        print("wtf???", k)
+
+attr_index2: list[str] = []
+attr2article2: dict[str, str] = {}
+for name in attr_index:
+    if name not in attr2char:
+        continue
+    if len(attr2char[name]) == 0:
+        del attr2char[name]
+        continue
+    attr_index2.append(name)
+    if name in attr2article:
+        attr2article2[name] = attr2article[name]
+    else:
+        if name.startswith('第一人称'):
+            attr2article2[name] = '/特殊第一人称'
+        elif name.startswith('第二人称'):
+            attr2article2[name] = '/特殊第二人称'
+        elif name in ['AB型', 'A型', 'B型', 'O型']:
+            attr2article2[name] = '/ABO血型'
+        elif name in ['RH-O型', 'RH型']:
+            attr2article2[name] = '/稀有血型'
+        else:
+            print('no article:', name)
+# attr_index2.sort()
+# attr_index2 = dict(sorted(attr_index2, key=lambda x: len(attr2char[x])))
+
+char_index2: list[str] = []
+for name in char_index:
+    if name not in char2attr:
+        continue
+    if len(char2attr[name]) == 0:
+        continue
+    assert name not in attr_index2
+    char_index2.append(name)
+# char_index2.sort()
+# char_index2 = dict(sorted(char_index2, key=lambda x: len(char2attr[x])))
+
+cv_index2: list[str] = []
+for name in cv_index:
+    if name not in cv2char:
+        continue
+    if len(cv2char[name]) == 0:
+        continue
+    cv_index2.append(name)
+# cv_index2.sort()
+# cv_index2 = dict(sorted(char_index2, key=lambda x: len(cv2char[x])))
+
+
+attr2char = dict(sorted(attr2char.items(), key=lambda x: len(x[1])))
+char2attr = dict(sorted(char2attr.items(), key=lambda x: len(x[1])))
+save_json(attr2char, "moegirl/attr2char.json")
+save_json(char2attr, "moegirl/char2attr.json")
+save_json(char2cv, "moegirl/char2cv.json")
+save_json(cv2char, "moegirl/cv2char.json")
+
+print("attribute count: {}".format(len(attr_index2)))
+print("article count: {}".format(len(attr2article2)))
+print("cv count: {}".format(len(cv_index2)))
+print("character count: {}".format(len(char_index2)))
+
+save_json(char_index2, "moegirl/char_index.json")
+save_json(attr_index2, "moegirl/attr_index.json")
+save_json(cv_index2, "moegirl/cv_index.json")
+save_json(attr2article2, "moegirl/attr2article.json")
