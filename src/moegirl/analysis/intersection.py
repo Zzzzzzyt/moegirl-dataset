@@ -1,4 +1,5 @@
 import json
+import os
 from re import L
 import numpy as np
 from tqdm import tqdm
@@ -49,6 +50,7 @@ with tqdm(total=attr_count * (attr_count - 1) // 2 + attr_count) as pbar:
             # result.append((attrs[i], attrs[j], chi2, table))
             pbar.update(1)
 
+os.makedirs("moegirl/analysis", exist_ok=True)
 # json.dump(attrs, open('moegirl/analysis/attr_ids.json', 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 np.save(open('moegirl/analysis/intersection.npy', 'wb'), intersection, allow_pickle=False)
 np.save(open('moegirl/analysis/cross.npy', 'wb'), cross, allow_pickle=False)

@@ -1,4 +1,5 @@
 import json
+import os
 import numpy as np
 from tqdm import tqdm
 
@@ -95,6 +96,7 @@ with tqdm(total=attr_count * (attr_count - 1) // 2 + attr_count) as pbar:
                         pbar.write(attrs[j] + " " + attrs[i])
             pbar.update(1)
 
+os.makedirs("moegirl/analysis", exist_ok=True)
 np.save(open("moegirl/analysis/contain.npy", "wb"), contain)
 np.save(open("moegirl/analysis/gain.npy", "wb"), gain)
 np.save(open("moegirl/analysis/chi2.npy", "wb"), chi2)
