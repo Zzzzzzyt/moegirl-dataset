@@ -12,6 +12,8 @@
 |萌娘百科wikitext爬虫|2025-12-28|
 |bangumi|2025-12-23|
 
+友情提醒：可通过`git clone --depth 1 https://github.com/Zzzzzzyt/moegirl-dataset.git`仅下载HEAD，减少下载量。
+
 ## 自行爬取
 
 萌百wikitext爬虫（`src/moegirl/crawler/crawler_extra.py`）需要登陆访问修改页面api。请将萌娘百科登陆cookie置于`.env`，格式如下：
@@ -28,6 +30,8 @@ make all
 ```
 
 即可。
+
+如中途出现网络错误，直接重新`make all`，脚本会自行断点重续。
 
 萌百分类页爬虫大约需要6小时，萌百wikitext爬虫大约需要40小时。bangumi数据来自[dump](https://github.com/bangumi/Archive)，大约需要下载350MB。
 
