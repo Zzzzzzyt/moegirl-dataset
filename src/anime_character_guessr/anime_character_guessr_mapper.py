@@ -19,20 +19,6 @@ conv = {
     '偶像': '偶像(萌属性)',
 }
 
-bgm_entry = {entry['id']: entry for entry in bgm_index}
-
-user_char_tags = {}
-for i in user_char_tags_raw:
-    id = str(i['_id'])
-    tagCounts = i['tagCounts']
-    tags = {}
-    for k, v in tagCounts.items():
-        if k in conv:
-            k = conv[k]
-        tags[k] = v
-    user_char_tags[id] = tags
-
-
 hair_attrs = [
     '黑发',
     '银发',
@@ -177,6 +163,37 @@ eye_color_attr = [
     # "渐变瞳",
     # "彩虹瞳",
 ]
+
+
+def moegirl_split(name):
+    cur = name
+    post = ""
+    postpos = cur.find("(")
+    if postpos != -1 and cur[-1] == ")":
+        post = cur[postpos + 1 : -1]
+        cur = cur[:postpos]
+
+    pre = ""
+    prepos = cur.find(":")
+    if prepos != -1:
+        pre = cur[:prepos]
+        cur = cur[prepos + 1 :]
+
+    return cur, pre, post
+
+
+bgm_entry = {entry['id']: entry for entry in bgm_index}
+
+user_char_tags = {}
+for i in user_char_tags_raw:
+    id = str(i['_id'])
+    tagCounts = i['tagCounts']
+    tags = {}
+    for k, v in tagCounts.items():
+        if k in conv:
+            k = conv[k]
+        tags[k] = v
+    user_char_tags[id] = tags
 
 
 def merge_user(bgmid, tags, user_tags):
@@ -332,9 +349,21 @@ for k, v in bgm2moegirl.items():
     if len(v) == 0:
         continue
     if len(v) > 1:
-        continue
-    moeid = v[0]
+        st = set()
+        root_name = None
+        for i in v:
+            name, pre, post = moegirl_split(i)
+            st.add(name)
+            if root_name is None or len(i) < len(root_name):
+                root_name = i
+        if len(st) != 1:
+            continue
+        moeid = root_name
+    else:
+        moeid = v[0]
+
     assert moeid in char2attr
+
     attrs = char2attr[moeid]
     tags = []
     for i in attrs:
